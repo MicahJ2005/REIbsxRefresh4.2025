@@ -1,0 +1,2 @@
+<apex:page id="pg" standardController="Account" extensions="SendEmailObjectExtn" sidebar="false" showHeader="false" docType="html-5.0" standardStylesheets="false" action="{!sendMail}" >
+</apex:page>

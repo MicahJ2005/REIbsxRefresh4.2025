@@ -1,0 +1,6 @@
+({
+    fetchAccountDocsInfo : function() {
+        
+        
+    }
+})

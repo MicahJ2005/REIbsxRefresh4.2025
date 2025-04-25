@@ -1,0 +1,289 @@
+<aura:component controller="AccountOppsStageCompletionRatioCtrl" implements="flexipage:availableForAllPageTypes,flexipage:availableForRecordHome,force:hasRecordId,force:appHostable" access="global" >
+    
+    <aura:attribute name="objWrapper" type="object" />
+    <aura:attribute name="bucketOppList" type="object[]" />
+    <aura:attribute name="status" type="boolean"/>
+    <aura:attribute name="options" type="List" />
+    <aura:attribute name="selectedValue" type="String" default="Created Date"/>
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}"/>
+    
+    <article class="slds-card"  style="box-shadow: rgba(99, 99, 99, 0.2) 0px 2px 8px 0px;">
+        <div class="slds-grid slds-einstein-header ">
+            <header class="slds-media slds-m-horizontal_x-small slds-has-flexi-truncate">
+                <aura:if isTrue="{!v.objWrapper}">
+                    <div class="slds-grid slds-grid_vertical-align-center slds-size_3-of-4 slds-medium-size_2-of-3">
+                        <div class="slds-media__figure">
+                            <span class="slds-icon_container slds-icon-utility-salesforce1">
+                                <lightning:icon iconName="standard:account" alternativeText="Account" title="Account" />
+                            </span>
+                        </div>
+                        <div class="slds-media__body">
+                            <h2  title="Einstein (10+)">
+                                <a href="javascript:void(0);" class="slds-card__header-link" title="Account's Opportunities Contracted Rate">
+                                    <span class="slds-text-heading_small">Account's Opportunities Contracted Rate
+                                    </span>
+                                </a>
+                            </h2>
+                        </div>
+                    </div>
+                    <div class="slds-form-element" style="float:right;padding-left:200px;">
+                        <label class="slds-checkbox_toggle slds-grid">
+                            <span class="slds-form-element__label slds-m-bottom_none">Switch To</span>
+                            <ui:inputCheckbox aura:id="chkbox" class="slds-input" change="{!c.onStatusChange}"/>
+                            <span id="toggle-desc" class="slds-checkbox_faux_container" aria-live="assertive">
+                                <span class="slds-checkbox_faux"></span>
+                                <span class="slds-checkbox_off">List View</span>
+                                <span class="slds-checkbox_on">Basic Info</span>
+                            </span>
+                        </label>
+                    </div>
+                </aura:if>
+            </header>
+        </div>
+        <aura:if isTrue="{!v.status == 'List View'}">
+            <aura:if isTrue="{!v.objWrapper.totalOpportunities > 0}">
+                <table class="slds-table slds-table--cell-buffer" role="grid">    
+                    <thead>  
+                        <tr class="slds-text-title--caps">
+                            <th class="slds-size--1-of-10" scope="col">
+                                <div class="slds-truncate" title="Name">Total Opp</div>
+                            </th>
+                            <th class="slds-size--1-of-10" scope="col">
+                                <div class="slds-truncate" title="Name">Opp Assessments</div>
+                            </th>
+                            <th class="slds-size--1-of-10" scope="col">
+                                <div class="slds-truncate" title="Name">Ass/Opp</div>
+                            </th>
+                            <th class="slds-size--1-of-10" scope="col">
+                                <div class="slds-truncate" title="Name">Opp Contracts</div>
+                            </th>
+                            <th class="slds-size--1-of-10" scope="col">
+                                <div class="slds-truncate" title="Name">Con/Ass</div>
+                            </th>
+                            <th class="slds-size--1-of-10" scope="col">
+                                <div class="slds-truncate" title="Name">Con/Opp</div>
+                            </th>
+                            <th class="slds-size--1-of-10" scope="col">
+                                <div class="slds-truncate" title="Name">Opp Purchased</div>
+                            </th>
+                            <th class="slds-size--1-of-10" scope="col">
+                                <div class="slds-truncate" title="Name">Contracted Rate</div>
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>        
+                        <tr>
+                            <td scope="row">
+                                <div class="slds-truncate"> 
+                                    {!v.objWrapper.totalOpportunities}
+                                </div>
+                            </td>
+                            <td scope="row">
+                                <div class="slds-truncate"> 
+                                    {!v.objWrapper.totalAssessmentOpportunities}
+                                </div>
+                            </td>
+                            <td scope="row">
+                                <div class="slds-truncate"> 
+                                    {!v.objWrapper.assessmentByTotalOpp}%
+                                </div>
+                            </td>
+                            <td scope="row">
+                                <div class="slds-truncate"> 
+                                    {!v.objWrapper.totalContractedOpportunities}
+                                </div>
+                            </td>
+                            <td scope="row">
+                                <div class="slds-truncate"> 
+                                    {!v.objWrapper.contractByAssessments}%
+                                </div>
+                            </td>
+                            <td scope="row">
+                                <div class="slds-truncate"> 
+                                    {!v.objWrapper.contractByOpportunities}%
+                                </div>
+                            </td>
+                            <td scope="row">
+                                <div class="slds-truncate"> 
+                                    {!v.objWrapper.totalPurchasedOpportunities}
+                                </div>
+                            </td>                   
+                            <td scope="row">
+                                <div class="slds-truncate"> 
+                                    <lightning:formattedNumber value="{!v.objWrapper.contractedRatePurchase}" minimumFractionDigits="2" maximumFractionDigits="2"/>%
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </aura:if>
+            <div style="box-shadow: rgba(0, 0, 0, 0.1) 0px 10px 50px;" class="slds-m-top_large">
+                <div class="slds-grid slds-gutters slds-p-around_x-small slds-m-horizontal_x-small">
+                    <div class="slds-col" >
+                        <lightning:select onchange="{!c.filterByDate}" name="mySelect" label="Select Filter:" aura:id="mySelect" value="{!v.selectedValue}">
+                            <aura:iteration items="{!v.options}" var="item">
+                                <option text="{!item.label}" value="{!item.value}" selected="{!item.selected}"/>
+                            </aura:iteration>
+                        </lightning:select>
+                    </div>
+                    <div class="slds-col">
+                        <lightning:input format ="MM-DD-YYYY" onchange="{!c.filterByDate}" dateStyle="short"  type="date" name="input1" aura:id="input1"  label="Start Date" />
+                    </div>
+                    <div class="slds-col">
+                        <lightning:input format ="MM-DD-YYYY" onchange="{!c.filterByDate}" dateStyle="short"  type="date" name="input2" aura:id="input2"  label="End Date" />
+                    </div>
+                </div>
+                
+                <table class="slds-table  slds-table--cell-buffer slds-m-top_small" >    
+                    <thead>  
+                        <tr class="slds-text-title--caps">
+                            <th class="slds-size--1-of-5" scope="col">
+                                <div class="slds-truncate" title="Name">Name</div>
+                            </th>
+                            <th class="slds-size--1-of-10" scope="col">
+                                <div class="slds-truncate" title="Name">Stage Name</div>
+                            </th>
+                            <th class="slds-size--1-of-10" scope="col">
+                                <div class="slds-truncate" title="Name">Market</div>
+                            </th>
+                            <th class="slds-size--1-of-10" scope="col">
+                                <div class="slds-truncate" title="Name">Created Date</div>
+                            </th>
+                            <th class="slds-size--1-of-10" scope="col">
+                                <div class="slds-truncate" title="Name">Date Visited</div>
+                            </th>
+                            <th class="slds-size--1-of-10" scope="col">
+                                <div class="slds-truncate" title="Name">Contract Accepted Date</div>
+                            </th>
+                            <th class="slds-size--1-of-10" scope="col">
+                                <div class="slds-truncate" title="Name">Purchase Date</div>
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>        
+                        <aura:iteration items="{!v.objWrapper.oppList}" var="wrp">
+                            <tr>
+                                <td scope="row">
+                                    <div class="slds-grid" style="width:180px">
+                                        <div class="slds-grid slds-has-flexi-truncate">
+                                            <p class="slds-truncate" title=""><a data-caseid="{!wrp.Id}" onclick="{!c.recordRedirect}">{!wrp.Name}</a></p>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td scope="row">
+                                    <div class="slds-truncate"> 
+                                        {!wrp.StageName}
+                                    </div>
+                                </td>
+                                <td scope="row">
+                                    <div class="slds-truncate"> 
+                                        {!wrp.Market__c}
+                                    </div>
+                                </td>
+                                <td scope="row">
+                                    <div class="slds-truncate"> 
+                                        <lightning:formattedDateTime value="{!wrp.CreatedDate}"/>
+                                    </div>
+                                </td>
+                                <td scope="row">
+                                    <div class="slds-truncate"> 
+                                        <lightning:formattedDateTime value="{!wrp.Date_Visited__c}"/>
+                                    </div>
+                                </td>
+                                <td scope="row">
+                                    <div class="slds-truncate"> 
+                                        <lightning:formattedDateTime value="{!wrp.Contract_Accepted_Date__c}"/>
+                                    </div>
+                                </td>
+                                <td scope="row">
+                                    <div class="slds-truncate"> 
+                                        <lightning:formattedDateTime value="{!wrp.Contract_Closing_Date__c}"/>
+                                    </div>
+                                </td>
+                            </tr>
+                        </aura:iteration>
+                    </tbody>
+                </table>
+            </div>
+        </aura:if>
+        
+        <aura:if isTrue="{!v.status == 'Basic Info'}">
+            <aura:if isTrue="{!v.objWrapper}">
+                <table class="slds-table slds-table--bordered slds-table--cell-buffer" role="grid">    
+                    <thead>  
+                        <tr class="slds-text-title--caps">
+                            <th class="slds-size--1-of-10" scope="col">
+                                <div class="slds-truncate" title="Name">Total Opp</div>
+                            </th>
+                            <th class="slds-size--1-of-10" scope="col">
+                                <div class="slds-truncate" title="Name">Opp Assessments</div>
+                            </th>
+                            <th class="slds-size--1-of-10" scope="col">
+                                <div class="slds-truncate" title="Name">Ass/Opp</div>
+                            </th>
+                            <th class="slds-size--1-of-10" scope="col">
+                                <div class="slds-truncate" title="Name">Opp Contracts</div>
+                            </th>
+                            <th class="slds-size--1-of-10" scope="col">
+                                <div class="slds-truncate" title="Name">Con/Ass</div>
+                            </th>
+                            <th class="slds-size--1-of-10" scope="col">
+                                <div class="slds-truncate" title="Name">Con/Opp</div>
+                            </th>
+                            <th class="slds-size--1-of-10" scope="col">
+                                <div class="slds-truncate" title="Name">Opp Purchased</div>
+                            </th>
+                            <th class="slds-size--1-of-10" scope="col">
+                                <div class="slds-truncate" title="Name">Contracted Rate</div>
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>        
+                        <tr>
+                            <td scope="row">
+                                <div class="slds-truncate"> 
+                                    {!v.objWrapper.totalOpportunities}
+                                </div>
+                            </td>
+                            <td scope="row">
+                                <div class="slds-truncate"> 
+                                    {!v.objWrapper.totalAssessmentOpportunities}
+                                </div>
+                            </td>
+                            <td scope="row">
+                                <div class="slds-truncate"> 
+                                    {!v.objWrapper.assessmentByTotalOpp}%
+                                </div>
+                            </td>
+                            <td scope="row">
+                                <div class="slds-truncate"> 
+                                    {!v.objWrapper.totalContractedOpportunities}
+                                </div>
+                            </td>
+                            <td scope="row">
+                                <div class="slds-truncate"> 
+                                    {!v.objWrapper.contractByAssessments}%
+                                </div>
+                            </td>
+                            <td scope="row">
+                                <div class="slds-truncate"> 
+                                    {!v.objWrapper.contractByOpportunities}%
+                                </div>
+                            </td>
+                            <td scope="row">
+                                <div class="slds-truncate"> 
+                                    {!v.objWrapper.totalPurchasedOpportunities}
+                                </div>
+                            </td>                   
+                            <td scope="row">
+                                <div class="slds-truncate"> 
+                                    <lightning:formattedNumber value="{!v.objWrapper.contractedRatePurchase}" minimumFractionDigits="2" maximumFractionDigits="2"/>%
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </aura:if>
+        </aura:if>
+    </article>
+</aura:component>

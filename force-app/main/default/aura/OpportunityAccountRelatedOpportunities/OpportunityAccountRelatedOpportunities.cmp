@@ -1,0 +1,84 @@
+<aura:component Controller="AccountRelatedOpportunitiesCtrl" implements="force:lightningQuickAction,force:hasRecordId,flexipage:availableForAllPageTypes" access="global">
+    
+    <aura:attribute name="opportunityList" type="Opportunity[]" />
+    
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}"/>
+    
+    <table class="slds-table slds-table_bordered slds-table_cell-buffer">
+        <thead>
+            <tr class="slds-text-title_caps">
+                <th scope="col">
+                    <div class="slds-truncate" title="Account Name">Name</div>
+                </th>
+                <th scope="col">
+                    <div class="slds-truncate" title="Account Name">MKT</div>
+                </th>
+                <th scope="col">
+                    <div class="slds-truncate" title="Account Name">Stage</div>
+                </th>
+                <th scope="col">
+                    <div class="slds-truncate" title="Account Name">LS</div>
+                </th>
+                <th scope="col">
+                    <div class="slds-truncate" title="Account Name">LD </div>
+                </th>
+                <th scope="col">
+                    <div class="slds-truncate" title="Account Name">CLP</div>
+                </th>
+                <th scope="col">
+                    <div class="slds-truncate" title="Account Name">CO</div>
+                </th>
+                <th scope="col">
+                    <div class="slds-truncate" title="Account Name">CC</div>
+                </th>
+                <th scope="col">
+                    <div class="slds-truncate" title="Account Name">AF</div>
+                </th>
+                <th scope="col">
+                    <div class="slds-truncate" title="Account Name">MPD</div>
+                </th>
+            </tr>
+        </thead>
+        <tbody>
+            <aura:iteration items="{!v.opportunityList}" var="opp">
+                <tr>
+                    <td data-label="Name">
+                        <div class="slds-truncate" title="">{!opp.Name}</div>
+                    </td>
+                    <td data-label="Stage">
+                        <div class="slds-truncate" title="">{!opp.Market__c}</div>
+                    </td>
+                    <td data-label="Stage">
+                        <div class="slds-truncate" title="">{!opp.StageName}</div>
+                    </td>
+                    <td data-label="Stage">
+                        <div class="slds-truncate" title="">{!opp.LeadSource}</div>
+                    </td>
+                    <td data-label="Stage">
+                        <lightning:formattedDateTime value="{!opp.Listing_Date__c}" year="numeric" month="numeric" day="numeric" />
+                        <!--<div class="slds-truncate" title="">{!opp.Listing_Date__c}</div>-->
+                    </td>
+                    <td data-label="Stage">
+                        <lightning:formattedNumber value="{!opp.Current_List_Price__c}" style="currency" currencyCode="USD" />
+                        <!--<div class="slds-truncate" title="">{!opp.Current_List_Price__c}</div>-->
+                    </td>
+                    <td data-label="Stage">
+                        <lightning:formattedNumber value="{!opp.Current_Offer__c}" style="currency" currencyCode="USD" />
+                        <!--<div class="slds-truncate" title="">{!opp.Current_Offer__c}</div>-->
+                    </td>
+                    <td data-label="Stage">
+                        <div class="slds-truncate" title="">{!opp.Closing_Concessions__c}</div>
+                    </td>
+                    <td data-label="Stage">
+                        <lightning:formattedNumber value="{!opp.Additional_Purchase_Costs__c}" style="currency" currencyCode="USD" />
+                       <!-- <div class="slds-truncate" title="">{!opp.Additional_Purchase_Costs__c}</div>-->
+                    </td>
+                    <td data-label="Stage">
+                        <lightning:formattedDateTime value="{!opp.MI_Purchase_Date__c}" year="numeric" month="numeric" day="numeric" />
+                        <!--<div class="slds-truncate" title="">{!opp.MI_Purchase_Date__c}</div>-->
+                    </td>
+                </tr>
+            </aura:iteration>
+        </tbody>
+    </table>
+</aura:component>

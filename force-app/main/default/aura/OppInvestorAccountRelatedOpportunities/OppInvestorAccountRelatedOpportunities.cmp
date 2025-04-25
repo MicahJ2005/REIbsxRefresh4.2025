@@ -1,0 +1,76 @@
+<aura:component Controller="AccountRelatedOpportunitiesCtrl" implements="flexipage:availableForAllPageTypes,force:hasRecordId,force:lightningQuickAction" access="global" >
+	 <aura:attribute name="opportunityList" type="Opportunity[]" />
+    
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}"/>
+    
+    <table class="slds-table slds-table_bordered slds-table_cell-buffer">
+        <thead>
+            <tr class="slds-text-title_caps">
+                <th scope="col">
+                    <div class="slds-truncate" title="Account Name">Name</div>
+                </th>
+                <th scope="col">
+                    <div class="slds-truncate" title="Account Name">MKT</div>
+                </th>
+                <th scope="col">
+                    <div class="slds-truncate" title="Account Name">Stage</div>
+                </th>
+                <th scope="col">
+                    <div class="slds-truncate" title="Account Name">Asking Price</div>
+                </th>
+                <th scope="col">
+                    <div class="slds-truncate" title="Account Name">Purchase Method</div>
+                </th>
+                <th scope="col">
+                    <div class="slds-truncate" title="Account Name">Closing Date</div>
+                </th>
+                <th scope="col">
+                    <div class="slds-truncate" title="Account Name">Lender</div>
+                </th>
+                <th scope="col">
+                    <div class="slds-truncate" title="Account Name">Contract Titling</div>
+                </th>
+            </tr>
+        </thead>
+        <tbody>
+            <aura:iteration items="{!v.opportunityList}" var="opp">
+                <tr>
+                    <td data-label="Name">
+                         <div class="slds-grid" style="width:100px;">
+                            <div class="slds-grid slds-has-flexi-truncate">
+                                <p class="slds-truncate" title=""><a href="{!'/one/one.app?#/sObject/'+ opp.Id + '/view'}" target="_blank">{!opp.Name}</a></p>
+                            </div>
+                        </div>
+                    </td>
+                    <td data-label="Stage">
+                        <div class="slds-truncate" title="">{!opp.Market__c}</div>
+                    </td>
+                    <td data-label="Stage">
+                        <div class="slds-truncate" title="">{!opp.StageName}</div>
+                    </td>
+                    <td data-label="Stage">
+                        <div class="slds-truncate" title="">{!opp.Asking_Price__c}</div>
+                    </td>
+                    
+                    <td data-label="Stage">
+                        <div class="slds-truncate" title="">{!opp.Purchase_Method__c}</div>
+                    </td>
+                    <td data-label="Stage">
+                        <lightning:formattedDateTime value="{!opp.Closing_Date__c}" year="numeric" month="numeric" day="numeric" />
+                    </td>
+                   <td data-label="Stage">
+                        {!opp.Lender__c}
+                    </td>
+                    <td data-label="">
+                        <div class="slds-grid" style="width:100px;">
+                            <div class="slds-grid slds-has-flexi-truncate">
+                                <p class="slds-truncate" title="">{!opp.Contract_Titling__c}</p>
+                            </div>
+                        </div>
+                    </td>
+                    
+                </tr>
+            </aura:iteration>
+        </tbody>
+    </table>
+</aura:component>

@@ -1,0 +1,2 @@
+<apex:page id="pg" standardController="Project_Item__c" extensions="ProjectItemEditExtn" sidebar="false" showHeader="false" docType="html-5.0" standardStylesheets="false" action="{!createProjectItem}" >
+</apex:page>

@@ -1,0 +1,88 @@
+<apex:page controller="VendorPortalHomeCtrl" showHeader="false" sidebar="false" >
+
+    <apex:composition template="CommunitiesTemplate">
+        <apex:define name="header">
+            <c:VendorPortalHeader ariaSelHome="true" ariaSelWO="false" ariaSelInvoice="false" ariaSelHWO="false" />
+        </apex:define>
+        <apex:define name="body">
+            <html xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+                <head>
+                    <script>
+                        $(document).ready(function($) {  
+                            $(".publisherattachtext").hide();//All the actions(Poll, Thanks, File, More) 
+                            $(".publishericon").hide();//All the actions(Poll, Thanks, File, More) Image     
+                            $(".contentPublisherSlideDown").hide(); /All the actions(Select File from Chatter/Upload from Computer) Image                      
+                        });
+                    </script>
+                    <style>
+                        .colOne{
+                            width: 60%;
+                            vertical-align: text-top;
+                            padding-left: 15px !important;
+                        }
+                        .colTwo{
+                            width: 5%;
+                        }
+                        .colThree{
+                            width: 35%;
+                            vertical-align: top;
+                            text-align: justify !important;
+                            padding-right: 15px !important;
+                        }
+                        .hideButton{
+                            display:none;
+                        }
+                        a:focus,a:active,a:hover {
+                            color:#2a94d6 !important;
+                        }
+                        .sfdc_richtext {text-align: justify !important;}
+                    </style>
+                    
+                        <apex:panelGrid columns="3" columnClasses="colOne, colTwo, colThree"  style="background-color:#f0f1f2 !important;">
+                            <apex:outputPanel >
+                                <apex:repeat value="{!portalMessages}" var="msg">
+                                    <apex:outputField value="{!msg.Message__c}"  style="float:left !important;"></apex:outputField>
+                                    <br/>
+                                </apex:repeat>
+                            </apex:outputPanel>
+                            <apex:outputPanel />
+                            <apex:outputPanel >
+                                <p Class="slds-button_brand sectionCls " style="text-align: justify !important;"><b>Vendor Support Message Center</b></p>
+                                <span>The Vendor Support Message Center is the primary method to communicate issues or questions regarding all of the documents/information contained in the Vendor Profile, including any “how to” or “policy clarification” questions. Please continue to use Asana, email or text for ANY and ALL “work” related communications up to and including schedules, work updates/issues and all financial related questions.</span>
+                                <br/>
+                                <span>Tag <b>@Finance</b> for all of your Vendor Portal questions.</span>
+                                <chatter:feed entityid="{!acctId}"/>
+                                
+                                <!--<chatter:feedWithFollowers entityId="{!$User.Id}"/>-->
+                                
+                                <!--<apex:pageblock title="Invoices Status this month" >
+                                    <apex:chart height="250" width="350" data="{!statusPieData}"> 
+                                        <apex:pieSeries tips="true" dataField="data" labelField="name"/> 
+                                        <apex:legend position="bottom"/>
+                                    </apex:chart>
+                                </apex:pageblock>
+                                <apex:outputText value="No Invoices found" rendered="{!statusPieData.size == 0}"></apex:outputText>
+
+                                <br/><br/>
+                        
+                                <apex:pageblock title="Invoices amount this month" >
+                                    <apex:chart height="250" width="350" data="{!amountBarData}"> 
+                                        <apex:axis type="Numeric" position="left" fields="data" title="Amount"/>    
+                                        <apex:axis type="Category" position="bottom" fields="name" title="Month"/>            
+                                        <apex:barSeries orientation="vertical" axis="left" xField="name" yField="data" colorsProgressWithinSeries="true"/> 
+                                    </apex:chart>
+                                </apex:pageblock>  
+                                <apex:outputText value="No Invoices found" rendered="{!amountBarData.size == 0}"></apex:outputText>-->
+                                 
+                            </apex:outputPanel>
+                        </apex:panelGrid>
+                        
+                    <br/>
+                </head>
+            </html>
+        </apex:define>
+        <apex:define name="footer">
+            <c:VendorPortalFooter />
+        </apex:define>
+    </apex:composition>
+</apex:page>

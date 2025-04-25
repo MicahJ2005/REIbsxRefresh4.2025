@@ -1,0 +1,25 @@
+<apex:page id="pg" docType="html-5.0">
+    <apex:slds />
+    
+    <html xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" lang="en">        
+        <div class="slds-notify slds-notify_alert slds-theme_alert-texture slds-theme_error" role="alert">
+            <span class="slds-assistive-text">error</span>
+            <span class="slds-icon_container slds-icon-utility-error slds-m-right_x-small" title="Description of icon when needed">
+                <svg class="slds-icon slds-icon_x-small" aria-hidden="true">
+                    <use xlink:href="{!URLFOR($Asset.SLDS,'/assets/icons/utility-sprite/svg/symbols.svg#error')}"></use>
+                </svg>
+            </span>
+            <h2>
+                New Project Item creation is not supported. Case is already Closed.
+            </h2>
+            <div class="slds-notify__close">
+                <button onclick="window.location='/{!$CurrentPage.parameters.id}'; return false;" class="slds-button slds-button_icon slds-button_icon-small slds-button_icon-inverse" title="Close">
+                    <svg class="slds-button__icon" aria-hidden="true">
+                        <use xlink:href="{!URLFOR($Asset.SLDS,'/assets/icons/utility-sprite/svg/symbols.svg#close')}"></use>
+                    </svg>
+                    <span class="slds-assistive-text">Close</span>
+                </button>
+            </div>
+        </div>
+    </html>
+</apex:page>

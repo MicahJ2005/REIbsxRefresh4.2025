@@ -1,0 +1,18 @@
+<apex:page showHeader="false" sidebar="false" title="{!$Label.site.site_under_construction}">
+    <apex:composition template="CommunitiesTemplate">
+        <apex:define name="header">
+            <c:VendorPortalHeader ariaSelHome="true" ariaSelWO="false" ariaSelInvoice="false" ariaSelHWO="false" />
+        </apex:define>
+        <apex:define name="body">
+            <center>
+            <apex:image url="{!URLFOR($Resource.SiteSamples, 'img/underconstruction.png')}"/>
+            
+            </center>
+            <br/>
+            
+        </apex:define>
+        <apex:define name="footer">
+            <c:VendorPortalFooter />
+        </apex:define>
+    </apex:composition>
+</apex:page>

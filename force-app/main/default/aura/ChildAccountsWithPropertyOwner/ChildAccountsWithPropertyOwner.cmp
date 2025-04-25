@@ -1,0 +1,66 @@
+<aura:component Controller="ChildAccountsWithPropertyOwnerCtrl" implements="force:lightningQuickAction,force:hasRecordId,flexipage:availableForAllPageTypes" access="global" >
+    
+    <aura:attribute name="myMap" type="object" />
+    <aura:attribute name="status" type="boolean"/>   
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}"/>
+    
+    <div class="Record Details"> 
+        <lightning:card iconName="standard:account" title="Account With Property Owner" >
+            <div class="slds-form-element slds-m-right_small" style="float:right;">
+                <label class="slds-checkbox_toggle slds-grid">
+                    <aura:if isTrue="{!v.status == 'Active'}">
+                        <span class="slds-form-element__label slds-m-bottom_none">Currently showing active house</span>
+                    </aura:if> 
+                    <ui:inputCheckbox aura:id="chkbox" class="slds-input" change="{!c.onStatusChange}"/>
+                    <span id="toggle-desc" class="slds-checkbox_faux_container" aria-live="assertive">
+                        <span class="slds-checkbox_faux"></span>
+                        <span class="slds-checkbox_on">View All</span>
+                        <span class="slds-checkbox_off">Active</span>
+                    </span>
+                </label>
+            </div>
+            <table class="slds-table slds-table_cell-buffer slds-table_bordered slds-table_col-bordered">
+                <thead>
+                    <tr class="slds-line-height_reset">
+                        <th class="" scope="col">
+                            <div class="slds-truncate" title="Opportunity Name">Owner Account</div>
+                        </th>
+                        <th class="" scope="col">
+                            <div class="slds-truncate" title="Account Name">House</div>
+                        </th>
+                        <th class="" scope="col">
+                            <div class="slds-truncate" title="Account Name">Share</div>
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <aura:iteration items="{!v.myMap}"  var="mapKey" indexVar="key">  
+                        <tr class="slds-hint-parent">
+                            <td data-label="Account" scope="row">
+                                <div class="slds-grid" style="width:200px">
+                                    <div class="slds-grid slds-has-flexi-truncate">
+                                        <p class="slds-truncate" title=""><a href="{!mapKey.accId}" tabindex="-1">{!mapKey.key}</a></p>
+                                    </div>
+                                </div>
+                            </td>
+                            <td data-label="Property Name">
+                                <div class="slds-truncate"> 
+                                    <aura:iteration items="{!mapKey.value}" var="propOwner">
+                                        <p class="slds-truncate" title=""><a href="{!'/'+propOwner.Property__c}" tabindex="-1">{!propOwner.Property__r.Name}</a></p>
+                                    </aura:iteration>
+                                </div>
+                            </td> 
+                            <td data-label="Share">
+                                <aura:iteration items="{!mapKey.value}" var="propOwner">
+                                    <div class="slds-truncate">
+                                        {!propOwner.Share__c}
+                                    </div>
+                                </aura:iteration>
+                            </td> 
+                        </tr>
+                    </aura:iteration>
+                </tbody>
+            </table>
+        </lightning:card>
+    </div>
+</aura:component>

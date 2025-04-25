@@ -1,0 +1,30 @@
+<apex:page controller="VendorHomeRapidRapidPassCtrl" showHeader="false" sidebar="false" >
+
+    <apex:composition template="CommunitiesTemplate">
+        <apex:define name="header">
+            <c:VendorPortalHeader ariaSelHome="true" ariaSelWO="false" ariaSelInvoice="false" ariaSelHWO="false" />
+        </apex:define>
+        <apex:define name="body">
+            <html xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" lang="en">
+                <head>
+                    <style>
+                        a:focus,a:active,a:hover {
+                            color:#2a94d6 !important;
+                        }
+                    </style>
+                </head>
+                <body >
+                    <div style="padding: 10px;">
+                        <apex:repeat value="{!portalMessages}" var="msg">
+                            <apex:outputField value="{!msg.Message__c}"></apex:outputField>
+                            <br/>
+                        </apex:repeat>
+                    </div>
+                </body>
+            </html>
+        </apex:define>
+        <apex:define name="footer">
+            <c:VendorPortalFooter />
+        </apex:define>
+    </apex:composition>
+</apex:page>

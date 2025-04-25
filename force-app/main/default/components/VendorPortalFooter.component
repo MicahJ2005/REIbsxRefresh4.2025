@@ -1,0 +1,12 @@
+<apex:component >
+    <html xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" lang="en">
+    <br/>
+        <div style="background-color:#25476a;width:100%;font-size: 1.3rem !important;">
+            <br/>
+            <center style="color:#FFFFFF;">
+                REI Nation / Premier Property Mangement Group
+            </center>
+            <br/>
+        </div>
+    </html>
+</apex:component>

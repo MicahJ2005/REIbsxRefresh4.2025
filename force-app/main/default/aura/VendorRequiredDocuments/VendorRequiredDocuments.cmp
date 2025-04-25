@@ -1,0 +1,51 @@
+<aura:component controller="VendorRequiredDocumentsController" implements="flexipage:availableForAllPageTypes,force:appHostable,force:hasRecordId" access="global">
+    <aura:attribute name="dataAcc" type="Account"/>
+    <aura:attribute name="data" type="Object"/>
+    <aura:attribute name="columns" type="List"/>
+    <aura:attribute name="columnsNonEdit" type="List"/>
+    <aura:attribute name="errors" type="Object" default="[]"/>
+    <aura:attribute name="draftValues" type="Object" default="[]"/>
+    
+    <aura:handler name="init" value="{! this }" action="{! c.init }"/>
+    <!-- PAGE HEADER -->
+    <div class="slds-page-header">
+        <!-- LAYOUT GRID -->
+        <div class="slds-grid">
+            <!-- GRID COL -->
+            <div class="slds-col slds-has-flexi-truncate">
+                <!-- HEADING AREA -->
+                <p class="slds-text-title_caps slds-line-height_reset">Files</p>
+                <h1 class="slds-page-header__title slds-m-right_small slds-align-middle slds-truncate"  title="Required Documents">Required Documents</h1>
+                <!-- / HEADING AREA -->
+            </div>
+            <!-- ACTION BUTTONS -->
+            <!-- / ACTION BUTTONS -->
+        </div>
+        <!-- / LAYOUT GRID -->
+        <!-- PAGE HEADER DETAIL ROW -->
+        <!-- / PAGE HEADER DETAIL ROW -->
+    </div>
+    <!-- / PAGE HEADER -->
+    
+    <aura:if isTrue="{!v.dataAcc.VendorApprovers__c}">
+        <lightning:datatable aura:id="dtTable"
+                             columns="{! v.columns }"
+                             data="{! v.data }"
+                             keyField="Id"
+                             errors="{! v.errors }"
+                             draftValues="{! v.draftValues }"
+                             onsave="{! c.handleSaveEdition }"
+                             />
+        <aura:set attribute="else">
+            <lightning:datatable aura:id="dtTableNonEdit"
+                                 columns="{! v.columnsNonEdit }"
+                                 data="{! v.data }"
+                                 keyField="Id"
+                                 errors="{! v.errors }"
+                                 draftValues="{! v.draftValues }"
+                                 />
+        </aura:set>    
+    </aura:if>
+    
+    
+</aura:component>

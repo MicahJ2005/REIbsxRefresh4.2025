@@ -1,0 +1,88 @@
+<apex:page sidebar="false" showHeader="false" >
+    <apex:composition template="CommunitiesTemplate">
+        <apex:define name="header">
+            <c:VendorPortalHeader ariaSelHome="false" ariaSelWO="true" ariaSelInvoice="false" ariaSelHWO="false" />
+        </apex:define>
+        <apex:define name="body">
+            <html> 
+  
+                <body> 
+                    <div class="container"> 
+                        <div class="row">
+                        
+                            <apex:outputPanel rendered="{!$CurrentPage.parameters.hasSaved == 'true'}">
+                            <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12" style="margin-top: 10%;"> 
+                                <div class="panel panel-success" style="min-height: 259px; border: 4px solid #ffff00 !important;"> 
+                                    <div class="panel-body"> 
+                                        <div> 
+                                            <p style="text-align:center;font-size: 4em; color: #ffff00;"> 
+                                                <span class="glyphicon glyphicon-ok-circle" aria-hidden="true"></span> 
+                                            </p> 
+                                            
+                                            <apex:outputPanel rendered="{!if($CurrentPage.parameters.lang == 'false',true,false)}">
+                                            <p style="font-weight:bold; font-size:20px; color:blue;"> 
+                                                <center style=" font-size: 53px;color: #ffff00;text-shadow: 4px 2px #ccc;">You’re almost done…</center> 
+                                            </p> 
+                                            <p style="text-align:center;font-size:20px;"> 
+                                            <apex:outputText value="We have saved your progress, but these changes have not been submitted for approval. Once you are satisfied with all your changes and all field/document requirements are met, please click the 'Submit' button to send in your changes for approval. You will receive a confirmation once your documents are verified and your Account setup is complete."></apex:outputText>
+                                            </p> 
+                                            </apex:outputPanel>
+                                            
+                                            <apex:outputPanel rendered="{!if($CurrentPage.parameters.lang == 'true',true,false)}">
+                                            <p style="font-weight:bold; font-size:20px; color:blue;"> 
+                                                <center style=" font-size: 53px;color: #ffff00;text-shadow: 4px 2px #ccc;">Ya casi terminas...</center> 
+                                            </p> 
+                                            <p style="text-align:center;font-size:20px;"> 
+                                            <apex:outputText value="Hemos guardado su progreso, pero estos cambios no se han enviado para ser aprobados. Una vez que esté satisfecho con todos sus cambios y se cumplan todos los requisitos de campo / documento, haga clic en el botón 'Enviar' para enviar sus cambios a ser aprobados. Recibirá una confirmación una vez que se verifiquen sus documentos y se complete la configuración de su cuenta."></apex:outputText>
+                                            </p> 
+                                            </apex:outputPanel>
+                                            
+                                        </div> 
+                                    </div> 
+                                </div> 
+                            </div>
+                                </apex:outputPanel>
+                                
+                            <apex:outputPanel rendered="{!$CurrentPage.parameters.hasSaved == 'false'}">
+                            <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12" style="margin-top: 10%;"> 
+                                <div class="panel panel-success" style="min-height: 259px; border: 4px solid #22b3a6 !important;"> 
+                                    <div class="panel-body"> 
+                                        <div> 
+                                            <p style="text-align:center;font-size: 4em; color: #22b3a6;"> 
+                                                <span class="glyphicon glyphicon-ok-circle" aria-hidden="true"></span> 
+                                            </p> 
+                                            
+                                            <apex:outputPanel rendered="{!if($CurrentPage.parameters.lang == 'false',true,false)}">
+                                            <p style="font-weight:bold; font-size:20px; color:blue;"> 
+                                                <center style=" font-size: 53px;color: #22b3a6;text-shadow: 4px 2px #ccc;">Thank you!</center> 
+                                            </p> 
+                                            <p style="text-align:center;font-size:20px;"> 
+                                            <apex:outputText value="The changes you have requested to your Account Profile have been Submitted for Approval.  Notifications of Change Requests and Status Updates will be sent to the Primary Contact email address on file."></apex:outputText>
+                                            </p> 
+                                            </apex:outputPanel>
+                                            
+                                            <apex:outputPanel rendered="{!if($CurrentPage.parameters.lang == 'true',true,false)}">
+                                            <p style="font-weight:bold; font-size:20px; color:blue;"> 
+                                                <center style=" font-size: 53px;color: #22b3a6;text-shadow: 4px 2px #ccc;">Gracias!</center> 
+                                            </p> 
+                                            <p style="text-align:center;font-size:20px;"> 
+                                            <apex:outputText value="Los cambios que ha solicitado a su perfil de cuenta se han enviado para ser aprobados. Las notificaciones de solicitud de cambio y actualizaciones de estado se enviarán a la dirección de correo electrónico de contacto principal en el archivo."></apex:outputText>
+                                            </p> 
+                                            </apex:outputPanel>
+                                            
+                                        </div> 
+                                    </div> 
+                                </div> 
+                            </div>
+                                </apex:outputPanel> 
+                                </div> 
+                    </div> 
+                </body> 
+            </html> 
+            <br/>
+        </apex:define>
+        <apex:define name="footer">
+            <c:VendorPortalFooter />
+        </apex:define>
+    </apex:composition>
+</apex:page>

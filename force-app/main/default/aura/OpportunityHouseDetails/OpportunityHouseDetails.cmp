@@ -1,0 +1,57 @@
+<aura:component Controller="OpportunityHouseDetailsController" implements="force:lightningQuickAction,force:hasRecordId,flexipage:availableForAllPageTypes" access="global">
+    
+    
+    <aura:attribute name="HouseRecord" type="House__c" />
+    <aura:attribute name="recordId" type="string" />
+    
+    
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}"/>
+    
+    <!-- Display a lightning card with details about the record -->
+    <div class="Record Details"> 
+    <lightning:card iconName="standard:account" title="House Details" >
+        <div class="slds-p-horizontal--small">
+            <div class="slds-form-element">
+                <label class="slds-form-element__label" for="form-element-01">House Name:</label>
+                <div class="slds-form-element__control">
+                    <p class="slds-text-heading--small"><lightning:formattedText title="House Name" value="{!v.HouseRecord.Name}" /></p>
+                </div>
+            </div>
+            
+            <div class="slds-form-element">
+                <label class="slds-form-element__label" for="form-element-01">Bedroom:</label>
+                <div class="slds-form-element__control">
+                    <p class="slds-text-heading--small"><lightning:formattedText title="House Name" value="{!v.HouseRecord.Bedrooms__c}" /></p>
+                </div>
+            </div>
+            
+            <div class="slds-form-element">
+                <label class="slds-form-element__label" for="form-element-01">Bathroom:</label>
+                <div class="slds-form-element__control">
+                    <p class="slds-text-heading--small"><lightning:formattedText title="House Name" value="{!v.HouseRecord.Bathrooms__c}" /></p>
+                </div>
+            </div>
+            
+            <div class="slds-form-element">
+                <label class="slds-form-element__label" for="form-element-01">Sq Feet:</label>
+                <div class="slds-form-element__control">
+                    <p class="slds-text-heading--small"><lightning:formattedNumber title="House Name" value="{!v.HouseRecord.Sq_Feet__c}" /></p>
+                </div>
+            </div>
+            
+            <div class="slds-form-element">
+                <label class="slds-form-element__label" for="form-element-01">Year Built:</label>
+                <div class="slds-form-element__control">
+                    <p class="slds-text-heading--small"><lightning:formattedText title="House Name" value="{!v.HouseRecord.Year_Built__c}" /></p>
+                </div>
+            </div>
+            
+            
+            
+            
+        </div>
+    </lightning:card>
+    </div>
+   
+	
+</aura:component>

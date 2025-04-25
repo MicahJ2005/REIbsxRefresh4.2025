@@ -1,0 +1,326 @@
+<apex:page controller="VendorPortalProcessProceduresCont" showHeader="false" sidebar="false" >
+    <apex:composition template="CommunitiesTemplate">
+        <apex:define name="header">
+            <c:VendorPortalHeader ariaSelHome="true" ariaSelWO="false" ariaSelInvoice="false" ariaSelHWO="false" />
+        </apex:define>
+        <apex:define name="body">
+            <html xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" lang="en">
+                <head>
+                    <style>
+                        ul.bullet li {
+                        list-style-type:disc!important;
+                        margin-left:50px;
+                        }
+                        p.slds-button_brand {
+                        margin-left:25px !important;
+                        width: 100% !important;
+                        line-height: 2.5rem !important;
+                        text-align: left !important; 
+                        text-transform: uppercase !important;
+                        }
+                        a:focus,a:active,a:hover {
+                        color:#2a94d6 !important;
+                        }
+                    </style>
+                </head>
+                <body >
+                    <p Class="slds-button_brand"><b><u>DOCUMENTS</u></b></p>
+                    <div style="padding: 30px;">
+                        <table width="100%">
+                            <tr>
+                                <td width="50%" valign="top">
+                                    <ul class="bullet">
+                                        <li>
+                                            <a href="https://www.irs.gov/individuals/international-taxpayers/taxpayer-identification-numbers-tin" target="_blank"><u>IRS: Tax Identification Numbers (TIN)</u></a>
+                                        </li>
+                                        <li>
+                                            <a href="{!$Label.OrgMyURL}/sfc/p/30000000pfXl/a/3A000000QXMv/b01ljImQylKI03Rzktyu0aoRY_vDFvdtGV8hYIUQKco" target="_blank"><u>Example IRS EIN Assignment Letter.pdf</u></a>
+                                        </li>
+                                        <li>
+                                            <a href="https://www.irs.gov/businesses/small-businesses-self-employed/lost-or-misplaced-your-ein" target="_blank"><u>Lost or Misplaced Your EIN Assignment Letter?</u></a>
+                                        </li>
+                                        <li>
+                                            <a href="https://www.irs.gov/pub/irs-pdf/fw9.pdf" target="_blank"><u>W-9.pdf</u></a>
+                                        </li>
+                                        <li>
+                                            <a href="{!$Label.OrgMyURL}/sfc/p/30000000pfXl/a/4V0000005mrp/tiC2.CmdfajeWOM2b0.9fPhzE7OwQ7LShC1aF5zdSpw" target="_blank"><u>Direct Deposit Agreement.pdf</u></a>
+                                        </li>
+                                        <li>
+                                            <a href="{!$Label.OrgMyURL}/sfc/p/30000000pfXl/a/4V000000mzn1/F1ASwnntLcaNKiGYe8_mgy1GlFnDTFud7ECgIajv3mc" target="_blank"><u>Insurance Agreement</u></a>
+                                        </li>
+                                        <li>
+                                            <a href="{!$Label.OrgMyURL}/sfc/p/30000000pfXl/a/4V000000mzn0/Zwv2eX8o.AzzHCuG8rPWsKRBsoKZh6b65yUx9UaE4SQ" target="_blank"><u>Hold Harmless Agreement</u></a>
+                                        </li>
+                                        <li>
+                                            <a href="{!$Label.OrgMyURL}/sfc/p/30000000pfXl/a/4V0000005md3/lxsZf9GdVp67vrGQJvRpQJAqvkC8eZ5lzvDzThZy8z0" target="_blank"><u><apex:outputText value="Invoices & Payment.pdf" /></u></a>
+                                        </li>
+                                        <li>
+                                            <a href="{!$Label.OrgMyURL}/sfc/p/30000000pfXl/a/PZ00000AffPd/p_5f6NGiTBgbitIxIcMuwNxQ0_6BydE3zspDoK2rlfk" target="_blank"><u><apex:outputText value="Payment Agreement" /></u></a>
+                                        </li>
+                                    </ul>
+                                </td>
+                                <td width="50%" valign="top">
+                                    <ul class="bullet">
+                                        <li>
+                                            <a href="{!$Label.OrgMyURL}/sfc/p/30000000pfXl/a/4V0000005mjd/PJXTtnq.n4oVlDgEeYAOWi.CuZLdcHtZ71nqAHIbbS8" target="_blank"><u> Bill.com Rehab Vendor Payment Information</u></a>
+                                        </li>
+                                        <li>
+                                            <a href="{!$Label.OrgMyURL}/sfc/p/30000000pfXl/a/4V0000005mjn/Y6lrcuZ5bknTdjcX6vSYdfOHEk7UImcG74QaL_hkqVc" target="_blank"><u>Draw Checks.pdf</u></a>
+                                        </li>
+                                        <li>
+                                            <a href="{!$Label.OrgMyURL}/sfc/p/30000000pfXl/a/4V0000005mkM/Bei2go2abXn6zrd5hIbvBtXUMKubZaVArPSSGoOvrXc" target="_blank"><u>Permits.pdf</u></a>
+                                        </li>
+                                        <li>
+                                            <a href="{!$Label.OrgMyURL}/sfc/p/30000000pfXl/a/4V000000ADsq/8cfLaobLC0_g0cE0QC74mj5LZwGoff4V.gi.EktLE.k" target="_blank"><u>Vendor Code of Ethics Sheet.pdf</u></a>
+                                        </li>
+                                        <li>
+                                            <a href="{!$Label.OrgMyURL}/sfc/p/30000000pfXl/a/4V0000005mjx/_HvbiqayD4nG5AKDXstuJTJ9.BIPv9s5Ee8f22IpKAU"><u>Jobsite Organization.pdf</u></a>
+                                        </li>
+                                        <li>
+                                            <a href="{!$Label.OrgMyURL}/sfc/p/30000000pfXl/a/4V0000005mjs/u01ageOUdqnlzY_oB2nnp87r.8d0319B7HYyn2XDTaY" target="_blank"><u>Jobsite Organization Presentation.pdf</u></a>
+                                        </li>
+                                    </ul>
+                                     <b><u>Documentos en español:</u></b>
+                                     <ul class="bullet">
+                                         <li>
+                                            <a href="{!$Label.OrgMyURL}/sfc/p/30000000pfXl/a/3A000000QYZI/XFTsPZNsVpHqqjZRqJXHBfd8ZGro__fEe.atg4sVkyc" target="_blank"><u>Organización para el lugar de Trabajo</u></a>
+                                        </li>
+                                        <li>
+                                            <a href="{!$Label.OrgMyURL}/sfc/p/30000000pfXl/a/4V0000005mmN/VwYPbrwVc0.OOv9lQisJ9IznYC7x30UdSrdka7DV8KY" target="_blank"><u>Distribución de Cheques</u></a>
+                                        </li>
+                                        <li>
+                                            <a href="{!$Label.OrgMyURL}/sfc/p/30000000pfXl/a/4V0000005mmI/vm.1VikQQcvFAiRlINhDdVme0096m_mfG.x1VrN3_Kg" target="_blank"><u>Memphis Invest - Información de pago al proveedor</u></a>
+                                        </li>
+                                    </ul>
+                                </td>
+                            </tr>
+                        </table>
+                        
+                    </div>
+                    <p Class="slds-button_brand" ><b><u>MATERIAL GUIDES</u></b></p>
+                    <div style="padding: 30px;">
+                        <table width="100%">
+                            <tr>
+                                <td width="50%" valign="top">
+                                    <b><u>REHAB:</u></b>
+                                    <ul class="bullet">
+                                        <li>
+                                            <a href="{!$Label.OrgMyURL}/sfc/p/30000000pfXl/a/4V0000005mkH/qylNTJHEa61s.fdmWKDYqWwL9l8DoC58GV8_nOKmb90" target="_blank"><u>Material Guide.pdf</u></a>
+                                        </li>
+                                    </ul>
+                                    <b><u>ROOFING:</u></b>
+                                    <ul class="bullet">
+                                        <li>
+                                            <a href="{!$Label.OrgMyURL}/sfc/p/30000000pfXl/a/4V0000005mkC/cGX_uLrlBf5w8.yp7v9swPmItmxyRyTQo_aqKm799fQ" target="_blank"><u>Material Guide - Roofing.pdf</u></a>
+                                        </li>
+                                        <li>
+                                            <a href="{!$Label.OrgMyURL}/sfc/p/30000000pfXl/a/3A000000QYZ3/AQ5LPU1O0pvL7w8Mmg_UMNB28.xyS5pk2yFHWBQVC7s" target="_blank"><u>GAF Roofing Shingle Product Brochure.pdf</u></a>
+                                        </li>
+                                        <li>
+                                            <a href="{!$Label.OrgMyURL}/sfc/p/30000000pfXl/a/3A000000QYZ8/Mh4iUXUr4UcsIxyANSXjvkDNj9BZrkjaTsXItcuCyn0" target="_blank"><u>GAF Roofing Shingle Spec Sheet.pdf</u></a>
+                                        </li>
+                                        <li>
+                                            <a href="{!$Label.OrgMyURL}/sfc/p/30000000pfXl/a/3A000000QYZD/r.rQmkwSpAYc2XmJwxuWcZ33ZZzKfhbix2uW0xFmMrI" target="_blank"><u>GAF Roofing Shingle Warranty.pdf</u></a>
+                                        </li>
+                                        <li>
+                                            <a href="{!$Label.OrgMyURL}/sfc/p/30000000pfXl/a/3A000000QYZX/zB6nuCmGtA1Ivd4DZ4B6A4.uWn.bLL8PEniopPCaWPk" target="_blank"><u>3-tab Roofing Shingle Product Brochure.pdf</u></a>
+                                        </li>
+                                        <li>
+                                            <a href="{!$Label.OrgMyURL}/sfc/p/30000000pfXl/a/3A000000QYZc/wTFEp0G8d2TMt84K.iFq_5C0RW9825_OIJbO__R9Uto" target="_blank"><u>3-tab Installation Insructions.pdf</u></a>
+                                        </li>
+                                    </ul>
+                                    <b><u>PLUMBING:</u></b>
+                                    <ul class="bullet">
+                                        <li>
+                                            <a href="{!$Label.OrgMyURL}/sfc/p/30000000pfXl/a/4V0000005mk7/L93_R71saS7s3PHq36jfaYSfe1Y.y4jz.nhjjTFWbzg" target="_blank"><u>Material Guide - Plumbing.pdf</u></a>
+                                        </li>
+                                    </ul>
+                                </td>
+                                <td width="50%" valign="top">
+                                    <b><u>FLOORING:</u></b>
+                                    <ul class="bullet">
+                                        <li>
+                                            <a href="{!$Label.OrgMyURL}/sfc/p/30000000pfXl/a/4V0000005mk2/1dAibq3CG_ArfquiMekIYi0BFS9L4E4LRTe_mExLm00" target="_blank"><u>Material Guide - Flooring.pdf</u></a>
+                                        </li>
+                                        <li>
+                                            <a href="{!$Label.OrgMyURL}/sfc/p/30000000pfXl/a/3A000000QYZr/9ov86652mlqs9tuOOXPSD8rgHfVLyaiCHZuF7IHnSlo" target="_blank"><u>Vinyl Plank Spec Sheet - MEM,LIT,OKC,TUL,STL.pdf</u></a>
+                                        </li>
+                                        <li>
+                                            <a href="{!$Label.OrgMyURL}/sfc/p/30000000pfXl/a/3A000000QYZw/N17MMQrsoh9N.BfnqbWJMy4_oIq5LyRWRczu1vZXVYk" target="_blank"><u>Vinyl Plank Spec Sheet - DFW &amp; HOU.pdf</u></a>
+                                        </li>
+                                        <li>
+                                            <a href="{!$Label.OrgMyURL}/sfc/p/30000000pfXl/a/3A000000QYZx/EgLL_m0l.06pEGq2C72g7G5ChsP7vJqq_didBYiBuUI" target="_blank"><u>Carpet Spec Sheet - MEM,LIT,OKC,TUL,STL.pdf</u></a>
+                                        </li>
+                                        <li>
+                                            <a href="{!$Label.OrgMyURL}/sfc/p/30000000pfXl/a/3A000000QYa1/0v96p0G1EcIVvcGDBzKdZl4TIsQJoKS633yY2hCk9Lg" target="_blank"><u>Carpet Spec Sheet - DFW.pdf</u></a>
+                                        </li>
+                                        <li>
+                                            <a href="{!$Label.OrgMyURL}/sfc/p/30000000pfXl/a/3A000000QYa6/9uADXd3ggQF3NwRIjb.G08GWQVdbkSzB9OZJ5zVQH30" target="_blank"><u>Carpet Spec Sheet - HOU.pdf</u></a>
+                                        </li>
+                                        <li>
+                                            <a href="{!$Label.OrgMyURL}/sfc/p/30000000pfXl/a/3A000000QYaB/PM1kQr1sjYQ37q4hmOtV4ytIDASs_JA.ARNgPneF9xE" target="_blank"><u>Carpet Pad Spec Sheet - MEM,LIT,OKC,TUL,STL.pdf</u></a>
+                                        </li>
+                                        <li>
+                                            <a href="{!$Label.OrgMyURL}/sfc/p/30000000pfXl/a/3A000000QYaG/34LXKNu2NfJyPA8.1TPrV8eTgK5_UNsFq7ASNtCaMsY" target="_blank"><u>Carpet Pad Spec Sheet - HOU.pdf</u></a>
+                                        </li>
+                                    </ul>
+                                </td>
+                            </tr>
+                        </table>                        
+                    </div>
+                    <p Class="slds-button_brand"><b><u>VENDOR CHECKLISTS</u></b></p>
+                    <div style="padding: 30px;">
+                        <table width="100%">
+                            <tr>
+                                <td width="50%" valign="top">
+                                    <b><u>CARPET CLEANING:</u></b>
+                                    <ul class="bullet">
+                                        <li>
+                                            <a href="{!$Label.OrgMyURL}/sfc/p/30000000pfXl/a/4V0000005mkR/fvjoCGfg05J8Mtp5A_MvcSi8TibpcjX9ynb681JC6Jg" target="_blank"><u>Vendor Checklist - Carpet Cleaning.pdf</u></a>
+                                        </li>
+                                    </ul>
+                                    <b><u>CHIMNEY / FIREPLACE:</u></b>
+                                    <ul class="bullet">
+                                        <li>
+                                            <a href="{!$Label.OrgMyURL}/sfc/p/30000000pfXl/a/4V0000005mkW/IfvAgDgBtmtu9FtaK9Jz.kaI1kHAxEcGdbcuBdQGUzY" target="_blank"><u>Vendor Checklist - Chimney/Fireplace.pdf</u></a>
+                                        </li>
+                                    </ul>
+                                    <b><u>CLEANERS:</u></b>
+                                    <ul class="bullet">
+                                        <li>
+                                            <a href="{!$Label.OrgMyURL}/sfc/p/30000000pfXl/a/4V0000005mkb/W3YyNsnF2lKT5SjN1GFO.ckDa8_YrxjB6UygK1aK4_4" target="_blank"><u>Vendor Checklist - Cleaners.pdf</u></a>
+                                        </li>
+                                    </ul>
+                                    <b><u>CONCRETE:</u></b>
+                                    <ul class="bullet">
+                                        <li>
+                                            <a href="{!$Label.OrgMyURL}/sfc/p/30000000pfXl/a/4V0000005mkq/Wf8xdR33kT7Ibz6Vbh0TLzdQ5Dhr29TryDkJLQissg4" target="_blank"><u>Vendor Checklist - Concrete.pdf</u></a>
+                                        </li>
+                                    </ul>
+                                    <b><u>ELECTRICIANS:</u></b>
+                                    <ul class="bullet">
+                                        <li>
+                                            <a href="{!$Label.OrgMyURL}/sfc/p/30000000pfXl/a/4V0000005mkv/.rGs.qO0Ocl.z3rZMLBlYmk92j96.46M_QDilZfU3uc" target="_blank"><u>Vendor Checklist - Electricians.pdf</u></a>
+                                        </li>
+                                    </ul>
+                                    <b><u>FLOORING - HARD WOODS:</u></b>
+                                    <ul class="bullet">
+                                        <li>
+                                            <a href="{!$Label.OrgMyURL}/sfc/p/30000000pfXl/a/4V0000005ml0/9k0Pf5NHSBiW5xa6ZSvK53YRIygWPeZkh9DZwuL9Pb4" target="_blank"><u>Vendor Checklist - Flooring - Hard Woods.pdf</u></a>
+                                        </li>
+                                    </ul>
+                                    <b><u>FLOORING - VINYL PLANK:</u></b>
+                                    <ul class="bullet">
+                                        <li>
+                                            <a href="{!$Label.OrgMyURL}/sfc/p/30000000pfXl/a/4V0000005ml5/qzhWMbN1zYhiLifO06q2OchGsu_Ck.8o.fc0eKf2dck" target="_blank"><u>Vendor Checklist - Flooring - Vinyl Plank.pdf</u></a>
+                                        </li>
+                                    </ul>
+                                    <b><u>FOUNDATIONS:</u></b>
+                                    <ul class="bullet">
+                                        <li>
+                                            <a href="{!$Label.OrgMyURL}/sfc/p/30000000pfXl/a/4V0000005mlA/zQk8xrbc50sGH13o5LASteeE6Z2xagVd6zjSgmELI6k" target="_blank"><u>Vendor Checklist - Foundations.pdf</u></a>
+                                        </li>
+                                    </ul>
+                                    <b><u>GARAGE:</u></b>
+                                    <ul class="bullet">
+                                        <li>
+                                            <a href="{!$Label.OrgMyURL}/sfc/p/30000000pfXl/a/4V0000005mlF/IPMx9lnTZ6MpMG4tHiLNxbgLSIOSMwt3FVFxVWQQZXo" target="_blank"><u>Vendor Checklist - Garage.pdf</u></a>
+                                        </li>
+                                    </ul>
+                                    <b><u>GUTTERS:</u></b>
+                                    <ul class="bullet">
+                                        <li>
+                                            <a href="{!$Label.OrgMyURL}/sfc/p/30000000pfXl/a/4V0000005mlK/yDarJpinPafvNT1mgDpBF7WvphtcPY1E71E3xrTVA.4" target="_blank"><u>Vendor Checklist - Gutters.pdf</u></a>
+                                        </li>
+                                    </ul>
+                                    <b><u>HVAC CREWS:</u></b>
+                                    <ul class="bullet">
+                                        <li>
+                                            <a href="{!$Label.OrgMyURL}/sfc/p/30000000pfXl/a/4V0000005mlP/6RYaQwiLtHK_jtDl7KiNhzAsdu1WVjXNf5.1bPmUFMQ" target="_blank"><u>Vendor Checklist - HVAC.pdf</u></a>
+                                        </li>
+                                    </ul>
+                                </td>
+                                <td width="50%" valign="top">
+                                    <b><u>INSULATION:</u></b>
+                                    <ul class="bullet">
+                                        <li>
+                                            <a href="{!$Label.OrgMyURL}/sfc/p/30000000pfXl/a/4V0000005mlU/BcpzK_H8.ulKuKPFvI4z1a.EWCgfCtEJJ9QlB.xYU58" target="_blank"><u>Vendor Checklist - Insulation.pdf</u></a>
+                                        </li>
+                                    </ul>
+                                    <b><u>LOCKS:</u></b>
+                                    <ul class="bullet">
+                                        <li>
+                                            <a href="{!$Label.OrgMyURL}/sfc/p/30000000pfXl/a/4V0000005mlZ/Q6F4PkAhBdnbP.gUwlyihLwWGofJpbADjDuS9fuPTtY" target="_blank"><u>Vendor Checklist - Locks.pdf</u></a>
+                                        </li>
+                                    </ul>
+                                    <b><u>PEST CONTROL:</u></b>
+                                    <ul class="bullet">
+                                        <li>
+                                            <a href="{!$Label.OrgMyURL}/sfc/p/30000000pfXl/a/4V0000005mlo/_XXLTAGbM8BmjxYZE65JJlIf2Pcl.WXmnHa12AzXDYI" target="_blank"><u>Vendor Checklist - Pest Control.pdf</u></a>
+                                        </li>
+                                    </ul>
+                                    <b><u>MAIN REHAB CREWS:</u></b>
+                                    <ul class="bullet">
+                                        <li>
+                                            <a href="{!$Label.OrgMyURL}/sfc/p/30000000pfXl/a/4V000000FDTx/57s5TsCzwL7ayIpos0az.VuGii0WWLbpPm0RSjYKSGM" target="_blank"><u>Vendor Checklist - Main Rehab Crews.pdf</u></a>
+                                        </li>
+                                    </ul>
+                                    <b><u>MOVE OUT VENDORS:</u></b>
+                                    <ul class="bullet">
+                                        <li>
+                                            <a href="{!$Label.OrgMyURL}/sfc/p/30000000pfXl/a/4V0000005mlj/BWQK8dVdLqJfq4Ps9Xpr0X0fGlo3kGM60kCjLDE9GfQ" target="_blank"><u>Vendor Checklist - Move Out Vendors.pdf</u></a>
+                                        </li>
+                                    </ul>
+                                    <b><u>PLUMBERS:</u></b>
+                                    <ul class="bullet">
+                                        <li>
+                                            <a href="{!$Label.OrgMyURL}/sfc/p/30000000pfXl/a/4V0000005mlt/2Z4OHWXFM7gAUBgxnqe8VKYQl4YchdpdARc2hcDVIS8" target="_blank"><u>Vendor Checklist - Plumbers.pdf</u></a>
+                                        </li>
+                                    </ul>
+                                    <b><u>ROOFERS:</u></b>
+                                    <ul class="bullet">
+                                        <li>
+                                            <a href="{!$Label.OrgMyURL}/sfc/p/30000000pfXl/a/4V0000005mly/OtmHtcGJGGETBq_tCitHe2DrtEpEZd2dHT9AvUJj2NQ" target="_blank"><u>Vendor Checklist - Roofers.pdf</u></a>
+                                        </li>
+                                    </ul>
+                                    <b><u>TRASH REMOVAL:</u></b>
+                                    <ul class="bullet">
+                                        <li>
+                                            <a href="{!$Label.OrgMyURL}/sfc/p/30000000pfXl/a/4V0000005mm3/cNNPiHiQ4dkwaCho_D_tba_LAtT_9rS_9o3b0pHNpzI" target="_blank"><u>Vendor Checklist - Trash Removal.pdf</u></a>
+                                        </li>
+                                    </ul>
+                                    <b><u>TUB/TOP REFINISHING:</u></b>
+                                    <ul class="bullet">
+                                        <li>
+                                            <a href="{!$Label.OrgMyURL}/sfc/p/30000000pfXl/a/4V0000005mm8/f1D4v_NwE38V_m2hi8ks_fy2tUmoizTp6PhSR3aKq4M" target="_blank"><u>Vendor Checklist - Tub/Top Refinishing.pdf</u></a>
+                                        </li>
+                                    </ul>
+                                    <b><u>YARD CREW:</u></b>
+                                    <ul class="bullet">
+                                        <li>
+                                            <a href="{!$Label.OrgMyURL}/sfc/p/30000000pfXl/a/4V0000005mmD/yLLe4BaJ.WgQCE6YnYE2sST6XZhQr0QuK9Soz7D6Gfw" target="_blank"><u>Vendor Checklist - Yard Crews.pdf</u></a>
+                                        </li>
+                                    </ul>
+                                    <b><u>COLD WEATHER:</u></b>
+                                    <ul class="bullet">
+                                        <li>
+                                            <a href="{!$Label.OrgMyURL}/sfc/p/30000000pfXl/a/4V0000005mkg/Aw1qthtWUX4frkOM1XUSkgkvONtMe..I.gg.byY1rzI" target="_blank"><u>Vendor Checklist - Cold Weather - Memphis.pdf</u></a>
+                                        </li>
+                                        <li>
+                                            <a href="{!$Label.OrgMyURL}/sfc/p/30000000pfXl/a/4V0000005mkl/UvLN2W6t6zNuF0R7N3GEcifHurG6zMVo3B_CqZ.cTp8" target="_blank"><u>Vendor Checklist - Cold Weather - Texas and Satellites.pdf</u></a>
+                                        </li>
+                                    </ul>
+                                </td>
+                            </tr>
+                            
+                        </table>
+                    </div>                    
+                </body>
+            </html>
+        </apex:define>
+        <apex:define name="footer">
+            <c:VendorPortalFooter />
+        </apex:define>
+    </apex:composition>
+    
+</apex:page>

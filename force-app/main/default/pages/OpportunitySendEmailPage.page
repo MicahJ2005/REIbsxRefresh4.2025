@@ -1,0 +1,683 @@
+<apex:page standardController="Opportunity" extensions="OpportunitySendEmailPageController"  id="pg" docType="html-5.0">
+    <apex:slds />
+    <head>
+        <script src="{!$Resource.jQueryMin}">
+        </script>
+        <script src="https://cdn.ckeditor.com/4.8.0/standard/ckeditor.js">
+        </script>
+        <script>
+        <apex:includeScript value="../../soap/ajax/26.0/connection.js" />
+        function setCKEditorValues(){
+            $("[id$='pg:frm:hiddenRTF']").val(CKEDITOR.instances[$("[id$='pg:frm:editor1']").attr('id')].getData());                            
+        }   
+        function searchValue(lookName, ObjectName, label) {
+            try {
+                $('input[id$=' + lookName + ']').css('background', 'url("http://www.hsi.com.hk/HSI-Net/pages/images/en/share/ajax-loader.gif") no-repeat right center');
+                var key = $('input[id$=' + lookName + ']').val();
+                Visualforce.remoting.Manager.invokeAction(
+                    '{!$RemoteAction.OpportunitySendEmailPageController.getLookupRecord}',
+                    key,
+                    ObjectName,
+                    function(result, event) {
+                        if (result != null) {
+                            if (event.status) {
+                                var tables = "<ul class='slds-lookup__list' role='listbox'>  ";
+                                var check = true;
+                                
+                                for (var i = 0; i < result.length; i++) {
+                                    tables += "<li role='presentation' onclick=\"fillRecord( '" + lookName + "','" + result[i].Id + "','" + "" +result[i].Account.Name + " - " + result[i].Name + " <" + result[i].Email + ">" + "' )\"><span class='slds-lookup__item-action slds-media' id='lookup-option-483' role='option'><div class='slds-media__body'><div class='slds-lookup__result-text'>" + "\"" +result[i].Account.Name + "\" - " + result[i].Name + " &lt;" + result[i].Email + "&gt;" + "</div></div></span></li>";
+                                }
+                                tables += "</ul>";
+                                if (result.length > 0) {
+                                    
+                                    tables = "<div class='slds-lookup__item--label slds-text-body--small'>" + label + "</div>" + tables;
+                                } else {
+                                    check = false;
+                                    tables = "<div class='slds-lookup__item--label slds-text-body--small'>No record found .</div>";
+                                }
+                                document.getElementById(lookName + "SrchDrpDwn").innerHTML = tables;
+                                $('[id$=' + lookName + 'SrchDrpDwn]').show();
+                                
+                                if(check){
+                                    $('[id$=' + lookName + 'SrchDrpDwn]').focus();
+                                }
+                                
+                            } else if (event.type === 'exception') {
+                                
+                            } else {
+                                
+                            }
+                            $('input[id$=' + lookName + ']').css('background', 'none');
+                        } else {
+                            $('input[id$=' + lookName + ']').css('background', 'none');
+                        }
+                    }, {
+                        escape: true
+                    }
+                );
+            } catch (e) {
+                alert('An Error has Occured. Error:' + e);
+            }
+            
+        }
+        function search(lookName) {
+            try {
+                var key = $('input[id$=' + lookName + ']').val();
+                Visualforce.remoting.Manager.invokeAction(
+                    '{!$RemoteAction.OpportunitySendEmailPageController.getLookupRecordUserContact}',
+                    key,
+                    '{!accountId}',
+                    function(result, event) {
+                        if (result != null) {
+                            if (event.status) {
+                                var tables = "<ul class='slds-lookup__list' role='listbox'>  ";
+                                var check = true;
+                                
+                                for (var i = 0; i < result.length; i++) {
+                                    tables += "<li role='presentation' onclick=\"fillMultiLookups( '" + lookName + "','" + result[i].Name + " <" + result[i].Email + ">" + "','" + result[i].Email + "' )\"><span class='slds-lookup__item-action slds-media' id='lookup-option-483' role='option'><div class='slds-media__body'><div class='slds-lookup__result-text'>" + result[i].Name + " &lt;" + result[i].Email + "&gt;" + "</div></div></span></li>";
+                                }
+                                if(result.length == 0){
+                                    tables += "<li role='presentation' onclick=\"fillMultiLookups( '" + lookName + "','" +  "<" + key + ">" + "','" + key + "' )\"><span class='slds-lookup__item-action slds-media' id='lookup-option-483' role='option'><div class='slds-media__body'><div class='slds-lookup__result-text'>" + "Add New Email- &lt;" + key + "&gt;" + "</div></div></span></li>";
+                                }    
+                                tables += "</ul>";
+                                if (result.length > 0) {
+                                    tables = "<div class='slds-lookup__item--label slds-text-body--small'>"  + "</div>" + tables;
+                                } else {
+                                    //check = false;
+                                    tables = "<div class='slds-lookup__item--label slds-text-body--small'>" +  "</div>" + tables;
+                                }
+                                document.getElementById(lookName + "SrchDrpDwn").innerHTML = tables;
+                                $('[id$=' + lookName + 'SrchDrpDwn]').show();
+                                
+                                if(check){
+                                    $('[id$=' + lookName + 'SrchDrpDwn]').focus();
+                                }
+                                
+                            } else if (event.type === 'exception') {
+                                
+                            } else {
+                                
+                            }
+                            $('input[id$=' + lookName + ']').css('background', 'none');
+                        } else {
+                            $('input[id$=' + lookName + ']').css('background', 'none');
+                        }
+                    }, {
+                        escape: true
+                    }
+                );
+            } catch (e) {
+                alert('An Error has Occured. Error:' + e);
+            }
+            
+        }
+        function fillRecord(lookup, id, name) {
+            $('[id$=' + lookup + 'SrchDrpDwn]').hide();
+            $('input[id$=' + lookup + 'Value]').val(id);
+            
+            $('[id$=' + lookup + 'Label]').text(name);
+            $('[id$=' + lookup + 'Search]').addClass('slds-hide');
+            $('[id$=' + lookup + 'LabelDiv]').removeClass('slds-hide');
+        }
+        function fillMultiLookups(lookup, value, email){
+            $('[id$=spinner]').css('display','block');
+            $('[id$=' + lookup + 'SrchDrpDwn]').hide();
+            fillMultiLookupsFunc(lookup,value,email);
+        }    
+        function showError(error) {
+            $(".slds-notify_container h2").each(function() {
+                $(this).text(error);
+            });
+            $(".slds-notify_container").removeClass('slds-hide');
+            setTimeout(function() {
+                $(".slds-notify_container").addClass('slds-hide');
+            }, 5000);
+        }
+        function CloseLookup(lookup){
+            $('input[id$=' + lookup + ']').val('');
+            $('input[id$=' + lookup + 'Value]').val('');
+            
+            $('[id$=' + lookup + 'Label]').text('');
+            $('[id$=' + lookup + 'Search]').removeClass('slds-hide');
+            $('[id$=' + lookup + 'LabelDiv]').addClass('slds-hide');
+        }    
+        $(document).ready(function() {
+            $("svg").on("click", function() {
+                if ($(this).attr('data') == 'msg') {
+                    $(".slds-notify_container").addClass('slds-hide');
+                }
+            });
+            $('svg').click(function (){
+                var lookup = $(this).attr('data');
+                if (lookup  != '' && lookup  != null && lookup  != 'undefined' && lookup.indexOf('Lookup') != -1){
+                    
+                    $('input[id$=' + lookup + ']').val('');
+                    $('input[id$=' + lookup + 'Value]').val('');
+                    
+                    $('[id$=' + lookup + 'Label]').text('');
+                    $('[id$=' + lookup + 'Search]').removeClass('slds-hide');
+                    $('[id$=' + lookup + 'LabelDiv]').addClass('slds-hide');
+                }
+            });
+            $(document).click(function() {
+                $('#ToLookupSrchDrpDwn').hide();
+                $('#AdditionalToSrchDrpDwn').hide();
+                $('#CCSrchDrpDwn').hide();
+                $('#BCCSrchDrpDwn').hide();
+            });
+        });
+        function validateAndSend(){
+            var flagSave = true;
+            $('.emailRequired').each(function (){
+                if($(this).val() == '' || $(this).val() == null || $(this).val() == 'undefined'){
+                    $(this).css('border','1px solid red ');
+                    flagSave = false;
+                }
+            });
+            if(flagSave){
+                setCKEditorValues();
+                sendFunc();
+            }else{
+                showError('** Required fields missing . ');
+                $('[id$=spinner]').css('display','none');
+            }
+        }
+        function getAsText(readFile) {
+            var reader = new FileReader();
+            reader.readAsDataURL(readFile);
+            reader.onload = attLoaded;   
+        }
+        function attLoaded(evt) {  
+            sforce.connection.sessionId = "{!$Api.Session_ID}";
+            var fileString = evt.target.result;
+            var blobfile = fileString;
+            
+            /*var binary = "";
+            var bytes = new Uint8Array(evt.target.result);
+            var length = bytes.byteLength;
+            for (var i = 0; i < length; i++)
+            {
+                binary += String.fromCharCode(bytes[i]);
+            }
+            */
+            var  input = document.getElementById("fileId");
+            filename= input.value;
+            
+            var doc = new sforce.SObject('Document');
+            doc.Name=filename.replace(/.*[\/\\]/, '');
+            doc.Body= blobfile.split(',')[1];
+            doc.FolderId = sforce.connection.getUserInfo().userId;
+            //var result = sforce.connection.create([doc]);
+            sforce.connection.create([doc],
+                                     {
+                                         onSuccess : function(result, source)
+                                         {   
+                                             if(result[0].getBoolean("success")) {
+                                                 attachFileFunction(doc.Name,result[0].id);
+                                             }
+                                         },
+                                         onFailure : function(error, source)
+                                         {
+                                             
+                                             showError(error);
+                                         }
+                                         
+                                     });
+            //attachFileFunction(filename.replace(/.*[\/\\]/, ''),blobfile.split(',')[1]);
+        }
+        function attachFileFunc(){
+            var fbody= document.getElementById("fileId").files[0];
+            if(fbody == undefined){
+                attachFileFunction('','');
+            }else{
+                if(fbody.size > 5242880){
+                    $('[id$=spinner]').css('display','none');
+                    showError('You can upload file upto 5MB ');
+                }
+                else{
+                    getAsText(fbody);
+                }    
+            }
+        }   
+        </script>
+        <style>
+            .slds-scope .slds-grid--pull-padded {
+            margin-right:0px !important;
+            margin-left:0px !important;
+            }
+            .slds-scope .slds-form--horizontal {
+            margin-top: 1%;
+            }
+            .dateFormat {
+            padding: 0 2px;
+            display: none;
+            }
+            .slds-scope .slds-page-header {
+            padding: 1rem .75rem;
+            border-bottom: 1px solid #d8dde6 !important;
+            background-color: #337AB7 !important;
+            color: white;
+            }
+            .slds-box{
+            }
+            .slds-scope .slds-medium-size--12-of-12 {
+            margin-bottom: 10px;
+            }
+            .slds-scope .slds-medium-size--6-of-12 {
+            margin-bottom: 10px;
+            }
+            .emailRequired{
+            border-left: 4px solid red !important;
+            }
+            .slds-scope .slds-table td, .slds-scope .slds-table th {
+            white-space: normal !important;
+            }
+            .slds-scope .slds-text-heading--label {
+            text-transform: capitalize !important; 
+            }
+            .slds-scope a:focus, .slds-scope a:hover{
+            display: initial !important;
+            }
+            .slds-scope .slds-input:read-only:focus, .slds-scope .slds-input:read-only:hover{
+            background-color: #fff; 
+            }
+            .lookupInput input[readonly] {
+            cursor: default;
+            color: #333;
+            background-color: #fff !important;
+            border: 1px solid #d8dde6 !important;
+            }
+            .datePicker{
+            z-index: 99999 ;
+            }
+            .slds-scope .slds-pill:hover {
+            background-color: rgb(244, 246, 249);
+            display: inline-flex !important;
+            }
+            .cke{
+            width : 150% !important;
+            }
+        </style>
+    </head>
+    <body>
+        <apex:form id="frm">
+            <apex:actionFunction name="fillMultiLookupsFunc" action="{!fillMultiLookupsValues}" reRender="additionalToBlock,ccBlock,bccBlock,additionalToMainBlock,ccMainBlock,bccMainBlock,renderError" oncomplete="$('[id$=spinner]').css('display','none');">
+                <apex:param value="" name="myParam1" assignto="{!lookupName}"/>
+                <apex:param value="" name="myParam2" assignto="{!lookupValue}"/>
+                <apex:param value="" name="myParam3" assignto="{!lookupEmail}"/>
+            </apex:actionFunction>
+            <apex:actionFunction name="deleteLookupValue" action="{!deleteLookupValueFromList}" reRender="additionalToBlock,ccBlock,bccBlock,additionalToMainBlock,ccMainBlock,bccMainBlock,renderError"  oncomplete="$('[id$=spinner]').css('display','none');">
+                <apex:param value="" name="myParam4" assignto="{!lookupName}"/>
+                <apex:param value="" name="myParam5" assignto="{!rowIndex}"/>
+            </apex:actionFunction>
+            <apex:actionFunction name="sendFunc" action="{!send}" reRender="renderError" oncomplete="$('[id$=spinner]').css('display','none');">
+            </apex:actionFunction>
+            <apex:actionFunction name="attachFileFunction" action="{!attachFile}" reRender="renderError,fileLocationPanel,filePanel,fileListPanel" oncomplete="$('[id$=spinner]').css('display','none');">
+                <apex:param name="fname" value="" assignTo="{!newfilename}" />
+                <apex:param name="fileId" value="" assignTo="{!newFileId}"/>
+            </apex:actionFunction>
+            <apex:outputPanel id="renderError">
+                <script>
+                if('{!error}' != '' && '{!error}' != null && '{!error}' != 'undefined'){
+                    showError('{!error}');
+                }
+                </script>
+            </apex:outputPanel>
+            <div class="slds-page-header" role="banner">
+                <div class="slds-media">
+                    <div class="slds-media__body">
+                        <p class="slds-page-header__title slds-truncate" title="Email Message">Email Message</p>
+                        <p class="slds-text-body--small"></p>
+                    </div>
+                    <ul class="slds-global-header__item slds-grid slds-grid--vertical-align-center">
+                        <li class="slds-dropdown-trigger slds-dropdown-trigger--click slds-p-horizontal--xxx-small">
+                            <!--<a href="javascript:void(0);" class="slds-has-blur-focus">Home</a>-->
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            <div class="slds-spinner_container" id="spinner" style="display:none;position: fixed;">
+                <div class="slds-spinner--brand slds-spinner slds-spinner--medium" aria-hidden="false" role="alert" style="    position: fixed;">
+                    <div class="slds-spinner__dot-a"></div>
+                    <div class="slds-spinner__dot-b"></div>
+                </div>
+            </div>
+            <div class="slds-notify_container slds-hide">
+                <div class="slds-notify slds-notify--toast slds-theme--error" role="alert">
+                    <span class="slds-assistive-text">Warning</span>
+                    <button class="slds-button slds-notify__close slds-button--icon-inverse" title="Close">
+                        <svg class="slds-button__icon slds-button__icon--large" aria-hidden="true" onclick="return false;" data="msg">
+                            <use xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="{!URLFOR($Asset.SLDS,'/assets/icons/utility-sprite/svg/symbols.svg#close')}"></use>
+                        </svg>
+                        <span class="slds-assistive-text">Close</span>
+                    </button>
+                    <div class="slds-notify__content">
+                        <h2 class="slds-text-heading--small"></h2>
+                    </div>
+                </div>
+            </div>
+            <fieldset class="slds-box slds-theme--default  slds-m-around--small" style="margin-bottom: 55px;">
+                <legend id="" class="slds-text-heading--small slds-p-vertical--medium legend">
+                    
+                </legend>
+                <div class="slds-grid slds-wrap slds-grid--pull-padded filter" >
+                    <div class="slds-p-horizontal--small slds-size--1-of-1 slds-medium-size--12-of-12 slds-large-size--12-of-12 slds-box" style="padding:0px;">
+                        <div class="slds-grid slds-wrap slds-grid--pull-padded">
+                            <div class="slds-size--12-of-12  slds-theme--shade">
+                                <h2 class="slds-section-title slds-theme--shade slds-p-left--small">Email Message Information</h2>
+                            </div>
+                            <!-- 1 row -->
+                            <div class="slds-p-horizontal--small slds-size--1-of-1 slds-medium-size--6-of-12 slds-large-size--6-of-12">
+                                <div class="slds-form--horizontal">
+                                    <div class="slds-form-element">
+                                        <label class="slds-form-element__label" for="From">From</label>
+                                        <div class="slds-form-element__control">
+                                            <apex:selectList value="{!emailFrom}" multiselect="false" size="1" styleClass="slds-input emailRequired">
+                                                <apex:selectOptions value="{!From}"/>
+                                            </apex:selectList>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="slds-p-horizontal--small slds-size--1-of-1 slds-medium-size--6-of-12 slds-large-size--6-of-12">
+                            </div>
+                            <div class="slds-p-horizontal--small slds-size--1-of-1 slds-medium-size--6-of-12 slds-large-size--6-of-12">
+                                <div class="slds-form--horizontal" id="toPanel">
+                                    <div class="slds-form-element">
+                                        <label class="slds-form-element__label" for="to">To</label>
+                                        
+                                        <div class="slds-form-element__control">
+                                            <apex:inputText value="{!emailId}" styleClass="slds-input emailRequired" style="width:100%" rendered="{!relatedToIdLead}" />
+                                        </div>
+                                        
+                                        <apex:outputPanel rendered="{!!relatedToIdLead}" >
+                                            <div class=" slds-lookup" data-select="single" id="ToLookupSearch">
+                                            <div class="slds-form-element__control slds-grid slds-box--border">
+                                                <div class="slds-input-has-icon slds-input-has-icon--right slds-grow">
+                                                    <svg class="slds-input__icon" aria-hidden="true">
+                                                        <use xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="{!URLFOR($Asset.SLDS, 'assets/icons/utility-sprite/svg/symbols.svg#search')}"></use>
+                                                    </svg>
+                                                    <input type="text" id="ToLookup" class="slds-input emailRequired" onkeyup="searchValue('ToLookup','Contact','')" placeholder="Search Contact" style="border:none; border-left:4px solid red;" html-autocomplete="off" />
+                                                    <div class="slds-lookup__menu closeDiv" id="ToLookupSrchDrpDwn" style="display:none"></div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <apex:inputHidden id="ToLookupValue" value="{!emailTo}" />
+                                        <!-- Display window -->
+                                        <div class="slds-form-element slds-lookup slds-hide" data-select="single" id="ToLookupLabelDiv">
+                                            <div class="slds-form-element__control slds-grid" style="border: 1px solid rgb(221, 219, 218);border-radius: .25rem;margin-top: 1px;margin-bottom: 10px;">
+                                                <label class="slds-align-middle slds-lookup__search-input slds-input--bare" for="form-help" id="ToLookupLabel">{!emailToName}</label>
+                                                <span class="slds-icon_container slds-grow" style="margin-top:4px;margin-right:5px;float:right;">
+                                                    <svg class="slds-icon slds-icon-text-default slds-icon_xx-small" aria-hidden="true" data="ToLookup">
+                                                        <use xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="{!URLFOR($Asset.SLDS, 'assets/icons/utility-sprite/svg/symbols.svg#close')}"></use>
+                                                    </svg>
+                                                </span>
+                                            </div>
+                                            <script>
+                                            if($('[id$=ToLookupValue]').val() != ''){
+                                                
+                                                $('[id$=ToLookupSearch]').addClass('slds-hide');
+                                                $('[id$=ToLookupLabelDiv]').removeClass('slds-hide');
+                                                
+                                            }
+                                            </script>
+                                        </div>
+                                        </apex:outputPanel>
+                                        
+                                    </div>
+                                    <!-- end display window -->
+                                </div>
+                            </div>
+                            <apex:outputPanel id="additionalToMainBlock" styleclass="slds-p-horizontal--small slds-size--1-of-1 slds-medium-size--6-of-12 slds-large-size--6-of-12">
+                                <div class="slds-form--horizontal" id="additionalToPanel">
+                                    <div class="slds-form-element">
+                                        <label class="slds-form-element__label" for="lookup">Additional To</label>
+                                        <div class="slds-form-element__control slds-input-has-icon slds-input-has-icon--right">
+                                            <svg aria-hidden="true" class="slds-input__icon slds-icon-text-default">
+                                                <use xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="{!URLFOR($Asset.SLDS, '/assets/icons/utility-sprite/svg/symbols.svg#search')}"></use>
+                                            </svg>
+                                            <input type="text" id="AdditionalTo" class="slds-input" onkeyup="search('AdditionalTo')" placeholder="Search Email" autocomplete="off"/>
+                                            <div class="slds-lookup__menu closeDiv" id="AdditionalToSrchDrpDwn" style="display:none"></div>
+                                        </div>
+                                        <div class="slds-pill_container slds-form-element__control" style="text-align:left;border: 0px;{!if(additionalToValues.size == 0, 'display:none;','display:inline-block;')}">
+                                            <apex:outputPanel id="additionalToBlock">
+                                                <apex:variable var="index" value="{!0}" />
+                                                <apex:repeat value="{!additionalToValues}"  var="additionalToValue">
+                                                    <a href="#void" class="slds-pill">
+                                                        <svg aria-hidden="true" class="slds-icon slds-icon-standard-account slds-pill__icon">
+                                                            <use xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="{!URLFOR($Asset.SLDS, '/assets/icons/utility-sprite/svg/symbols.svg#user')}"></use>
+                                                        </svg>
+                                                        <span class="slds-pill__label">{!additionalToValue}</span>
+                                                        <button class="slds-button slds-button--icon-bare slds-pill__remove" onClick="$('[id$=spinner]').css('display','block');deleteLookupValue('AdditionalTo','{!index}');return false;">
+                                                            <svg aria-hidden="true" class="slds-button__icon">
+                                                                <use xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="{!URLFOR($Asset.SLDS, '/assets/icons/utility-sprite/svg/symbols.svg#close')}"></use>
+                                                            </svg>
+                                                            <span class="slds-assistive-text">Remove</span>
+                                                        </button>
+                                                    </a>
+                                                    <apex:variable value="{!index+1}" var="index"/>
+                                                </apex:repeat>
+                                            </apex:outputPanel>
+                                        </div>
+                                    </div>
+                                </div>
+                            </apex:outputPanel>
+                            
+                            <apex:outputPanel id="ccMainBlock" styleclass="slds-p-horizontal--small slds-size--1-of-1 slds-medium-size--6-of-12 slds-large-size--6-of-12">
+                                <div class="slds-form--horizontal" id="ccPanel">
+                                    <div class="slds-form-element">
+                                        <label class="slds-form-element__label" for="lookup">CC</label>
+                                        <div class="slds-form-element__control slds-input-has-icon slds-input-has-icon--right">
+                                            <svg aria-hidden="true" class="slds-input__icon slds-icon-text-default">
+                                                <use xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="{!URLFOR($Asset.SLDS, '/assets/icons/utility-sprite/svg/symbols.svg#search')}"></use>
+                                            </svg>
+                                            <input type="text" id="CC" class="slds-input" onkeyup="search('CC')" placeholder="Search Email" autocomplete="off"/>
+                                            <div class="slds-lookup__menu closeDiv" id="CCSrchDrpDwn" style="display:none"></div>
+                                        </div>
+                                        <div class="slds-pill_container  slds-form-element__control" style="text-align:left;border: 0px;{!if(CCValues.size == 0, 'display:none;','display:inline-block;')}">
+                                            <apex:outputPanel id="ccBlock">
+                                                <apex:variable var="index" value="{!0}" />
+                                                <apex:repeat value="{!CCValues}"  var="CCValue">
+                                                    <a href="#void" class="slds-pill">
+                                                        <svg aria-hidden="true" class="slds-icon slds-icon-standard-account slds-pill__icon">
+                                                            <use xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="{!URLFOR($Asset.SLDS, '/assets/icons/utility-sprite/svg/symbols.svg#user')}"></use>
+                                                        </svg>
+                                                        <span class="slds-pill__label">{!CCValue}</span>
+                                                        <button class="slds-button slds-button--icon-bare slds-pill__remove"  onClick="$('[id$=spinner]').css('display','block');deleteLookupValue('CC','{!index}');return false;">
+                                                            <svg aria-hidden="true" class="slds-button__icon">
+                                                                <use xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="{!URLFOR($Asset.SLDS, '/assets/icons/utility-sprite/svg/symbols.svg#close')}"></use>
+                                                            </svg>
+                                                            <span class="slds-assistive-text">Remove</span>
+                                                        </button>
+                                                    </a>
+                                                    <apex:variable value="{!index+1}" var="index"/>
+                                                </apex:repeat>
+                                            </apex:outputPanel>
+                                        </div>
+                                    </div>
+                                </div>
+                            </apex:outputPanel>
+                            
+                            <apex:outputPanel id="bccMainBlock" styleclass="slds-p-horizontal--small slds-size--1-of-1 slds-medium-size--6-of-12 slds-large-size--6-of-12">
+                                <div class="slds-form--horizontal" id="bccPanel">
+                                    <div class="slds-form-element">
+                                        <label class="slds-form-element__label" for="lookup">BCC</label>
+                                        <div class="slds-form-element__control slds-input-has-icon slds-input-has-icon--right">
+                                            <svg aria-hidden="true" class="slds-input__icon slds-icon-text-default">
+                                                <use xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="{!URLFOR($Asset.SLDS, '/assets/icons/utility-sprite/svg/symbols.svg#search')}"></use>
+                                            </svg>
+                                            <input type="text" id="BCC" class="slds-input" onkeyup="search('BCC')" placeholder="Search Email" autocomplete="off"/>
+                                            <div class="slds-lookup__menu closeDiv" id="BCCSrchDrpDwn" style="display:none"></div>
+                                        </div>
+                                        <div class="slds-pill_container slds-form-element__control" style="text-align:left;border: 0px;{!if(bccValues.size == 0, 'display:none;','display:inline-block;')}">
+                                            <apex:outputPanel id="bccBlock">
+                                                <apex:variable var="index" value="{!0}" />
+                                                <apex:repeat value="{!bccValues}"  var="bccValue">
+                                                    <a href="#void" class="slds-pill">
+                                                        <svg aria-hidden="true" class="slds-icon slds-icon-standard-account slds-pill__icon">
+                                                            <use xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="{!URLFOR($Asset.SLDS, '/assets/icons/utility-sprite/svg/symbols.svg#user')}"></use>
+                                                        </svg>
+                                                        <span class="slds-pill__label">{!bccValue}</span>
+                                                        <button class="slds-button slds-button--icon-bare slds-pill__remove"  onClick="$('[id$=spinner]').css('display','block');deleteLookupValue('BCC','{!index}');return false;">
+                                                            <svg aria-hidden="true" class="slds-button__icon">
+                                                                <use xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="{!URLFOR($Asset.SLDS, '/assets/icons/utility-sprite/svg/symbols.svg#close')}"></use>
+                                                            </svg>
+                                                            <span class="slds-assistive-text">Remove</span>
+                                                        </button>
+                                                    </a>
+                                                    <apex:variable value="{!index+1}" var="index"/>
+                                                </apex:repeat>
+                                            </apex:outputPanel>
+                                        </div>
+                                    </div>
+                                </div>
+                            </apex:outputPanel>
+                            <div class="slds-p-horizontal--small slds-size--1-of-1 slds-medium-size--6-of-12 slds-large-size--6-of-12">
+                                <div class="slds-form--horizontal">
+                                    <div class="slds-form-element">
+                                        <label class="slds-form-element__label" for="EmailTemplateFolder">Email Template Folder</label>
+                                        <div class="slds-form-element__control">
+                                            <apex:selectList value="{!selectedEmailTemplateFolder}"  multiselect="false" size="1" styleClass="slds-input">
+                                                <apex:selectOptions value="{!emailTemplateFolderOpts}"  />
+                                                <apex:actionSupport event="onchange"  action="{!refreshEmailTemplateSection}" rerender="emailTemplateBlock,renderError"  oncomplete="$('[id$=spinner]').css('display','none');" onsubmit="$('[id$=spinner]').css('display','block');" />
+                                            </apex:selectList>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="slds-p-horizontal--small slds-size--1-of-1 slds-medium-size--6-of-12 slds-large-size--6-of-12">
+                            </div>
+                            <apex:outputPanel styleclass="slds-p-horizontal--small slds-size--1-of-1 slds-medium-size--6-of-12 slds-large-size--6-of-12" id="emailTemplateBlock">
+                                <div class="slds-form--horizontal">
+                                    <div class="slds-form-element">
+                                        <label class="slds-form-element__label" for="EmailTemplate">Email Template</label>
+                                        <div class="slds-form-element__control">
+                                            <apex:selectList value="{!selectedEmailTemplate}" multiselect="false" size="1" styleClass="slds-input ">
+                                                <apex:selectOptions value="{!emailTemplateOpts}"/>
+                                                <apex:actionSupport event="onchange" action="{!refreshEmailTemplateSection}" rerender="body,subject,renderError" oncomplete="$('[id$=spinner]').css('display','none');" onsubmit="setCKEditorValues();$('[id$=spinner]').css('display','block');"/>
+                                            </apex:selectList>
+                                        </div>
+                                    </div>
+                                </div>
+                            </apex:outputPanel>
+                            <div class="slds-p-horizontal--small slds-size--1-of-1 slds-medium-size--6-of-12 slds-large-size--6-of-12">
+                            </div>
+                            <apex:outputPanel styleclass="slds-p-horizontal--small slds-size--1-of-1 slds-medium-size--6-of-12 slds-large-size--6-of-12" id="subject">
+                                <div class="slds-form--horizontal">
+                                    <div class="slds-form-element">
+                                        <label class="slds-form-element__label" for="Subject">Subject</label>
+                                        <div class="slds-form-element__control">
+                                            <apex:inputText value="{!subject}" styleClass="slds-input emailRequired" style="width:120%"/>
+                                        </div>
+                                    </div>
+                                </div>
+                            </apex:outputPanel>
+                            <div class="slds-p-horizontal--small slds-size--1-of-1 slds-medium-size--6-of-12 slds-large-size--6-of-12">
+                            </div>
+                            <apex:outputPanel styleclass="slds-p-horizontal--small slds-size--1-of-1 slds-medium-size--6-of-12 slds-large-size--6-of-12" id="body">
+                                <script>
+                                CKEDITOR.replace('pg:frm:editor1');
+                                </script>
+                                <div class="slds-form--horizontal">
+                                    <div class="slds-form-element">
+                                        <label class="slds-form-element__label" for="Body">Body</label>
+                                        <div class="slds-form-element__control">
+                                            <apex:inputtextarea id="editor1" value="{!body}" styleClass="ckeditor" richtext="false"/>
+                                            <apex:inputHidden id="hiddenRTF" value="{!body}"/>
+                                            <!--<apex:inputTextArea value="{!body}" styleClass="slds-input emailRequired" richText="true" style="width:200%" rows="20" id="body"/>-->
+                                        </div>
+                                    </div>
+                                </div>
+                            </apex:outputPanel>
+                        </div>
+                    </div>
+                    <div class="slds-p-horizontal--small slds-size--1-of-1 slds-medium-size--12-of-12 slds-large-size--12-of-12 slds-box" style="padding:0px;">
+                        <div class="slds-grid slds-wrap slds-grid--pull-padded">
+                            <div class="slds-size--12-of-12  slds-theme--shade">
+                                <h2 class="slds-section-title slds-theme--shade slds-p-left--small">Attachments</h2>
+                            </div>
+                            <!-- 1 row -->
+                            <apex:outputPanel styleclass="slds-p-horizontal--small slds-size--1-of-1 slds-medium-size--6-of-12 slds-large-size--6-of-12" id="fileLocationPanel">
+                                <div class="slds-form--horizontal">
+                                    <div class="slds-form-element">
+                                        <label class="slds-form-element__label" for="fileLocation">File Location</label>
+                                        <div class="slds-form-element__control">
+                                            <apex:selectList value="{!selectedDocumentFolder}" multiselect="false" size="1" styleClass="slds-input">
+                                                <apex:selectOptions value="{!FileLocation}"/>
+                                                <apex:actionSupport event="onchange" action="{!refreshDocumentSection}" rerender="renderError,filePanel"  oncomplete="$('[id$=spinner]').css('display','none');" onsubmit="$('[id$=spinner]').css('display','block');" />
+                                            </apex:selectList>
+                                        </div>
+                                    </div>
+                                </div>
+                            </apex:outputPanel>
+                             <apex:outputPanel styleclass="slds-p-horizontal--small slds-size--1-of-1 slds-medium-size--6-of-12 slds-large-size--6-of-12" id="filePanel">
+                                <div class="slds-form--horizontal" style="{!IF(selectedDocumentFolder == 'My Computer', 'display:block', 'display:none')}">
+                                     <div class="slds-form-element">
+                                        <label class="slds-form-element__label" for="uploadFile">Upload File</label>
+                                        <div class="slds-form-element__control">
+                                            <input type="file" id="fileId" name="attFile" required="true" class="slds-input"/>
+                                        </div>
+                                    </div>
+                                </div>
+                                 <div class="slds-form--horizontal" style="{!IF(selectedDocumentFolder == 'My Computer', 'display:none', 'display:block')}">
+                                    <div class="slds-form-element">
+                                        <label class="slds-form-element__label" for="fileLocation">Select Document</label>
+                                        <div class="slds-form-element__control">
+                                            <apex:selectList value="{!selectedDocument}" multiselect="false" size="1" styleClass="slds-input">
+                                                <apex:selectOptions value="{!DocumentOpts}"/>
+                                            </apex:selectList>
+                                        </div>
+                                    </div>
+                                </div>
+                                 <button type="button" class="slds-button slds-button--brand" onClick="$('[id$=spinner]').css('display','block');attachFileFunc(); return false;" style="float:right;margin-top: 10px;">Attach File</button>
+                                 <div style="clear:both;"/>
+                            </apex:outputPanel>
+                            <apex:outputPanel styleclass="slds-p-horizontal--small slds-size--1-of-1 slds-medium-size--8-of-12 slds-large-size--8-of-12" id="fileListPanel">
+                                <div class="form-group">
+                                    <apex:outputPanel id="FileList">
+                                        <table class="table">
+                                            <thead>
+                                                <th scope="col">
+                                                    <div>Action</div>    
+                                                </th>
+                                                <th>
+                                                    <div>File Name</div>    
+                                                </th>
+                                                <th> 
+                                                    <div>File Location</div>
+                                                </th>
+                                            </thead> 
+                                            <tbody>
+                                                <apex:variable var="index" value="{!0}" />
+                                                <apex:repeat value="{!emailAttachmentListWrapper}" var="docu">
+                                                    <tr>
+                                                        <td scope="col">
+                                                            <apex:commandLink value="Delete" action="{!deleteAttachment}" reRender="FileList,error" onclick="$('[id$=spinner]').css('display','block');" oncomplete="$('[id$=spinner]').css('display','none');">
+                                                                <apex:param name="attachNumber" value="{!index}" assignTo="{!rowIndexAttach}"/>
+                                                            </apex:commandLink>
+                                                        </td>
+                                                        <td scope="col">
+                                                            <div>{!docu.Name}</div> 
+                                                        </td>
+                                                        <td scope="col">
+                                                            <div>{!docu.location}</div> 
+                                                        </td>
+                                                    </tr>
+                                                    <apex:variable value="{!index+1}" var="index"/>
+                                                </apex:repeat>
+                                            </tbody>
+                                        </table>
+                                    </apex:outputPanel>
+                                </div>
+                            </apex:outputPanel>
+                        </div>
+                    </div>
+                </div>
+            </fieldset>
+            <div class="slds-docked-form-footer">
+                <button type="button" class="slds-button slds-button--neutral" onclick="window.location.href='/{!relatedToId}'">Cancel</button>
+                <button type="button" class="slds-button slds-button--brand" onClick="$('[id$=spinner]').css('display','block');validateAndSend(); return false;">Send</button>
+            </div>
+        </apex:form>
+    </body>
+</apex:page>

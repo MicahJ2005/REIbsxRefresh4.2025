@@ -1,0 +1,74 @@
+<aura:component controller="HousePhotoController" implements="flexipage:availableForAllPageTypes,force:appHostable,force:hasRecordId" access="global">
+    
+    <aura:attribute name="dataAcc" type="Account"/>
+    <aura:attribute name="fileName" type="String" default="No File Selected.." />
+    <aura:attribute name="data" type="Object"/>
+    <aura:attribute name="columns" type="List"/>
+    <aura:attribute name="columnsNonEdit" type="List"/>
+    <aura:attribute name="errors" type="Object" default="[]"/>
+    <aura:attribute name="draftValues" type="Object" default="[]"/>
+     <aura:attribute name="showLoadingSpinner" type="boolean" default="false"/>
+    <aura:attribute name="acceptPhoto" type="List" default="['.jpg', '.jpeg','.jfif','.bmp', '.PNG']"/>
+    <aura:attribute name="acceptedFile" type="List" default="['.jpg', '.jpeg','.gif','.png', '.PNG', '.tif', '.tiff','.pdf']"/>
+    <aura:attribute name="activeButton" type="Boolean" default="true"/>
+    
+    
+    <aura:attribute name="homefile" type="ContentVersion" 
+                    default="{ 'sobjectType': 'ContentVersion' }"/>
+    
+    <aura:handler name="init" value="{! this }" action="{! c.init }"/>
+    <!--PAGE HEADER -->
+    <div class="slds-page-header">
+        <!-- LAYOUT GRID -->
+        <div class="slds-grid">
+            <!-- GRID COL -->
+            <div class="slds-col slds-has-flexi-truncate">
+                <!-- HEADING AREA -->
+                <p class="slds-text-title_caps slds-line-height_reset">Files</p>
+                <h1 class="slds-page-header__title slds-m-right_small slds-align-middle slds-truncate"  title="House Marketing Pictures">House Marketing Pictures</h1>
+                <!-- / HEADING AREA -->
+            </div>
+            <!-- ACTION BUTTONS -->
+            <!-- / ACTION BUTTONS -->
+        </div>
+        <!-- / LAYOUT GRID -->
+        <!-- PAGE HEADER DETAIL ROW -->
+        <!-- / PAGE HEADER DETAIL ROW -->
+    </div>
+    <!-- / PAGE HEADER -->
+    <div class="slds-col slds-has-flexi-truncate slds-card slds-p-around_medium" style="background:white;">
+        <label class="slds-form-element__label" for="unique-id-of-input">Type : </label> <force:inputField value="{!v.homefile.Photo_Type__c}" change="{!c.handelActiveButton}"/>
+        <!-- <lightning:input name="file1" type="file" aura:id="fileId" accept="image/png,.jpg,.gif,.tif, .pdf"
+                         label="" multiple="false"  onchange="{! c.handleFilesChange }"/> -->
+        <!-- -->
+        <div>
+            <lightning:fileUpload 
+                                  name="fileUploader"
+                                  disabled="{!v.activeButton}"
+                                  multiple="false"
+                                  recordId="{!v.recordId}"
+                                  onuploadfinished="{!c.handleUploadFinished}" />
+        </div>
+        <!-- -->
+        <div class="slds-text-body_small slds-text-color_error slds-align_absolute-center">
+            <!-- {!v.fileName} -->
+        </div>
+        <aura:if isTrue="{!v.showLoadingSpinner}">
+      <div class="slds-text-body_small slds-text-color_error">Uploading... 
+         <img src="/auraFW/resources/aura/images/spinner.gif" class="spinner-img" alt="Loading"/>'
+      </div>
+   </aura:if>
+        <!-- <div class="slds-align_absolute-center slds-p-top_x-small">
+        <button class="slds-button slds-button_brand" onclick="{!c.doSave1}">Process Upload</button>
+    	</div> -->
+    </div>
+    <lightning:datatable aura:id="dtTable"
+                         columns="{! v.columns }"
+                         data="{! v.data }"
+                         keyField="Id"
+                         errors="{! v.errors }"
+                         hideCheckboxColumn="true"
+                         />
+    
+    
+</aura:component>

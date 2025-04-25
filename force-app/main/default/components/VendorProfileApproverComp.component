@@ -1,0 +1,56 @@
+<apex:component controller="VendorProfileApproverCompController" access="global" >
+    <apex:attribute name="accRecId" assignTo="{!recordId}" type="Id" description="Id of account"/> 
+    <apex:attribute name="isPrimaryAcc" assignTo="{!isPrimary}" type="Boolean" description="Is Primary Email?"/> 
+    <apex:outputPanel rendered="{!isPrimary}">
+        {!acc.Name}
+        <br/><br/>
+        This notification is to inform you that the following changes to your Account have been requested:
+        <br/><br/>
+    </apex:outputPanel>
+    <apex:outputPanel rendered="{!!isPrimary}">
+        The Vendor has made changes to the profile that need your approval.
+        <br/><br/>
+        The following changes have been requested:
+        <br/><br/>
+    </apex:outputPanel>
+    <table width="100%" border="1" >
+        <thead>
+            <th> Change Request For </th>
+            <th> Old Value </th>
+            <th> New Value </th>
+        </thead>
+        <tbody>
+            <apex:repeat value="{!accHistory}" var="accHist">
+                <apex:outputPanel layout="none"  >
+                    <tr>
+                        <td style="text-align: center; vertical-align: middle;">
+                            {!$ObjectType.Account.Fields[accHist.Field].Label}
+                        </td>
+                        <td style="text-align: center; vertical-align: middle;">
+                            <apex:outputText value="{!accHist.OldValue}" rendered="{!AND(accHist.Field != 'Market__c', accHist.Field != 'Category_1__c', accHist.Field != 'Maint_Category_1__c')}"/>
+                            <apex:outputText value="{!acc.Temp_Market__c}" rendered="{!accHist.Field == 'Market__c'}"/>
+                            <apex:outputText value="{!acc.Rehab_Contractor_Trade_s__c }" rendered="{!accHist.Field == 'Category_1__c'}"/>
+                            <apex:outputText value="{!acc.Property_Maintenance_Trade_s__c}" rendered="{!accHist.Field == 'Maint_Category_1__c'}"/>
+                        </td>
+                        <td style="text-align: center; vertical-align: middle;">
+                            <apex:outputText value="{!accHist.NewValue}" rendered="{!AND(accHist.Field != 'Market__c', accHist.Field != 'Category_1__c', accHist.Field != 'Maint_Category_1__c')}"/>
+                            <apex:outputText value="{!acc.Market__c}" rendered="{!accHist.Field == 'Market__c'}"/>
+                            <apex:outputText value="{!acc.Category_1__c}" rendered="{!accHist.Field == 'Category_1__c'}"/>
+                            <apex:outputText value="{!acc.Maint_Category_1__c}" rendered="{!accHist.Field == 'Maint_Category_1__c'}"/>
+                        </td>
+                    </tr>
+                </apex:outputPanel>
+            </apex:repeat>
+        </tbody>
+    </table>
+    <apex:outputPanel rendered="{!isPrimary}">
+        <br/>
+        If you do not recognize or approve this request, please contact <a href="{!$Label.VendorCommunityURL}VendorPortalHome">support</a>.
+    </apex:outputPanel>
+    <apex:outputPanel rendered="{!!isPrimary}">
+        <br/>
+        The following Vendor Account requires approval: 
+        <br/>
+        <apex:outputlink value="{!$Label.Org_Path+'/r/Account/'+acc.Id+'/view'}">{!acc.Name}</apex:outputlink>
+    </apex:outputPanel>
+</apex:component>

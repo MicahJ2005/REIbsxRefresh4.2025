@@ -1,0 +1,193 @@
+<apex:page controller="UserAuditReportController" readOnly="true" sidebar="false" cache="false" id="pg"  docType="html-5.0" showHeader="true">
+   <apex:slds />
+   <!--<apex:pagemessages id="pagErr" />-->
+   <!--<apex:includeScript value="{!URLFOR($Resource.Jquery_ToolKit,'js/vendor/jquery.min.js')}"/>-->
+   <link rel="stylesheet" href="https://cdn.datatables.net/1.10.13/css/jquery.dataTables.min.css"/>
+   <script src="https://code.jquery.com/jquery-3.3.1.js"></script>
+   <script src="https://cdn.datatables.net/1.10.13/js/jquery.dataTables.min.js"></script> 
+   <html xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+      <head>
+         <style>
+            .Search-lookup-field{
+            color: #16325c;
+            border: 1px solid #d8dde6;
+            border-radius: .25rem;
+            width: 80%;
+            display: inline-block;
+            transition: border .1s linear,background-color .1s linear;        
+            padding: 0 1rem 0 .75rem;
+            line-height: 1.875rem;
+            min-height: calc(1.875rem + (1px * 2));
+            }
+            .lookupInput input {
+            margin-top: 0px;
+            width: 87% !important;
+            }
+            .lookupInput > a{
+            background: transparent !important;
+            border: none !important;
+            margin-left: -12px  !important;
+            }    
+            th.no-sort.sorting_asc::after{
+            content:none !important;
+            }
+            th.sorting::after{
+            content:none !important;
+            }
+            table.dataTable thead .sorting::after {
+            content:none !important;
+            }
+         </style>
+         <script type="text/javascript">
+            $(document).ready(function() {
+               // DataTable
+               var table = $('#example').DataTable({
+                   scrollY: "310px",
+                   scrollX: true,
+                   pageLength: 50,
+                   scrollCollapse: true,
+                   paging: true,
+                   fixedColumns: false,
+                   "columnDefs": [{
+                       "targets": 'no-sort',
+                       "orderable": false,
+                   }]
+               });            
+               //$("#example thead tr th").removeClass('sorting_asc');            
+            });              
+         </script>
+      </head>
+      <apex:form >
+         <div style="clear:both;"/>
+         <!--End show error msg -->
+         <br/>                             
+         <div class="slds-col  col2 fontcls" style=" max-width: 90%;margin: 0px auto;background-color: white;" >
+            <div class="form-header-group">
+               <!--<div class="header" valign="top" width="100%" style="vertical-align: top; ">
+                  <table width="100%"  >
+                     <tr>
+                        <td width="33.3%" valign="top" >
+                           &nbsp;
+                        </td>
+                        <td width="33.3%" style="text-align: center;" >
+                           <b>
+                              <h1 style="font-size: 1.7rem;color:#23408f;font-family: Raleway, Helvetica Neue, Helvetica, Arial, sans-serif;">User Audit Report</h1>
+                           </b>
+                        </td>
+                        <td width="33.3%" style="text-align: right;" valign="top">
+                           <apex:image url="{!$Resource.VendorPortalLogo}" width="150px" height="150px"/>
+                        </td>
+                     </tr>
+                  </table>
+                  </div>-->
+               <div class="slds-form" role="list">
+                  <div class="slds-form__row">
+                     <div class="slds-form__item" role="listitem">
+                        <div class="slds-form-element slds-form-element_horizontal slds-is-editing">
+                           <label class="slds-form-element__label" for="single-form-element-id-02"><b>User</b></label>
+                           <div class="slds-form-element__control">
+                              <apex:inputfield styleclass="slds-lookup__search-input slds-input" value="{!userObj.CreatedById}" />
+                           </div>
+                        </div>
+                     </div>
+                     <div class="slds-form__item" role="listitem">
+                        <div class="slds-form-element slds-form-element_horizontal slds-is-editing">
+                           <label class="slds-form-element__label" for="single-form-element-id-03"><b>Start Date</b></label>
+                           <div class="slds-form-element__control">
+                              <apex:input type="date" value="{!startDate}" id="startDateId" styleclass="slds-input" />
+                              <!--<apex:input type="text" value="{!startDate}"  id="event_start_date" styleclass="slds-input" html-placeholder="mm-dd-yy"/> -->                           
+                           </div>
+                        </div>
+                     </div>
+                     <div class="slds-form__item" role="listitem">
+                        <div class="slds-form-element slds-form-element_horizontal slds-is-editing">
+                           <label class="slds-form-element__label" for="single-form-element-id-03"><b>End Date</b></label>
+                           <div class="slds-form-element__control">
+                              <apex:input type="date" value="{!endDate}" styleclass="slds-input" />
+                           </div>
+                        </div>
+                     </div>
+                  </div>
+                  <br/>
+                  <center>
+                     <apex:commandLink action="{!searchButton}" >
+                        <button class="slds-button slds-button_brand" >Search</button>   
+                     </apex:commandLink>
+                     <!--<button class="slds-button slds-button_brand" >Update Vendor Profile</button>             
+                        <button class="slds-button slds-button_destructive" href="#" onClick="closeWindow();return false">Cancel</button> -->&nbsp;
+                        <apex:commandButton value="Export Below Data" styleClass="slds-button slds-button_success" action="{!Export_Data}" rendered="{!if(showExportButton==true,true,false)}">                                               
+                        </apex:commandButton>         
+                  </center>
+                  <br/>
+                  <apex:pageBlock id="refreshtable">
+                     <apex:outputLabel rendered="{!if(wrpList.size==0,true,false)}" styleClass="alert alert-success" >            
+                        No Record Found
+                     </apex:outputLabel>
+                     <apex:outputLabel rendered="{!if(wrpList.size!=0,true,false)}" styleClass="alert alert-success" >
+                        <table class="slds-table slds-table--bordered "  cellspacing="0" id="example" width="100%">
+                           <thead>
+                              <tr class="slds-text-heading--label">
+                                 <th class="no-sort sorting_disabled"  scope="col">
+                                    <div class="slds-truncate">
+                                       User Name                    
+                                    </div>
+                                 </th>
+                                 <th class="" scope="col">
+                                    <div class="slds-truncate">
+                                       Object Name
+                                       <!--<a ><i class="fa fa-sort" aria-hidden="true" style="cursor:pointer"/></a>-->
+                                    </div>
+                                 </th>
+                                 <th class="" scope="col">
+                                    <div class="slds-truncate">
+                                       Record
+                                       <!--<a ><i class="fa fa-sort" aria-hidden="true" style="cursor:pointer"/></a>-->
+                                    </div>
+                                 </th>
+                                 <th class="no-sort" scope="col">
+                                    <div class="slds-truncate">
+                                       Type                                    
+                                    </div>
+                                 </th>
+                                 <th class="" scope="col">
+                                    <div class="slds-truncate">
+                                       Date
+                                       <!--<a ><i class="fa fa-sort" aria-hidden="true" style="cursor:pointer"/></a>-->
+                                    </div>
+                                 </th>
+                              </tr>
+                           </thead>
+                           <tbody>
+                              <apex:repeat value="{!wrpList}" var="wrp">
+                                 <tr class="slds-hint-parent">
+                                    <td class="slds-truncate" >
+                                       <apex:outputfield value="{!wrp.sObjectRecord['CreatedById']}"/>
+                                    </td>
+                                    <td class="slds-truncate" >
+                                       <apex:outputText value="{!wrp.objectName}" />
+                                    </td>
+                                    <td class="slds-truncate" >
+                                       <apex:outputLink value="/{!wrp.sObjectRecord['Id']}" id="theLinkcase" >
+                                          <apex:outputtext value="{! if(wrp.objectName == 'Case',wrp.sObjectRecord['CaseNumber'],if(wrp.objectName =='Task' || wrp.objectName =='Event',wrp.sObjectRecord['Subject'],if(wrp.objectName !='Task' || wrp.objectName !='Event' || wrp.objectName !='Case',wrp.sObjectRecord['Name'],wrp.sObjectRecord['Name'])))}" />
+                                       </apex:outputLink>
+                                    </td>
+                                    <td class="slds-truncate" >
+                                       <apex:outputText value="{!wrp.type}"/>
+                                    </td>
+                                    <td class="slds-truncate" >
+                                       <apex:outputText value="{0,date,MM/dd/yyyy HH:mm}">
+                                          <apex:param value="{!wrp.typeDate}" />
+                                       </apex:outputText>
+                                    </td>
+                                 </tr>
+                              </apex:repeat>
+                           </tbody>
+                        </table>
+                     </apex:outputLabel>
+                  </apex:pageBlock>
+               </div>
+            </div>
+         </div>
+      </apex:form>
+   </html>
+</apex:page>

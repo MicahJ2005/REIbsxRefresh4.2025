@@ -1,0 +1,144 @@
+<aura:component  controller="OpportunityDocumentCtrl" implements="force:lightningQuickAction,force:hasRecordId,flexipage:availableForAllPageTypes" access="global" >
+    
+    <aura:attribute name="opportunityRec" type="Opportunity" />
+    
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}"/>
+    
+    
+    <div class="slds-card slds-p-around_large">
+        
+        <div class="slds-grid slds-wrap slds-grid--pull-padded">
+            <div class="slds-col--padded slds-size_4-of-4 slds-text-heading_small">Contract And Assignment 1</div>
+            <div class="slds-col--padded slds-size_1-of-4">
+                <aura:if isTrue="{!v.opportunityRec.Contract_Document_1__c == null}">
+                    Please Upload File
+                    <aura:set attribute="else"> 
+                        <button class="slds-button" onclick="{! c.openFile1 }">{!v.opportunityRec.Contract_Document_1__c}</button>
+                    </aura:set>
+                </aura:if>                
+            </div>
+            
+            <div class="slds-col--padded slds-size_2-of-4 slds-align_absolute-center">
+                <lightning:fileUpload  aura:id = "Contract_Document_1"                                                                                 
+                                      name="fileUploader"
+                                      multiple="false"
+                                      accept=".pdf, .png"
+                                      recordId="{!v.recordId}"
+                                      onuploadfinished="{!c.handleUploadFinished}" />
+            </div>
+        </div>
+        
+        <div class="slds-grid  slds-wrap slds-grid--pull-padded">
+            <div class="slds-col--padded slds-size_4-of-4 slds-text-heading_small">Contract And Assignment 2</div>
+            <div class="slds-col--padded slds-size_1-of-4">
+                <aura:if isTrue="{!v.opportunityRec.Contract_Document_2__c == null}">
+                    Please Upload File
+                    <aura:set attribute="else">                        
+                        <button class="slds-button" onclick="{! c.openFile2 }">{!v.opportunityRec.Contract_Document_2__c}</button>
+                    </aura:set>
+                </aura:if>
+            </div>
+            <div class="slds-col--padded slds-size_2-of-4 slds-align_absolute-center">
+                <lightning:fileUpload aura:id = "Contract_Document_2"
+                                      name="fileUploader"
+                                      multiple="false"
+                                      accept=".pdf, .png"
+                                      recordId="{!v.recordId}"
+                                      onuploadfinished="{!c.handleUploadFinished}" />
+            </div>
+        </div>
+        
+        
+        <div class="slds-grid  slds-wrap slds-grid--pull-padded">
+            <div class="slds-col--padded slds-size_4-of-4 slds-text-heading_small">Contract And Assignment 3</div>
+            <div class="slds-col--padded slds-size_1-of-4">
+                <aura:if isTrue="{!v.opportunityRec.Contract_Document_3__c == null}">
+                    Please Upload File
+                    <aura:set attribute="else">                        
+                        <button class="slds-button" onclick="{! c.openFile3 }">{!v.opportunityRec.Contract_Document_3__c}</button>
+                    </aura:set>
+                </aura:if>
+            </div>
+            <div class="slds-col--padded slds-size_2-of-4 slds-align_absolute-center">
+                <lightning:fileUpload aura:id = "Contract_Document_3"
+                                      name="fileUploader"
+                                      multiple="false"
+                                      accept=".pdf, .png"
+                                      recordId="{!v.recordId}"
+                                      onuploadfinished="{!c.handleUploadFinished}" />
+            </div>
+        </div>
+        
+        
+        <div class="slds-grid  slds-wrap slds-grid--pull-padded">
+            <div class="slds-col--padded slds-size_4-of-4 slds-text-heading_small">Contract And Assignment 4</div>
+            <div class="slds-col--padded slds-size_1-of-4">
+                <aura:if isTrue="{!v.opportunityRec.Contract_Document_4__c == null}">
+                    Please Upload File
+                    <aura:set attribute="else">                        
+                        <button class="slds-button" onclick="{! c.openFile4 }">{!v.opportunityRec.Contract_Document_4__c}</button>
+                    </aura:set>
+                </aura:if>
+            </div>
+            <div class="slds-col--padded slds-size_2-of-4 slds-align_absolute-center">
+                <lightning:fileUpload aura:id = "Contract_Document_4"
+                                      name="fileUploader"
+                                      multiple="false"
+                                      accept=".pdf, .png"
+                                      recordId="{!v.recordId}"
+                                      onuploadfinished="{!c.handleUploadFinished}" />
+            </div>
+        </div>
+        
+        <div class="slds-grid slds-wrap slds-grid--pull-padded ">
+            <div class="slds-col--padded slds-size_4-of-4 slds-text-heading_small">Wiring Instructions</div>
+            <div class="slds-col--padded slds-size_1-of-4">
+                <aura:if isTrue="{!v.opportunityRec.Contract_Document_5__c == null}">
+                    Please Upload File
+                    <aura:set attribute="else">                        
+                        <button class="slds-button" onclick="{! c.openFile5 }">{!v.opportunityRec.Contract_Document_5__c}</button>
+                    </aura:set>
+                </aura:if>
+            </div>
+            
+            <div class="slds-col--padded slds-size_2-of-4 slds-align_absolute-center">
+                <lightning:fileUpload aura:id = "Contract_Document_5"
+                                      name="fileUploader"
+                                      multiple="false"
+                                      accept=".pdf, .png"
+                                      recordId="{!v.recordId}"
+                                      onuploadfinished="{!c.handleUploadFinished}" />
+            </div>
+        </div>
+        
+        
+        <div class="slds-grid  slds-wrap slds-grid--pull-padded">
+            <div class="slds-col--padded slds-size_4-of-4 slds-text-heading_small">Lease / Leaseback</div>
+            <div class="slds-col--padded slds-size_1-of-4">
+                <aura:if isTrue="{!v.opportunityRec.Contract_Document_6__c == null}">
+                    Please Upload File
+                    <aura:set attribute="else">                        
+                        <button class="slds-button" onclick="{! c.openFile6 }">{!v.opportunityRec.Contract_Document_6__c}</button>
+                    </aura:set>
+                </aura:if>
+            </div>
+            <div class="slds-col--padded slds-size_2-of-4 slds-align_absolute-center">
+                <lightning:fileUpload aura:id = "Contract_Document_6"
+                                      name="fileUploader"
+                                      multiple="false"
+                                      accept=".pdf, .png"
+                                      recordId="{!v.recordId}"
+                                      onuploadfinished="{!c.handleUploadFinished}" />
+            </div>
+        </div>
+        
+        <br/>
+        <br/>
+        
+        <center>
+            <div class="slds-col--padded slds-size_1-of-2" >
+                <lightning:button label="Send Title Email" title="Send Email" onclick="{!c.oppsendEmailwithAttach }"/>
+            </div>
+        </center>
+    </div>
+</aura:component>

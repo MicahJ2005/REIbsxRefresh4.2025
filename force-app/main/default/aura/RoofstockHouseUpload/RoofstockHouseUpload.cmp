@@ -1,0 +1,44 @@
+<aura:component controller="RoofstockHouseUploadController" implements="flexipage:availableForRecordHome,force:hasRecordId,force:lightningQuickActionWithoutHeader" access="global" >
+    <!--use boolean attribute for Store true/false value,
+    make default to "false" so modal box are not display on the load of component. 
+    --> 
+    
+    <aura:attribute name="record" type="Project__c"/>
+    <aura:attribute name="loaded" type="Boolean" default="false" />
+    <aura:handler name="init" value="{!this}" action="{!c.init}"/>
+    
+    <!--Custom Styles for Modal Header and Footer--> 
+    <aura:html tag="style">
+        .slds-p-around--medium {
+        padding: 0rem !important;
+        }   
+        .slds-modal__content{
+        overflow-y:hidden !important;
+        height:unset !important;
+        max-height:unset !important;
+        }
+        .cuf-content {
+        padding: 0 0rem !important;
+        }
+        .slds-spinner_container{
+        position : static !important;
+        }
+    </aura:html>
+    
+    <div class="modal-header slds-modal__header slds-size_1-of-1">
+        <h4 class="title slds-text-heading--medium">Upload House To Roofstock</h4>
+    </div>
+    <div class="slds-modal__content slds-align_absolute-center slds-m-vertical_x-large">
+        <aura:if isTrue="{!v.loaded }">
+            <lightning:spinner alternativeText="Loading" size="small" />
+            <aura:set attribute="else">
+                <lightning:icon iconName="utility:home" alternativeText="House" title="Approved" style="float:left;"/>
+                <h6 class="title slds-text-heading--medium slds-m-left_x-small slds-m-top_x-small">{!v.record.House__r.Name}</h6>
+            </aura:set>
+        </aura:if>
+    </div>
+    <div class="modal-footer slds-modal__footer slds-align_absolute-center">
+        <lightning:button class="slds-size_1-of-4" onclick="{!c.upload}" label="Upload" iconName="utility:upload" variant="brand" iconPosition="left" />
+    </div>
+    
+</aura:component>

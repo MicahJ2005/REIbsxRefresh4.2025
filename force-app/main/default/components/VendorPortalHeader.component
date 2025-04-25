@@ -1,0 +1,290 @@
+<apex:component controller="VendorPortalHeaderController" allowDML="true" >
+   <apex:attribute name="ariaSelHome" type="Boolean" description="used to change tab based on aria-selected" default="false"/>
+   <apex:attribute name="ariaSelWO" type="Boolean" description="used to change tab based on aria-selected" default="false"/>
+   <apex:attribute name="ariaSelInvoice" type="Boolean" description="used to change tab based on aria-selected" default="false"/>
+   <apex:attribute name="ariaSelHWO" type="Boolean" description="used to change tab based on aria-selected" default="false"/>
+   <html xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" lang="en">
+      <head>
+         <meta charset="utf-8"/>
+         <meta name="viewport" content="width=device-width, initial-scale=1"/>
+         <apex:stylesheet value="{!URLFOR($Resource.SLDSNew, '/styles/salesforce-lightning-design-system.css')}"/>
+         <apex:stylesheet value="{!URLFOR($Resource.Bootstrap, '/bootstrap-sf1-master/dist/css/bootstrap.min.css')}"/>
+         <apex:includeScript value="{!URLFOR($Resource.Jquery_ToolKit,'js/vendor/jquery.min.js')}"/>
+         <script src="/soap/ajax/34.0/connection.js" type="text/javascript"></script>
+         <script>
+             function openJModal(){
+                console.log('popup------');
+                document.getElementById('imagepopupId').style.display = 'block';
+            }
+            
+            function redirectPage(){                
+                window.location.href = '/VendorPortal/VendorPortalHome';                
+            }
+            
+            function hideShowMenuNew(){
+            var elem = document.getElementById('menuLog');
+            if ( elem.classList.contains('active') ) { // Check for class
+                elem.classList.remove('active');
+            }
+            else{
+                elem.classList.add('active');
+            }
+            }
+            /*function uploadFun(){
+                alert('uploadFun1');
+                uploadFun1();
+            }*/
+            
+            function uploadFileFn(){
+                    
+            var fbody= document.getElementById("fileId").files[0];
+            getAsTextFile(fbody);
+            
+            }
+            function getAsTextFile(readFile) {
+            
+            var reader = new FileReader();
+            if(readFile == undefined){
+                showError(' Please input a valid file. ');
+                return;
+            }else{
+                reader.readAsDataURL(readFile);
+                reader.onload = attLoadedNewFile;
+            }
+            
+            }
+                
+            //verify the file extension, throw error if other than given values below
+            // creates attachment
+            
+            function attLoadedNewFile(evt) {  
+            var fileString = evt.target.result;
+            var extension;
+            var blobfile = fileString;
+            var input = document.getElementById("fileId");
+            console.log('input------'+input);
+            filename= input.value;
+            console.log('filename------'+filename);
+            uploadFun(filename.replace(/.*[\/\\]/, ''), blobfile.split(',')[1]);
+            }
+            
+            
+            
+         </script>
+         <style>
+            .liTab{
+            color: #337ab7;
+            background-color:#FFFFFF !important;
+            border-radius:8px;
+            font-size: 2 px;
+            }
+            .slds-tabs_default__nav li{
+            color: #000000 !important;
+            background-color: #00FF41;
+            border-radius:8px;
+            }
+            .slds-tabs_default__nav li> a{
+            color: #000000 !important;
+            }
+            .slds-tabs_default__nav li:hover {
+            background-color: #00FF41 !important;
+            color: #000000;
+            }
+            .liMenu{
+            color: #337ab7;
+            background-color:#FFFFFF !important;
+            }
+            .headerFontCls {
+            font-size: 1.4rem !important;
+            }
+            a:focus,a:active,a:hover {
+            color:#FFFFFF !important;
+            }
+            .nav-tabs>li.active>a {
+            border-bottom: 5px solid #0070d2; !important;
+            background-color: #FFFFFF;
+            color: #337ab7;
+            } 
+            .nav-tabs>li.colorCls>a {
+            color:#FFFFFF !important;
+            }
+            .nav-tabs>li.colorCls>a:hover {
+            color:#000000 !important;
+            }
+            #container2{
+            position: relative; 
+            width: 75px; 
+            height: 70px;                
+            } 
+            #div1 {
+            position: absolute;
+            width: 75px; 
+            height: 70px;
+            } 
+            #div2 {
+            position: absolute;
+            top: 50px;
+            left: 50px;
+            width: 24px;
+            height: 18px;                
+            }          
+         </style>
+      </head>
+      <div class="slds-tabs_default headerFontCls" style="background-color:#25476a;width:100%;height:100px;">
+         <div style="border: 1px solid #25476a;background-color:#25476a;float:left;width:15%;height:100%;">
+            <apex:image url="{!$Resource.VendorPortalLogoREIN}" style="display:block;width:100%;height:100%;"/>
+         </div>
+         <div style="border: 1px solid #25476a;background-color:#25476a;float:left;width:15%;height:100%;">
+            <apex:image url="{!$Resource.VendorPortalLogoPPMG}" style="display:block;width:100%;height:100%;"/>
+         </div>
+         <div style="background-color:#25476a;float:left;width:15%;height:100%;">
+            
+         </div>
+         <div style="background-color:#25476a;overflow: hidden;width:55%;height:100%;" >
+            <div style="width:100%;height:30%;float:left;">
+               <br/> 
+               <ul class="slds-tabs_default__nav" role="tablist" style="float:right;background-color:#25476a;border:0px !important;">
+                  &nbsp;&nbsp;
+                  <!-- FILE UPLOAD ----------------------->
+                  <!-----------------------------------Start Popup OutPut Pannel----------------------------------->  
+                  <div class="modal" id="imagepopupId" role="dialog" tabindex="-1" aria-labelledby="demo-default-modal" data-backdrop="static" aria-hidden="true" >
+                     <div class="modal-dialog modal-lg" style="width: 500px;">
+                        <div class="modal-content" style="background-color:#ECF0F5">
+                           <!--Modal header-->
+                           <div class="modal-header" style="border-bottom: 0px solid #e5e5e5 !important;">
+                              <!--<button type="button" class="close" data-dismiss="modal" id="cancelId" style="margin-top:0!important" onclick="renderPasswordPopUp()">
+                                 <i class="pci-cross pci-circle"></i>
+                                 </button>-->
+                              <button type="button" class="close" data-dismiss="modal">&times;</button>          
+                           </div>
+                           <!--Modal body-->
+                           <div class="modal-body" style="padding-right: 35px;padding-left: 35px;">
+                              <apex:form id="configform">
+                                 <apex:outputPanel id="popupid">
+                                    <div class="boxed">
+                                       <div id="container" style="min-height: 10vh !important;">
+                                          <div id="page-content">
+                                             <!-- Details Section -->
+                                             <div class="row">
+                                                <div class="panel">
+                                                   <div class="panel-heading">
+                                                      <div style="padding-top: 15px;">
+                                                         <h3 class="panel-title" style="color:#25476A;font-weight: bold;">
+                                                            Image Upload:
+                                                         </h3>
+                                                      </div>
+                                                   </div>
+                                                   <div class="panel-body" id="fieldset" style="min-height:80px;">
+                                                      <div class="table-responsive">
+                                                         <table style="width:100%;">
+                                                            <tr>
+                                                               <th style="white-space: normal;" class="pad-btm">
+                                                                  <input type="file" id="fileId" onchange="uploadFileFn()"/>
+                                                               </th>
+                                                            </tr>
+                                                         </table>
+                                                      </div>
+                                                   </div>
+                                                </div>
+                                             </div>
+                                             <!-- Buttons -->
+                                             <div class="row" style="display: flex !important;justify-content: center !important;">
+                                             </div>
+                                          </div>
+                                       </div>
+                                    </div>
+                                 </apex:outputPanel>
+                                 <apex:actionFunction action="{!upload}" name="uploadFun" reRender="j_id0:CommunitiesTemplate:j_id3:j_id4:frm" oncomplete="redirectPage()" >
+                                    <apex:param name="fName" value="" assignTo="{!fileName}" />
+                                    <apex:param name="fBody" value="" assignTo="{!file}"  />
+                                 </apex:actionFunction>
+                              </apex:form>
+                           </div>
+                        </div>
+                     </div>
+                  </div>
+                  <!-- Modal window ends here -->     
+                  <!-----------------------------------End Popup OutPut Pannel-----------------------------------> 
+                  <table>
+                     <tr>
+                        <td>
+                           <apex:outputPanel id="profilePicPanel">
+                              <div id="container2">
+                                 <div id="div1">
+                                    <apex:image value="{!profileImageUrl}" style="width: 75px;height: 70px;" />
+                                 </div>
+                                 <div id="div2">
+                                    <a   data-toggle="modal" href="" onclick="openJModal()" >                                    
+                                    <!--<i class="fa fa-camera" aria-hidden="true" style="float: right;font-size:19px"></i>-->
+                                    <apex:image url="{!$Resource.CameraIcon}" style="width:100%;height:100%;"/>
+                                    </a>
+                                 </div>
+                              </div>
+                           </apex:outputPanel>
+                        </td>
+                        <td>
+                           <!--<input type="file" id="fileId" onchange="uploadFileFn()"/>-->
+                        </td>
+                     </tr>
+                  </table>
+                  <!--<apex:commandbutton action="" value="Upload" />-->
+                  <li class="{!IF($CurrentPage.Name == 'VendorPortalChangePassword','slds-tabs_default__item liTab','slds-tabs_default__item')}"  role="presentation">
+                     <a  href="/VendorPortal/VendorPortalChangePassword" role="menuitem" tabindex="-1">
+                     <span class="slds-truncate" title="Accounts">Reset Password</span>
+                     </a>
+                  </li>
+                  &nbsp;&nbsp;
+                  <li class="slds-tabs_default__item" role="presentation">
+                     <a href="{!$Site.Prefix}/secur/logout.jsp"  target="_blank" style="text-align:center;"><i class="fa fa-sign-out"></i> Logout</a>
+                  </li>
+                  &nbsp;&nbsp;
+               </ul>
+            </div>
+         </div>
+      </div>
+      <div class="slds-tabs_default headerFontCls" style="background-color:#25476a;width:100%;height:20px;">
+      </div>
+      <div class="slds-tabs_default headerFontCls" style="background-color:#25476a;width:100%;height:40px;">
+         <ul role="tablist" class="nav nav-tabs bs-adaptive-tabs" style="background-color:#25476a;" id="myTab" tabindex="1">
+            <li class="{!IF($CurrentPage.Name == 'VendorPortalHome','active','colorCls')}" role="presentation">
+               <a data-toggle="tab" href="/VendorPortal/VendorPortalHome" role="tab" tabindex="-1" aria-selected="true" aria-controls="tab-default-1" id="tab-default-1__item">
+               Home
+               </a>                
+            </li>
+            <li  class="{!IF($CurrentPage.Name == 'VendorHomeDepotRapidPass','active','colorCls')}" role="presentation">
+               <a data-toggle="tab" href="/VendorPortal/VendorHomeDepotRapidPass" role="tab" tabindex="-1" aria-selected="true" aria-controls="tab-default-2" id="tab-default-2__item">
+               Home Depot Rapid Pass
+               </a>
+            </li>
+             <!-- 1 Feb -->
+             <li  class="{!IF($CurrentPage.Name == 'VendorPortalSherwinWilliams','active','colorCls')}" role="presentation">
+               <a data-toggle="tab" href="/VendorPortal/VendorPortalSherwinWilliams" role="tab" tabindex="-1" aria-selected="true" aria-controls="tab-default-2" id="tab-default-2__item">
+               Sherwin Williams
+               </a>
+            </li>
+             <!-- 1 Feb -->
+            <!--<li  class="{!IF(OR($CurrentPage.Name == 'VendorProjectsOrWorkOrders', $CurrentPage.Name == 'VendorCompletedProjects', $CurrentPage.Name == 'VendorInvoices'),'active','colorCls')}" role="presentation">
+               <a data-toggle="tab" href="/VendorPortal/VendorProjectsOrWorkOrders" role="tab" tabindex="-1" aria-selected="{!ariaSelWO}" aria-controls="tab-default-3" id="tab-default-3__item">
+               Projects | Work Orders | Invoices
+               </a>
+            </li>-->
+           <!-- <li  class="{!IF($CurrentPage.Name == 'VendorUnderConstruction','active','colorCls')}" role="presentation">
+               <a data-toggle="tab" href="/VendorPortal/VendorUnderConstruction" role="tab" tabindex="-1" aria-selected="{!ariaSelWO}" aria-controls="tab-default-3" id="tab-default-3__item">
+               Projects | Work Orders | Invoices
+               </a>
+            </li>-->
+            <li  class="{!IF($CurrentPage.Name == 'VendorPortalProcessProcedures','active','colorCls')}" role="presentation">
+               <a data-toggle="tab" href="/VendorPortal/VendorPortalProcessProcedures" role="tab" tabindex="-1" aria-selected="{!ariaSelHWO}" aria-controls="tab-default-4" id="tab-default-4__item">
+               Resources
+               </a>
+            </li>
+            <li  class="{!IF($CurrentPage.Name == 'VendorPortalAccountProfile','active','colorCls')}" role="presentation">
+               <a data-toggle="tab" href="/VendorPortal/VendorPortalAccountProfile" role="tab" tabindex="-1" aria-selected="{!ariaSelHWO}" aria-controls="tab-default-5" id="tab-default-5__item">
+               Account Profile
+               </a>
+            </li>
+         </ul>
+      </div>
+      <br/>
+   </html>
+</apex:component>

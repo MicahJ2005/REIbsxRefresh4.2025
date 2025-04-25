@@ -1,0 +1,1295 @@
+<apex:page id="pg" controller="CreateProjectItemExtn" sidebar="false" showHeader="false" docType="html-5.0" standardStylesheets="false" lightningStylesheets="true" cache="false">
+    <apex:slds />
+    
+    <html xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" lang="en">
+        <head>
+            <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
+            <apex:includeScript value="../../soap/ajax/26.0/connection.js" />
+                
+                <style>
+                .displayOff{
+                    display: none !important;
+                }
+            .displayOn{
+                display: block !important;
+            }
+            .labelCls{
+                font-weight: bold;
+            }
+            .lookupInput a{ 
+                position: absolute; 
+                width: 1% !important; 
+                margin-left: 0.1%; 
+                background-image: url(/img/setup/search-icon.png) !important; 
+                background-repeat: no-repeat !important; 
+                background-position: center !important; 
+                display: inline-flex !important; 
+            } 
+            .lookupInput input{ 
+                width:91% !important; 
+            } 
+            .lookupInput a img{ 
+                display:none !important; 
+            }
+            .datePicker{
+                z-index: 99999 ;
+            }
+            .spinnerBg{
+                width: 100%;
+                height: 400%;
+                position: absolute;
+                background-color: #000;
+                opacity: 0.2;
+                z-index: 999999;
+            }
+            .spinner{
+                width: 100%;
+                height: 100%;
+                position: absolute;
+                background-image: url("/img/loading32.gif");
+                background-size: 16px;
+                background-repeat: no-repeat;
+                background-attachment: fixed;
+                background-position: center;
+                z-index: 9999999;
+                opacity: 1;
+            }
+            .zen-btn{
+                padding-left: 1rem !important;
+                padding-right: 1rem !important;
+                text-align: center !important;
+                vertical-align: middle !important;
+                border: 1px solid rgb(221, 219, 218) !important;
+                transition: border .15s linear !important;
+                background-color: rgba(27, 82, 151, 1) !important;
+                border-color: rgba(27, 82, 151, 1) !important;
+                color: rgb(255, 255, 255) !important;
+            }
+            .inlineEditUndoLink{
+                display:contents !important;
+            }
+            .inlineEditModified{
+                background-color: white !important;
+            }
+            </style>
+            <script type="text/javascript">
+                
+                function onlyOne(checkbox, actualVal, textid) {
+                console.log('checkbox.checked---'+checkbox.checked);
+                if(checkbox.checked){
+                    document.getElementById(textid).value = actualVal;
+                }
+                else{
+                    document.getElementById(textid).value = '';
+                    console.log('document.getElementById(textid).value---'+document.getElementById(textid).value);
+                }
+                var checkboxes = document.getElementsByClassName('checkOptions');
+                
+                
+                for(var i = 0; i < checkboxes.length; i++)
+                {
+                    if (checkboxes.item(i) !== checkbox){
+                        checkboxes.item(i).checked = false;
+                    }
+                }
+                
+                ownerAcceptedBidNew();
+            }
+            
+            function onlyOneVendor(checkboxId, actualVal, textid) {
+                var checkbox = document.getElementById('pg:frm:repetid:'+ actualVal + ':'+checkboxId);
+                if(checkbox.checked){
+                    document.getElementById(textid).value = actualVal;
+                }
+                else{
+                    document.getElementById(textid).value = '';
+                    console.log('document.getElementById(textid).value---'+document.getElementById(textid).value);
+                }
+                var checkboxes = document.getElementsByClassName('checkOptions');
+                
+                
+                for(var i = 0; i < checkboxes.length; i++)
+                {
+                    if (checkboxes.item(i) !== checkbox){
+                        checkboxes.item(i).checked = false;
+                    }
+                }
+                
+                ownerAcceptedBidNew();
+            }
+            
+            function showHideAmount(input, checkId){
+                if (input.checked){
+                    document.getElementById(checkId).style.display = 'block';
+                }
+                else{
+                    document.getElementById(checkId).style.display = 'none';
+                    document.getElementById(checkId).value = 0;
+                }
+            }
+            
+            function openModal(){
+                $(".errorModal3.slds-modal").addClass('slds-fade-in-open');
+                $(".slds-backdrop").addClass('slds-backdrop--open');
+            }
+            
+            function closeModal(){
+                $(".errorModal3.slds-modal").removeClass('slds-fade-in-open');
+                $(".slds-backdrop").removeClass('slds-backdrop--open');
+            }
+            
+            function calculateMarkupAmount(repairCost, input, markupAmount){
+                var markPercent = input.value;
+                markPercent = Number(markPercent.replace(/[^0-9\.]+/g,""));
+                if(markPercent > 15){
+                    document.getElementById(markupAmount).value = 0;
+                    document.getElementById(input.id).value = 0;
+                    $('[id$=spinner]').css('display','none');
+                    return false;
+                }
+                else{
+                    var repairCostVal = document.getElementById(repairCost).value; 
+                    repairCostVal = Number(repairCostVal.replace(/[^0-9\.]+/g,""));
+                    if(repairCostVal == null || repairCostVal == '' || repairCostVal == 'undefined'){
+                        document.getElementById(markupAmount).value = 0;
+                        document.getElementById(input.id).value = 0;
+                    }
+                    else{
+                        document.getElementById(markupAmount).value = repairCostVal * (markPercent/100);
+                    }
+                    ownerAcceptedBidMarkup();
+                    return true;
+                }
+            }
+            
+            function calculateMarkupPercent(repairCost, markup, input){
+                var markupAmount = input.value;
+                markupAmount = Number(markupAmount.replace(/[^0-9\.]+/g,""));
+                var repairCostVal = document.getElementById(repairCost).value;
+                repairCostVal = Number(repairCostVal.replace(/[^0-9\.]+/g,""));
+                if(repairCostVal == null || repairCostVal == '' || repairCostVal == 'undefined'){
+                    document.getElementById(markup).value = 0;
+                    document.getElementById(input.id).value = 0;
+                    ownerAcceptedBidMarkup();
+                }
+                else{
+                    var markPercent = (markupAmount/repairCostVal) * 100;
+                    if(markPercent > 15){
+                        document.getElementById(markup).value = 0;
+                        document.getElementById(input.id).value = 0;
+                        $('[id$=spinner]').css('display','none');
+                        return false;
+                    }
+                    else{
+                        document.getElementById(markup).value = markPercent;
+                        ownerAcceptedBidMarkup();
+                        return true;
+                    }
+                }
+                return true;
+            }
+            
+            var fileLenght=0;  
+            
+            function attachFiles() {  
+                FileUploaded =0;
+                var fileLocation = document.getElementById('pg:frm:fileLocation').value;
+                console.log('fileLocation----'+fileLocation);
+                if(fileLocation == ''){
+                    $('[id$=spinner]').css('display','none');
+                }
+                else if(fileLocation == 'My Computer'){
+                    var v=document.getElementById('fileId');  
+                    console.log(v.files.length);  
+                    fileLenght = v.files.length;  
+                    console.log('fileLenght----'+fileLenght);
+                    if(fileLenght == 0){
+                        $('[id$=spinner]').css('display','none');
+                    }
+                    else{
+                        for (var i = 0; i < v.files.length; i++) {  
+                            uploadSelectedFile(v.files[i], function(err, res){   
+                                FileUploading += 1;
+                                // console.log('FileUploading-----'+FileUploading);
+                                // console.log('FileUploading1-----'+ids.toString());
+                                // console.log('i-----'+i);
+                                //    console.log('length-----'+v.files.length);
+                                //    console.log('fileLenght----'+fileLenght);
+                                
+                                if(FileUploaded== v.files.length){
+                                    var idString = ids.toString(); 
+                                    attachFileFunctionNew(idString);
+                                    //blank input file value 
+                                    document.getElementById("fileId").value = "";  
+                                }
+                                
+                                else if(v.files.length == 0){
+                                    var idString = ids.toString(); 
+                                    attachFileFunctionNew(idString);
+                                }
+                                
+                                
+                            })
+                            setTimeout(function(){    }, 10000);
+                        }
+                    } 
+                }
+                    else if(fileLocation == 'Notes & Attachments'){
+                        attachFileFunctionNew('');
+                    }
+                
+            }
+            
+            var FileUploading = 0;  
+            var FileUploaded = 0;  
+            var ids = new Array();  
+            var uploadSelectedFile = function(file, callback) {  
+                filetoBase64(file, function(err, content){  
+                    var conVer_object = {  
+                        ContentLocation : 'S',  
+                        VersionData : content,   
+                        PathOnClient : file.name,   
+                        Title : file.name   
+                    };  
+                    $.ajax({  
+                        url: '/services/data/v39.0/sobjects/ContentVersion',  
+                        data: JSON.stringify(conVer_object ),  
+                        type: 'POST',  
+                        processData: false,  
+                        contentType: false,  
+                        headers: {'Authorization': 'Bearer {!$Api.Session_ID}', 'Content-Type': 'application/json'},
+                        xhr: function(){  
+                            var xhr = new window.XMLHttpRequest();  
+                            //Upload progress  
+                            xhr.upload.addEventListener("progress", function(evt){  
+                                if (evt.lengthComputable) {  
+                                    $('#progress_bar_container').css('display', 'block');  
+                                    var percentComplete = evt.loaded / evt.total;  
+                                    console.log('percentComplete '+percentComplete );  
+                                    var percentCompletex= percentComplete*100;  
+                                    $('#percentText').html("Uploading. Please wait... "+Math.round(percentCompletex)+"%");  
+                                    $('.progress').css('width', percentCompletex+ "%");  
+                                    if(percentCompletex == 100){  
+                                        $('#progress_bar_container').css('display', 'none');  
+                                    }  
+                                }  
+                            }, false);  
+                            return xhr;  
+                        },  
+                        
+                        success: function(response) {  
+                            FileUploaded += 1;  
+                            console.log(response.id); // the id of the attachment  
+                            ids.push(response.id);   
+                            console.log('Ids: ' +ids);  
+                            
+                            //$('#records').html('File has been uploeded. Uploaded File ids: ' +ids);  
+                            if(fileLenght == FileUploaded ){  
+                                console.log('Hii totla fle Uploaded');
+                                // refreshFilePanel();
+                                //calculateLocation(ids.toString());  
+                            }  
+                            callback(null, true)                         
+                            //setTimeout(function(){ callback(null, true)   }, 5000);
+                        },
+                        
+                        
+                    }); 
+                    
+                }); 
+            }   
+            
+            //Read file  
+            var filetoBase64 = function(file, callback){  
+                var reader = new FileReader();  
+                reader.onload = function() {  
+                    var myFileContents = reader.result;  
+                    var base64Mark = 'base64,';  
+                    var dataStart = myFileContents.indexOf(base64Mark) + base64Mark.length;  
+                    myFileContents = myFileContents.substring(dataStart);  
+                    callback(null, myFileContents);  
+                }  
+                reader.readAsDataURL(file);  
+            }   
+            
+            function refreshFilePanel(){
+                console.log('Called');
+                refreshDocument();
+                
+            }
+            </script>
+            
+        </head>
+        
+        <apex:form id="frm">
+            <apex:actionStatus id="spinnerStatus" >
+                <apex:facet name="start">
+                    <div class="spinnerBg" />
+                    <div class="spinner" />
+                </apex:facet>
+            </apex:actionStatus>
+            
+            <div class="slds-spinner_container" id="spinner" style="display:none;position: fixed;">
+                <div class="slds-spinner--brand slds-spinner slds-spinner--medium" aria-hidden="false" role="alert" style="    position: fixed;">
+                    <div class="slds-spinner__dot-a"></div>
+                    <div class="slds-spinner__dot-b"></div>
+                </div>
+            </div>
+            
+            <apex:actionFunction name="ownerAcceptedBidNew" action="{!bidAcceptedByOwner}" oncomplete="$('[id$=spinner]').css('display','none');" reRender="errorMsg, vendorAcctPanel, totalRepairCostPanel, ownerPanel, VendorStartDatePanel" />
+            <apex:actionFunction name="ownerAcceptedBidMarkup" action="{!bidAcceptedByOwner}" oncomplete="$('[id$=spinner]').css('display','none');" reRender="totalRepairCostPanel" />
+            
+            <apex:actionFunction name="attachFileFunctionNew" action="{!attachFile}"  oncomplete="refreshFilePanel()" >
+                <apex:param name="fileId" value="" assignTo="{!newFileId}"/>
+            </apex:actionFunction>
+            <apex:actionFunction name="refreshDocument" action="{!refreshDocumentSection1}" reRender="renderError,fileLocationPanel,filePanel,fileListPanel" oncomplete="$('[id$=spinner]').css('display','none');">
+                
+            </apex:actionFunction>
+            <apex:outputPanel id="renderError">
+                <script>
+                if('{!error}' != '' && '{!error}' != null && '{!error}' != 'undefined'){
+                    showError('{!error}');
+                }
+                </script>
+            </apex:outputPanel>
+            
+            <!-- Row Start Project Item Information -->
+            <div class="lds-size--1-of-1 slds-medium-size--12-of-12 slds-large-size--12-of-12 slds-p-horizontal_xx-large" style="margin:auto;" >
+                <div class="slds-page-header">
+                    <div class="slds-media">
+                        <div class="slds-media__figure">
+                            <span class="slds-icon_container slds-icon_container--square slds-icon-custom-custom19">
+                                <svg aria-hidden="true" class="slds-icon slds-icon--medium">
+                                    <use xlink:href="{!URLFOR($Asset.SLDS,'assets/icons/custom-sprite/svg/symbols.svg#custom19')}"></use>
+                                </svg>
+                            </span>
+                        </div>
+                        <div class="slds-media__body">
+                            <!-- Row Start -->
+                            <div class="slds-form__row">
+                                <div class="slds-form__item" role="listitem">
+                                    <div class="slds-form-element slds-form-element_stacked slds-is-editing">
+                                        <label class="slds-form-element__label labelCls" for="hasMultipleBids">
+                                            <p class="slds-text-body_small slds-line-height_reset">Work Order</p>
+                                        </label>
+                                        <div class="slds-form-element__control">
+                                            <apex:outputPanel id="proName" style="width:100%;">
+                                                <h1 class="slds-page-header__title slds-truncate slds-align-middle" title="Work Order">
+                                                    {!projectItem.Name}
+                                                </h1>
+                                            </apex:outputPanel>
+                                        </div>    
+                                    </div>
+                                </div>
+                                <div class="slds-form__item" role="listitem">
+                                    <div class="slds-form-element slds-form-element_stacked slds-is-editing">
+                                        <label class="slds-form-element__label labelCls" >
+                                            <p class="slds-text-body_small slds-line-height_reset">Description</p>
+                                        </label>
+                                        <div class="slds-form-element__control">
+                                            <apex:outputField value="{!projectItem.Description__c}" >
+                                                <!-- ...with an inline-edit enabled dependent field -->
+                                                <apex:inlineEditSupport event="ondblClick" />
+                                            </apex:outputField> 
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="slds-form__item" role="listitem">
+                                    <div class="slds-form-element slds-form-element_stacked slds-is-editing">
+                                        <label class="slds-form-element__label labelCls" >
+                                            <p class="slds-text-body_small slds-line-height_reset">{!$ObjectType.Case.fields.FU_Phone__c.Label}</p>
+                                        </label>
+                                        <div class="slds-form-element__control">
+                                            <apex:outputField value="{!cs.FU_Phone__c}" styleClass="slds-output slds-truncate"/> 
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="slds-form__item" role="listitem">
+                                    <div class="slds-form-element slds-form-element_stacked slds-is-editing">
+                                        <div class="slds-form-element slds-form-element_stacked slds-is-editing">
+                                            <label class="slds-form-element__label labelCls" >
+                                                <p class="slds-text-body_small slds-line-height_reset">Contact</p>
+                                            </label>
+                                            <div class="slds-form-element__control">
+                                                <apex:outputField value="{!cs.Contact_Information__c}" styleClass="slds-output slds-truncate"/> 
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Row End -->
+                            
+                            <!-- Row Start -->
+                            <div class="slds-form__row">
+                                <div class="slds-form__item" role="listitem">
+                                    <div class="slds-form-element slds-form-element_stacked slds-is-editing">
+                                        <label class="slds-form-element__label labelCls" for="completedDt">
+                                            <p class="slds-text-body_small slds-line-height_reset">{!$ObjectType.Case.fields.Renovation_Warranty_Stage_Indicator__c.Label}</p>
+                                            <!--<p class="slds-text-body_small slds-line-height_reset">{!$ObjectType.Project_Item__c.fields.Renovation_Warranty_Stage_Indicator__c.Label}</p>-->
+                                        </label>
+                                        <div class="slds-form-element__control">
+                                            <apex:outputText id="workOrderTag4" value="{!cs.Renovation_Warranty_Stage_Indicator__c}" styleClass="slds-output slds-truncate"/>
+                                            <!--<apex:outputText id="workOrderTag4" value="{!projectItem.Renovation_Warranty_Stage_Indicator__c}" styleClass="slds-output slds-truncate"/>-->
+                                        </div>
+                                        <!--
+<label class="slds-form-element__label labelCls" for="leaseCloseDt">
+<p class="slds-text-body_small slds-line-height_reset">{!$ObjectType.Project__c.fields.Last_Lease_Closing_Date__c.Label}</p>
+</label>
+<div class="slds-form-element__control">
+<apex:outputText id="leaseCloseDt" value="{0,date,MM/dd/yy}"> 
+<apex:param value="{!lastLeaseCloseDate}" /> 
+</apex:outputText>
+</div>
+-->
+                                    </div>
+                                </div>
+                                <div class="slds-form__item" role="listitem">
+                                    <div class="slds-form-element slds-form-element_stacked slds-is-editing">
+                                        <label class="slds-form-element__label labelCls" for="priority">
+                                            <p class="slds-text-body_small slds-line-height_reset">{!$ObjectType.Project_Item__c.fields.Priority__c.Label}</p>
+                                        </label>
+                                        <div class="slds-form-element__control">
+                                            <apex:outputPanel id="priorityPanel">
+                                                <apex:outputText id="priority" style="background-color:{!IF(projectItem.Priority__c == 'Critical', 'rgb(244, 199, 195);', IF(projectItem.Priority__c == 'Urgent', 'rgb(246, 178, 107);', IF(projectItem.Priority__c == 'High', 'rgb(252, 232, 178);', 'rgb(183, 225, 205);')))}" value="{!projectItem.Priority__c}" ></apex:outputText>
+                                            </apex:outputPanel>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="slds-form__item" role="listitem">
+                                    <div class="slds-form-element slds-form-element_stacked slds-is-editing">
+                                        <label class="slds-form-element__label labelCls" for="houseName">
+                                            <p class="slds-text-body_small slds-line-height_reset">{!$ObjectType.Case.fields.Property__c.Label}</p>
+                                        </label>
+                                        <div class="slds-form-element__control">
+                                            <a href="/{!cs.Property__c}" target="_blank">{!cs.Property__r.Name}</a>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="slds-form__item" role="listitem">
+                                    <div class="slds-form-element slds-form-element_stacked slds-is-editing">
+                                        <label class="slds-form-element__label labelCls" for="first30Days">
+                                            <p class="slds-text-body_small slds-line-height_reset">Resident 1st 30-days</p>
+                                        </label>
+                                        <div class="slds-form-element__control">
+                                            <apex:inputCheckbox value="{!first30days}" disabled="true" />
+                                        </div>    
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Row End -->
+                            
+                            <!-- Row Start -->
+                            <div class="slds-form__row">
+                                <div class="slds-form__item" role="listitem">
+                                    <div class="slds-form-element slds-form-element_stacked slds-is-editing">
+                                        <label class="slds-form-element__label labelCls" for="completedDt">
+                                            <p class="slds-text-body_small slds-line-height_reset">{!$ObjectType.Case.fields.Owner_Warranty_Stage_Indicator__c.Label}</p>
+                                            <!--<p class="slds-text-body_small slds-line-height_reset">{!$ObjectType.Project_Item__c.fields.Owner_Warranty_Stage_Indicator__c.Label}</p>-->
+                                        </label>
+                                        <div class="slds-form-element__control">
+                                            <apex:outputText id="workOrderTag3" value="{!cs.Owner_Warranty_Stage_Indicator__c}" styleClass="slds-output slds-truncate"/>
+                                            <!--<apex:outputText id="workOrderTag3" value="{!projectItem.Owner_Warranty_Stage_Indicator__c}" styleClass="slds-output slds-truncate"/>-->
+                                        </div>
+                                        <!--
+<label class="slds-form-element__label labelCls" for="Last_Lease_Project_Type">
+<p class="slds-text-body_small slds-line-height_reset">Last Lease Project Type</p>
+</label>
+<div class="slds-form-element__control">
+<h1 id="Last_Lease_Project_Type" class="slds-truncate slds-align-middle" title="Last Lease Project Type">
+<apex:outputText value="{!lastLeaseProjectType}" styleClass="slds-output slds-truncate"/>
+</h1>
+</div>
+-->
+                                    </div>
+                                </div>
+                                <div class="slds-form__item" role="listitem">
+                                    <div class="slds-form-element slds-form-element_stacked slds-is-editing">
+                                        <label class="slds-form-element__label labelCls" for="Vendor_Start_Date">
+                                            <p class="slds-text-body_small slds-line-height_reset">{!$ObjectType.Project_Item__c.fields.Vendor_Start_Date__c .Label}</p>
+                                        </label>
+                                        <div class="slds-form-element__control">
+                                            <apex:outputPanel id="VendorStartDatePanel">
+                                                <h1 id="Vendor_Start_Date" class="slds-truncate slds-align-middle" title="{!projectItem.Vendor_Start_Date__c }">
+                                                    <apex:outputText value="{0,date,MM/dd/yy}"> 
+                                                        <apex:param value="{!projectItem.Vendor_Start_Date__c }" /> 
+                                                    </apex:outputText>
+                                                </h1>
+                                            </apex:outputPanel>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="slds-form__item" role="listitem">
+                                    <div class="slds-form-element slds-form-element_stacked slds-is-editing">
+                                        <b><a onclick="openModal()">View Case History</a></b>
+                                    </div>
+                                </div>
+                                <div class="slds-form__item" role="listitem">
+                                    <div class="slds-form-element slds-form-element_stacked slds-is-editing">
+                                        
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Row End -->
+                            <!-- Row Start -->
+                            <div class="slds-form__row">
+                                <div class="slds-form__item" role="listitem">
+                                    <div class="slds-form-element slds-form-element_stacked slds-is-editing">
+                                        <!--
+<label class="slds-form-element__label labelCls" for="workOrderTag" >
+<p class="slds-text-body_small slds-line-height_reset">Rehab Warranty Stage</p>
+</label>
+<div class="slds-form-element__control">
+<apex:outputText id="workOrderTag" value="{!workOrderTag}" styleClass="slds-output slds-truncate"/> 
+</div>
+-->
+                                    </div>
+                                </div>
+                                <div class="slds-form__item" role="listitem">
+                                    <div class="slds-form-element slds-form-element_stacked slds-is-editing">
+                                        <label class="slds-form-element__label labelCls" for="completedDt">
+                                            <p class="slds-text-body_small slds-line-height_reset">{!$ObjectType.Project_Item__c.fields.Completed_Date__c.Label}</p>
+                                        </label>
+                                        <div class="slds-form-element__control">
+                                            <apex:outputPanel id="CompletedDatePanel">
+                                                <h1 id="completedDt" class="slds-truncate slds-align-middle" title="{!projectItem.Completed_Date__c}">
+                                                    <apex:outputText value="{0,date,MM/dd/yy}"> 
+                                                        <apex:param value="{!projectItem.Completed_Date__c}" /> 
+                                                    </apex:outputText>
+                                                </h1>
+                                            </apex:outputPanel>
+                                        </div>  
+                                    </div>
+                                </div>
+                                
+                                <div class="slds-form__item" role="listitem">
+                                    <div class="slds-form-element slds-form-element_stacked slds-is-editing">
+                                        <apex:outputText style="color:red;" value="NOTE: Customer Service Assignment not assigned to this House." rendered="{!cs.Property__r.Investor__r.Customer_Service_Assignment__c == null}"></apex:outputText>
+                                    </div>    
+                                </div>
+                                <div class="slds-form__item" role="listitem">
+                                    <div class="slds-form-element slds-form-element_stacked slds-is-editing">
+                                        
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Row End -->
+                            <!-- Row Start -->
+                            <div class="slds-form__row">
+                                <div class="slds-form__item" role="listitem">
+                                    <div class="slds-form-element slds-form-element_stacked slds-is-editing">
+                                        
+                                    </div>
+                                    <!-- 
+<div class="slds-form-element slds-form-element_stacked slds-is-editing">
+<label class="slds-form-element__label labelCls" for="workOrderTag" >
+<p class="slds-text-body_small slds-line-height_reset">Renovation Warranty Stage</p>
+</label>
+<div class="slds-form-element__control">
+<apex:outputText id="workOrderTag1" value="{!projectItem.Renovation_Warranty_Stage__c}" styleClass="slds-output slds-truncate"/> 
+</div>
+</div>
+-->
+                                    
+                                </div>
+                                <div class="slds-form__item" role="listitem">
+                                    <div class="slds-form-element slds-form-element_stacked slds-is-editing">
+                                        
+                                    </div>
+                                    
+                                </div>
+                                <div class="slds-form__item" role="listitem">
+                                    <div class="slds-form-element slds-form-element_stacked slds-is-editing">
+                                        
+                                    </div>
+                                </div>
+                                <div class="slds-form__item" role="listitem">
+                                    <div class="slds-form-element slds-form-element_stacked slds-is-editing">
+                                        
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Row End --> 
+                            <!-- Row Start -->
+                            <div class="slds-form__row">
+                                <div class="slds-form__item" role="listitem">
+                                    
+                                    <!--
+<div class="slds-form-element slds-form-element_stacked slds-is-editing">
+<label class="slds-form-element__label labelCls" for="workOrderTag" >
+<p class="slds-text-body_small slds-line-height_reset">Owner Warranty Stage</p>
+</label>
+<div class="slds-form-element__control">
+<apex:outputText id="workOrderTag2" value="{!projectItem.Owner_Warranty_Stage__c}" styleClass="slds-output slds-truncate"/> 
+</div>
+</div>
+-->
+                                    
+                                </div>
+                                <div class="slds-form__item" role="listitem">
+                                    
+                                </div>
+                                
+                                <div class="slds-form__item" role="listitem">
+                                    <div class="slds-form-element slds-form-element_stacked slds-is-editing">
+                                        
+                                    </div>
+                                </div>
+                                
+                                <div class="slds-form__item" role="listitem">
+                                    <div class="slds-form-element slds-form-element_stacked slds-is-editing">
+                                        
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Row End --> 
+                        </div>
+                    </div>
+                </div>
+                <br/>
+                
+                <apex:pageMessages id="errorMsg"></apex:pageMessages>          
+                
+                <br/>
+                
+                <div class="slds-size--1-of-1 slds-medium-size--12-of-12 slds-large-size--12-of-12 slds-box" style="padding:0px;">
+                    <div class="slds-size--12-of-12 slds-theme--shade">
+                        <h2 class="slds-section-title slds-theme--shade slds-p-left--small">Project Item Information</h2>
+                    </div>
+                    <div class="slds-grid slds-wrap slds-grid--pull-padded slds-p-horizontal_xx-large">
+                        
+                        <!-- Row End Project Item Information -->
+                        <div class="slds-form slds-size--1-of-1 slds-medium-size--12-of-12 slds-large-size--12-of-12" role="list">
+                            <div class="slds-form__row">
+                                <div class="slds-form__item" role="listitem">
+                                    <div class="slds-form-element slds-form-element_stacked slds-is-editing">
+                                        <label class="slds-form-element__label labelCls" for="Status">
+                                            <abbr class="slds-required" title="required">* </abbr>{!$ObjectType.Project_Item__c.fields.Maintenance_Status__c.Label}
+                                        </label>
+                                        <div class="slds-form-element__control">
+                                            <!--<apex:selectList id="" value="{!projectItem.Maintenance_Status__c}" styleClass="slds-input" size="1" multiselect="false" required="true">
+<apex:selectOptions value="{!maintenanceStatus}"/>
+</apex:selectList>-->
+                                            <apex:inputField id="Status" value="{!projectItem.Maintenance_Status__c}" styleClass="slds-input">
+                                                <apex:actionSupport event="onchange" action="{!checkBids}" reRender="statusReasonPanel, DispatchPanel, CompletedDatePanel"/>
+                                            </apex:inputField>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="slds-form__item" role="listitem">
+                                    <div class="slds-form-element slds-form-element_stacked slds-is-editing">
+                                        <label class="slds-form-element__label labelCls" for="MaintenanceCategoryGlobal">
+                                            <abbr class="slds-required" title="required">* </abbr>{!$ObjectType.Project_Item__c.fields.MaintenanceCategoryGlobal__c.Label}
+                                        </label>
+                                        <div class="slds-form-element__control">
+                                            <apex:inputField id="MaintenanceCategoryGlobal" value="{!projectItem.MaintenanceCategoryGlobal__c}" styleClass="slds-input"/>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="slds-form__item" role="listitem">
+                                    <div class="slds-form-element slds-form-element_stacked slds-is-editing">
+                                        <label class="slds-form-element__label labelCls" for="CaseOwnerId">
+                                            <abbr class="slds-required" title="required">* </abbr>Case Owner
+                                        </label>
+                                        <div class="slds-form-element__control">
+                                            <apex:inputField id="CaseOwnerId" value="{!cs.OwnerId}" styleClass="slds-input slds-lookup__search-input">
+                                                <apex:actionSupport event="onchange" onsubmit="$('[id$=spinner]').css('display','block');" oncomplete="$('[id$=spinner]').css('display','none');" reRender="priorityPanel, vendorAcctPanel, bidsListPanel"/>
+                                            </apex:inputField>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="slds-form__item" role="listitem">
+                                    <div class="slds-form-element slds-form-element_stacked slds-is-editing">
+                                        <apex:outputPanel id="DispatchPanel">
+                                            <label class="slds-form-element__label labelCls" for="Dispatch">{!$ObjectType.Project_Item__c.fields.Dispatch__c.Label}</label>
+                                            <div class="slds-form-element__control">
+                                                <apex:outputField value="{!projectItem.MaintenanceDispatch_Date__c}" id="Dispatch" styleClass="slds-output" />
+                                            </div>
+                                        </apex:outputPanel>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="slds-form slds-size--1-of-1 slds-medium-size--12-of-12 slds-large-size--12-of-12" role="list">
+                            <div class="slds-form__row">
+                                <div class="slds-form__item" role="listitem">
+                                    <div class="slds-form-element slds-form-element_stacked slds-is-editing">
+                                        <apex:outputPanel id="statusReasonPanel">
+                                            <apex:outputPanel rendered="{!IF(projectItem.Maintenance_Status__c == 'Standby', true, false)}">
+                                                <label class="slds-form-element__label labelCls" for="Maintenance_Standby_Reason">
+                                                    {!$ObjectType.Project_Item__c.fields.Maintenance_Standby_Reason__c.Label}
+                                                </label>
+                                                <div class="slds-form-element__control">
+                                                    <apex:inputField id="Maintenance_Standby_Reason" value="{!projectItem.Maintenance_Standby_Reason__c}" styleClass="slds-input"/>
+                                                </div>
+                                            </apex:outputPanel>
+                                            <apex:outputPanel rendered="{!IF(projectItem.Maintenance_Status__c == 'Closed - Not Fixing', true, false)}">
+                                                <label class="slds-form-element__label labelCls" for="Maintenance_Not_Fixing_Reason">
+                                                    {!$ObjectType.Project_Item__c.fields.Maintenance_Not_Fixing_Reason__c.Label}
+                                                </label>
+                                                <div class="slds-form-element__control">
+                                                    <apex:inputField id="Maintenance_Not_Fixing_Reason" value="{!projectItem.Maintenance_Not_Fixing_Reason__c}" styleClass="slds-input"/>
+                                                </div>
+                                            </apex:outputPanel>
+                                            <apex:outputPanel rendered="{!IF(projectItem.Maintenance_Status__c == 'Unsatisfied', true, false)}">
+                                                <label class="slds-form-element__label labelCls" for="Maintenance_Unsatisfied_Reason">
+                                                    {!$ObjectType.Project_Item__c.fields.Maintenance_Unsatisfied_Reason__c.Label}
+                                                </label>
+                                                <div class="slds-form-element__control">
+                                                    <apex:inputField id="Maintenance_Unsatisfied_Reason" value="{!projectItem.Maintenance_Unsatisfied_Reason__c}" styleClass="slds-input">
+                                                        <apex:actionSupport event="onchange" action="{!checkBids}" reRender="otherReasonPanel"/>
+                                                    </apex:inputField>
+                                                </div>
+                                            </apex:outputPanel>
+                                        </apex:outputPanel>
+                                    </div>
+                                </div>
+                                <div class="slds-form__item" role="listitem">
+                                    <div class="slds-form-element slds-form-element_stacked slds-is-editing">
+                                        <apex:outputPanel id="otherReasonPanel">
+                                            <apex:outputPanel rendered="{!IF(projectItem.Maintenance_Unsatisfied_Reason__c == 'Other', true, false)}">
+                                                <label class="slds-form-element__label labelCls" for="Other_Reason">
+                                                    {!$ObjectType.Project_Item__c.fields.Other_Reason__c.Label}
+                                                </label>
+                                                <div class="slds-form-element__control">
+                                                    <apex:inputField id="Other_Reason" value="{!projectItem.Other_Reason__c}" styleClass="slds-input"/>
+                                                </div>
+                                            </apex:outputPanel>
+                                        </apex:outputPanel>
+                                    </div>
+                                </div>
+                                <div class="slds-form__item" role="listitem">
+                                    <div class="slds-form-element slds-form-element_stacked slds-is-editing">
+                                        
+                                    </div>
+                                </div>
+                                <div class="slds-form__item" role="listitem">
+                                    <div class="slds-form-element slds-form-element_stacked slds-is-editing">
+                                        
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="slds-form slds-size--1-of-1 slds-medium-size--12-of-12 slds-large-size--12-of-12" role="list">
+                            <div class="slds-form__row">
+                                <div class="slds-form__item" role="listitem">
+                                    <div class="slds-form-element slds-form-element_stacked slds-is-editing">
+                                        <label class="slds-form-element__label labelCls" for="hasMultipleBids">
+                                            Will this repair require multiple bids?
+                                        </label>
+                                        <div class="slds-form-element__control">
+                                            <apex:selectList required="true" id="hasMultipleBids" value="{!hasMultipleBids}" styleClass="slds-input" size="1" multiselect="false" >
+                                                <apex:actionSupport event="onchange" action="{!checkBids}" onsubmit="$('[id$=spinner]').css('display','block');" oncomplete="$('[id$=spinner]').css('display','none');" reRender="bidPanel" />
+                                                <apex:selectOptions value="{!yesNo}" />
+                                            </apex:selectList>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="slds-form__item" role="listitem">
+                                    <div class="slds-form-element slds-form-element_stacked slds-is-editing">
+                                        <apex:outputPanel id="bidPanel">
+                                            <apex:outputLabel styleClass="slds-form-element__label labelCls" for="numberOfBids">
+                                                <abbr class="slds-required" title="required">* </abbr> How many bids: #
+                                            </apex:outputLabel>
+                                            <div class="slds-form-element__control">
+                                                <apex:input type="number"  id="numberOfBids" value="{!numberOfBids}" styleClass="slds-input" html-min="1" disabled="{!IF(hasMultipleBids == 'No', true, false)}" >
+                                                    <apex:actionSupport event="onchange" action="{!bidTotalList}" reRender="bidsListPanel" />
+                                                </apex:input>
+                                            </div>
+                                        </apex:outputPanel>
+                                    </div>
+                                </div>
+                                <div class="slds-form__item" role="listitem">
+                                    <div class="slds-form-element slds-form-element_stacked slds-is-editing">
+                                        <apex:outputPanel id="vendorAcctPanel">
+                                            <apex:outputLabel styleClass="slds-form-element__label labelCls" for="Vendor_Acct">
+                                                {!$ObjectType.Project_Item__c.fields.Vendor_Acct__c.Label}
+                                            </apex:outputLabel>
+                                            <div class="slds-form-element__control">
+                                                <apex:outputField id="Vendor_Acct" value="{!projectItem.Vendor_Acct__c}" styleClass="slds-output"/>
+                                            </div>
+                                        </apex:outputPanel>    
+                                    </div>
+                                </div>
+                                <div class="slds-form__item" role="listitem">
+                                    <div class="slds-form-element slds-form-element_stacked slds-is-editing">
+                                        <apex:outputPanel id="totalRepairCostPanel">
+                                            <apex:outputLabel styleClass="slds-form-element__label labelCls" for="repairCost"  >
+                                                Total Repair Cost: #
+                                            </apex:outputLabel>
+                                            <div class="slds-form-element__control">
+                                                <apex:outputText styleClass="slds-output" value="${0, number, ###,###,##0.00}" >
+                                                    <apex:param value="{!projectItem.Total_Repair_Cost__c}"  />
+                                                </apex:outputText>
+                                            </div>   
+                                        </apex:outputPanel> 
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <apex:outputPanel id="ownerPanel" style="width:100%;">
+                            <apex:outputPanel rendered="{!IF(projectItem.Total_Repair_Cost__c > OVER_400, true, false)}">
+                                <div class="slds-size--1-of-1 slds-medium-size--12-of-12 slds-large-size--12-of-12 slds-box" style="padding:0px;">
+                                    <div class="slds-size--12-of-12 slds-theme--shade">
+                                        <h2 class="slds-section-title slds-theme--shade slds-p-left--small">Over $400 Information</h2>
+                                    </div>
+                                    <div class="slds-form slds-size--1-of-1 slds-medium-size--12-of-12 slds-large-size--12-of-12 slds-p-horizontal_xx-large" role="list">
+                                        <div class="slds-form__row">
+                                            <div class="slds-form__item" role="listitem">
+                                                <div class="slds-form-element slds-form-element_stacked slds-is-editing">
+                                                    <div class="slds-form-element__control">
+                                                        <div class="slds-form__row">
+                                                            <label class="slds-form-element__label labelCls" for="over400StatusOption">
+                                                                {!$ObjectType.Project_Item__c.fields.Over_400_Status__c.Label}
+                                                            </label>
+                                                            <apex:selectRadio id="over400StatusOption" value="{!projectItem.Over_400_Status__c}" layout="pageDirection">
+                                                                <apex:selectOptions value="{!over400Status}"/>
+                                                            </apex:selectRadio>
+                                                        </div>           
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="slds-form__item" role="listitem">
+                                                <div class="slds-form-element slds-form-element_stacked slds-is-editing">
+                                                    <apex:outputLabel styleClass="slds-form-element__label labelCls" for="itemDescription" >
+                                                        {!$ObjectType.Project_Item__c.fields.Over_400_Description__c.Label}
+                                                    </apex:outputLabel>
+                                                    <div class="slds-form-element__control">
+                                                        <apex:inputTextArea value="{!projectItem.Over_400_Description__c}" rows="3" id="itemDescription" styleClass="slds-textarea"/>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="slds-form__item" role="listitem">
+                                                <div class="slds-form-element slds-form-element_stacked slds-is-editing">
+                                                    <apex:outputLabel styleClass="slds-form-element__label labelCls" for="Notes" >
+                                                        {!$ObjectType.Project_Item__c.fields.Notes__c.Label}
+                                                    </apex:outputLabel>
+                                                    <div class="slds-form-element__control">
+                                                        <apex:inputTextArea value="{!projectItem.Notes__c}" rows="3" id="Notes" styleClass="slds-textarea"/>
+                                                        
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="slds-form__item" role="listitem">
+                                                <div class="slds-form-element slds-form-element_stacked slds-is-editing">
+                                                    
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    
+                                    <div class="slds-size--1-of-1 slds-medium-size--12-of-12 slds-large-size--12-of-12 slds-box" style="padding:0px;">
+                                        <div class="slds-grid slds-wrap slds-grid--pull-padded">
+                                            <div class="slds-size--12-of-12 slds-theme--shade">
+                                                <h2 class="slds-section-title slds-theme--shade slds-p-left--small">Attachments</h2>
+                                            </div>
+                                            
+                                            <apex:outputPanel styleclass="slds-p-horizontal--small slds-size--1-of-1 slds-medium-size--6-of-12 slds-large-size--6-of-12" id="fileLocationPanel">
+                                                <div class="slds-form--horizontal">
+                                                    <div class="slds-form-element">
+                                                        <label class="slds-form-element__label" for="fileLocation">File Location</label>
+                                                        <div class="slds-form-element__control">
+                                                            <apex:selectList value="{!selectedDocumentFolder}" id="fileLocation" multiselect="false" size="1" styleClass="slds-input">
+                                                                <apex:selectOptions value="{!FileLocation}"/>
+                                                                <apex:actionSupport event="onchange" action="{!refreshDocumentSection}" rerender="renderError,filePanel"  oncomplete="$('[id$=spinner]').css('display','none');" onsubmit="$('[id$=spinner]').css('display','block');" />
+                                                            </apex:selectList>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </apex:outputPanel>
+                                            <apex:outputPanel styleclass="slds-p-horizontal--small slds-size--1-of-1 slds-medium-size--6-of-12 slds-large-size--6-of-12" id="filePanel">
+                                                <div class="slds-form--horizontal" style="{!IF(selectedDocumentFolder == 'My Computer', 'display:block', 'display:none')}">
+                                                    <div id="progress_bar_container" style="display:none; padding:10px;">  
+                                                        <span id="percentText"></span>  
+                                                        <div class="slds-progress-bar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="25" role="progressbar">  
+                                                            <span class="slds-progress-bar__value progress" style=" width: 0%;">  
+                                                                <span class="slds-assistive-text">Progress: 25%</span>  
+                                                            </span>  
+                                                        </div>  
+                                                    </div><br/>  
+                                                    <div class="slds-form-element">
+                                                        <label class="slds-form-element__label" for="uploadFile">Upload File</label>
+                                                        <div class="slds-form-element__control">
+                                                            <input type="file" id="fileId" name="attFile" class="slds-input" multiple="true"/>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="slds-form--horizontal" style="{!IF((selectedDocumentFolder == '' || selectedDocumentFolder == 'My Computer'), 'display:none', 'display:block')}">
+                                                    <div class="slds-form-element">
+                                                        <label class="slds-form-element__label" for="fileLocation">Select Document</label>
+                                                        <div class="slds-form-element__control">                                                            
+                                                            <div Class="slds-input new_input" style="overflow-y: scroll;height:50px;"> 
+                                                                <apex:repeat value="{!docWrapList}" var="wrapper"> 
+                                                                    <apex:inputCheckbox id="cat" value="{!wrapper.isSelected}" /> {!wrapper.label}<br/> 
+                                                                </apex:repeat> 
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <button type="button" class="slds-button slds-button--brand" onClick="$('[id$=spinner]').css('display','block'); attachFiles(); return false;" style="float:right;margin-top: 10px;">Attach File</button>
+                                                <div style="clear:both;"/>
+                                            </apex:outputPanel>
+                                            <apex:outputPanel styleclass="slds-p-horizontal--small slds-size--1-of-1 slds-medium-size--8-of-12 slds-large-size--8-of-12" id="fileListPanel">
+                                                <div class="form-group">
+                                                    <apex:outputPanel id="FileList">
+                                                        <table class="table">
+                                                            <thead>
+                                                                <th scope="col">
+                                                                    <div>Action</div>    
+                                                                </th>
+                                                                <th>
+                                                                    <div>File Name</div>    
+                                                                </th>
+                                                                <th> 
+                                                                    <div>File Location</div>
+                                                                </th>
+                                                            </thead> 
+                                                            <tbody>
+                                                                <apex:variable var="index" value="{!0}" />
+                                                                <apex:repeat value="{!emailAttachmentListWrapper}" var="docu">
+                                                                    <tr>
+                                                                        <td scope="col">
+                                                                            <apex:commandLink value="Delete" action="{!deleteAttachment}" reRender="FileList,error" onclick="$('[id$=spinner]').css('display','block');" oncomplete="$('[id$=spinner]').css('display','none');">
+                                                                                <apex:param name="attachNumber" value="{!index}" assignTo="{!rowIndexAttach}"/>
+                                                                            </apex:commandLink>
+                                                                        </td>
+                                                                        <td scope="col">
+                                                                            <div>{!docu.Name}</div> 
+                                                                        </td>
+                                                                        <td scope="col">
+                                                                            <div>{!docu.location}</div> 
+                                                                        </td>
+                                                                    </tr>
+                                                                    <apex:variable value="{!index+1}" var="index"/>
+                                                                </apex:repeat>
+                                                            </tbody>
+                                                        </table>
+                                                    </apex:outputPanel>
+                                                </div>
+                                            </apex:outputPanel>
+                                        </div>
+                                    </div>
+                                    
+                                </div>
+                                
+                            </apex:outputPanel>
+                            
+                        </apex:outputPanel>
+                        
+                        <br/>
+                        
+                        <apex:outputPanel id="bidsListPanel" style="width:100%;">
+                            <div id="bidDiv" style="overflow-x:auto;padding:1rem">
+                                <table class="slds-table slds-table_cell-buffer slds-table_bordered" id="tableid"  >
+                                    <thead>
+                                        <tr class="slds-line-height_reset">
+                                            <th class="" scope="col">
+                                                <div class="slds-truncate" title="{!$ObjectType.Project_Item_Bid__c.fields.Owner_Accepted__c.Label}">
+                                                    {!$ObjectType.Project_Item_Bid__c.fields.Owner_Accepted__c.Label}
+                                                </div>
+                                            </th>
+                                            <th class="" scope="col">
+                                                <div class="slds-truncate" title="{!$ObjectType.Project_Item_Bid__c.fields.Vendor__c.Label}">
+                                                    {!$ObjectType.Project_Item_Bid__c.fields.Vendor__c.Label}
+                                                </div>
+                                            </th>                                            
+                                            <th class="" scope="col">
+                                                <div class="slds-truncate" title="{!$ObjectType.Project_Item_Bid__c.fields.Repair_Cost__c.Label}">
+                                                    {!$ObjectType.Project_Item_Bid__c.fields.Repair_Cost__c.Label}
+                                                </div>
+                                            </th>
+                                            <th class="" scope="col">
+                                                <div class="slds-truncate" title="{!$ObjectType.Project_Item_Bid__c.fields.Markup__c.Label}">
+                                                    {!$ObjectType.Project_Item_Bid__c.fields.Markup__c.Label}
+                                                </div>
+                                            </th>
+                                            <th class="" scope="col">
+                                                <div class="slds-truncate" title="{!$ObjectType.Project_Item_Bid__c.fields.Markup_Amount__c.Label}">
+                                                    {!$ObjectType.Project_Item_Bid__c.fields.Markup_Amount__c.Label}
+                                                </div>
+                                            </th>
+                                            <th class="" scope="col">
+                                                <div class="slds-truncate" title="{!$ObjectType.Project_Item_Bid__c.fields.SOW_Description__c.Label}">
+                                                    {!$ObjectType.Project_Item_Bid__c.fields.SOW_Description__c.Label}
+                                                </div>
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <apex:variable var="rownum" value="{!0}"/>
+                                        <apex:repeat value="{!bidWrapperList}" var="projectItemBid" id="repetid">
+                                            <tr class="slds-hint-parent">                                                
+                                                <td >
+                                                    <apex:inputCheckbox styleClass="checkOptions" id="accepted" value="{!projectItemBid.bid.Owner_Accepted__c}" onclick="$('[id$=spinner]').css('display','block'); onlyOne(this, '{!rownum}', '{!$Component.RadioButtonValue}')" />
+                                                    <apex:outputLabel for="accepted" styleClass="slds-checkbox__label">
+                                                        <span class="slds-checkbox--faux"></span>
+                                                        <span class="slds-form-element__label"></span>
+                                                    </apex:outputLabel>
+                                                </td>
+                                                <td>
+                                                    <div class="slds-truncate">
+                                                        <apex:inputField styleClass="slds-input slds-lookup__search-input" value="{!projectItemBid.bid.Vendor__c}" id="Vendor" onchange="$('[id$=spinner]').css('display','block'); onlyOneVendor('accepted', '{!rownum}', '{!$Component.RadioButtonValue}')" />
+                                                    </div>
+                                                </td>
+                                                <td >
+                                                    <div class="slds-truncate">
+                                                        <apex:inputField id="Repair_Cost" value="{!projectItemBid.bid.Repair_Cost__c}" styleClass="slds-input" >
+                                                            <apex:actionSupport event="onchange" action="{!bidAcceptedByOwner}" onsubmit="$('[id$=spinner]').css('display','block');" oncomplete="$('[id$=spinner]').css('display','none');" reRender="totalRepairCostPanel" />
+                                                        </apex:inputField>
+                                                    </div>
+                                                </td>
+                                                <td >
+                                                    <div class="slds-truncate">
+                                                        <apex:inputField id="Markup" value="{!projectItemBid.bid.Markup__c}" styleClass="slds-input" onchange="$('[id$=spinner]').css('display','block'); return calculateMarkupAmount('{!$Component.Repair_Cost}',this,'{!$Component.Markup_Amount}');" >
+                                                        </apex:inputField>
+                                                    </div>
+                                                </td>
+                                                <td >
+                                                    <div class="slds-truncate">
+                                                        <apex:inputField id="Markup_Amount" value="{!projectItemBid.bid.Markup_Amount__c}" styleClass="slds-input" onchange="$('[id$=spinner]').css('display','block'); return calculateMarkupPercent('{!$Component.Repair_Cost}','{!$Component.Markup}',this);">
+                                                        </apex:inputField>
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <div class="slds-truncate">
+                                                        <apex:inputTextArea value="{!projectItemBid.bid.SOW_Description__c}" rows="1" cols="16" id="Description" styleClass="slds-textarea"/>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        </apex:repeat>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </apex:outputPanel>
+                        
+                        <apex:inputHidden value="{!acceptedRow}" id="RadioButtonValue" />                    
+                    </div>
+                </div>
+            </div>
+            
+            <br/>
+            <br/><br/>
+            <center>
+                <apex:commandButton value="Save & Refresh" onclick="$('[id$=spinner]').css('display','block');" oncomplete="$('[id$=spinner]').css('display','none');" action="{!saveProjectItem}" reRender="errorMsg, bidsListPanel, emailModal, proName" styleClass="slds-button slds-button_success"  > &nbsp;&nbsp;&nbsp;&nbsp;
+                    <apex:param name="firstParam" assignTo="{!selectedButton}" value="SaveRefresh" />
+                </apex:commandButton>
+                <apex:commandButton value="Save" onclick="$('[id$=spinner]').css('display','block');" oncomplete="$('[id$=spinner]').css('display','none');" action="{!saveProjectItem}" reRender="errorMsg, bidsListPanel, emailModal, proName" styleClass="slds-button slds-button_brand" > &nbsp;&nbsp;&nbsp;&nbsp;
+                    <apex:param name="firstParam" assignTo="{!selectedButton}" value="Save" />
+                </apex:commandButton>
+                <apex:commandButton value="Save & New" onclick="$('[id$=spinner]').css('display','block');" oncomplete="$('[id$=spinner]').css('display','none');" action="{!saveProjectItem}" reRender="errorMsg, bidsListPanel, emailModal, proName" styleClass="slds-button slds-button_outline-brand" > &nbsp;&nbsp;&nbsp;&nbsp;
+                    <apex:param name="firstParam" assignTo="{!selectedButton}" value="SaveNew" />
+                </apex:commandButton>
+                <apex:commandButton action="{!cancel}" value="Cancel" status="status" styleClass="slds-button slds-button_neutral" />
+            </center>
+            
+            <div class="demo-only" style="height: 940px;">
+                <section role="dialog" tabindex="-1" aria-labelledby="modal-heading-01" aria-modal="true" aria-describedby="modal-content-id-1" class="slds-modal errorModal3 slds-fade-in-close slds-modal_large">
+                    <div class="slds-modal__container">
+                        <header class="slds-modal__header">
+                            <button class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse" title="Close">
+                                <svg class="slds-button__icon slds-button__icon_large" aria-hidden="true">
+                                    <use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="/assets/icons/utility-sprite/svg/symbols.svg#close" />
+                                </svg>
+                                <span class="slds-assistive-text">Close</span>
+                            </button>
+                            <h2 id="modal-heading-01" class="slds-text-heading_medium slds-hyphenate">Case History (Last 90 Days)</h2>
+                        </header>
+                        <div class="slds-modal__content slds-p-around_medium" id="modal-content-id-1">
+                            <article class="slds-card">
+                                <div class="slds-card__header slds-grid">
+                                    <header class="slds-media slds-media_center slds-has-flexi-truncate">
+                                        <div class="slds-media__figure">
+                                            <span class="slds-icon_container slds-icon-standard-case" title="case">
+                                                <svg class="slds-icon slds-icon_small" aria-hidden="true">
+                                                    <use xlink:href="{!URLFOR($Asset.SLDS,'/assets/icons/standard-sprite/svg/symbols.svg#case')}"></use>
+                                                </svg>
+                                                <span class="slds-assistive-text">Case History</span>
+                                            </span>
+                                        </div>
+                                        <div class="slds-media__body">
+                                            <h2 class="slds-card__header-title">
+                                                <a href="javascript:void(0);" class="slds-card__header-link slds-truncate" title="Case History">
+                                                    <span>Case History</span>
+                                                </a>
+                                            </h2>
+                                        </div>
+                                        <div class="slds-no-flex">
+                                            LAST 90 DAYS
+                                        </div>
+                                    </header>
+                                </div>
+                                <div class="slds-card__body slds-card__body_inner">
+                                    <ul class="slds-grid slds-wrap slds-grid_pull-padded">
+                                        <apex:repeat value="{!caseHistoryList}" var="csHistory">
+                                            <li class="slds-p-horizontal_small slds-size_1-of-1 slds-medium-size_1-of-3">
+                                                <article class="slds-tile slds-media slds-card__tile slds-hint-parent">
+                                                    <div class="slds-media__figure">
+                                                        <span class="slds-icon_container slds-icon-standard-case" title="Description of icon when needed">
+                                                            <svg class="slds-icon slds-icon_small" aria-hidden="true">
+                                                                <use xlink:href="{!URLFOR($Asset.SLDS,'/assets/icons/standard-sprite/svg/symbols.svg#case')}"></use>
+                                                            </svg>
+                                                            <span class="slds-assistive-text">Case</span>
+                                                        </span>
+                                                    </div>
+                                                    <div class="slds-media__body">
+                                                        <div class="slds-grid slds-grid_align-spread slds-has-flexi-truncate">
+                                                            <h3 class="slds-tile__title slds-truncate" title="{!csHistory.CaseNumber}">
+                                                                <a href="/{!csHistory.id}" target="_blank">{!csHistory.CaseNumber}</a>
+                                                            </h3>
+                                                            <div class="slds-shrink-none">
+                                                                <a href="/{!csHistory.id}" target="_blank" class="slds-button slds-button_icon slds-button_icon-border-filled slds-button_icon-x-small" aria-haspopup="true" title="View">
+                                                                    <svg class="slds-button__icon slds-button__icon_hint" aria-hidden="true">
+                                                                        <use xlink:href="{!URLFOR($Asset.SLDS,'/assets/icons/utility-sprite/svg/symbols.svg#down')}"></use>
+                                                                    </svg>
+                                                                    <span class="slds-assistive-text">View</span>
+                                                                </a>
+                                                            </div>
+                                                        </div>
+                                                        <div class="slds-tile__detail">
+                                                            <dl class="slds-list_horizontal slds-wrap">
+                                                                <dt class="slds-item_label slds-text-color_weak slds-truncate" title="{!$ObjectType.Case.fields.CategoryGlobal__c.Label}">{!$ObjectType.Case.fields.CategoryGlobal__c.Label}:</dt>
+                                                                <dd class="slds-item_detail slds-truncate" title="{!csHistory.CategoryGlobal__c}">{!csHistory.CategoryGlobal__c}</dd>
+                                                                <dt class="slds-item_label slds-text-color_weak slds-truncate" title="{!$ObjectType.Case.fields.Status.Label}">{!$ObjectType.Case.fields.Status.Label}:</dt>
+                                                                <dd class="slds-item_detail slds-truncate" title="{!csHistory.CategoryGlobal__c}">{!csHistory.Status}</dd>
+                                                                <dt class="slds-item_label slds-text-color_weak slds-truncate" title="{!$ObjectType.Case.fields.Vendor_Name__c.Label}">{!$ObjectType.Case.fields.Vendor_Name__c.Label}:</dt>
+                                                                <dd class="slds-item_detail slds-truncate" title="{!csHistory.Vendor_Name__c}">{!csHistory.Vendor_Name__c}</dd>
+                                                                <dt class="slds-item_label slds-text-color_weak slds-truncate" title="{!$ObjectType.Case.fields.Vendor_Date_Closed__c.Label}">{!$ObjectType.Case.fields.Vendor_Date_Closed__c.Label}:</dt>
+                                                                <dd class="slds-item_detail slds-truncate" title="{!csHistory.Vendor_Date_Closed__c}">
+                                                                    {!csHistory.Vendor_Date_Closed__c}
+                                                                </dd>
+                                                            </dl>
+                                                        </div>
+                                                    </div>
+                                                </article>
+                                            </li>
+                                        </apex:repeat>
+                                    </ul>
+                                </div>
+                                <footer class="slds-card__footer">
+                                    <a class="slds-card__footer-action" href="{!$Label.Org_Path}/r/{!cs.Property__c}/related/Projects__r/view" target="_blank">View All
+                                        <span class="slds-assistive-text">Case History</span>
+                                    </a>
+                                </footer>
+                            </article>
+                        </div>
+                        <footer class="slds-modal__footer">
+                            <a onclick="closeModal()">Cancel</a>
+                        </footer>
+                    </div>
+                </section>
+                <div class="slds-backdrop slds-backdrop_close"></div>
+            </div>
+            
+            <apex:outputPanel id="emailModal">
+                <div class="demo-only" style="height: 940px;display:{!IF(showPopup, 'block;', 'none;')}">
+                    <section role="dialog" tabindex="-1" aria-labelledby="modal-heading-01" aria-modal="true" aria-describedby="modal-content-id-1" class="slds-modal slds-fade-in-open previewEmailModal">
+                        <div class="slds-modal__container">
+                            <header class="slds-modal__header">
+                                <button class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse" title="Close">
+                                    <svg class="slds-button__icon slds-button__icon_large" aria-hidden="true">
+                                        <use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="/assets/icons/utility-sprite/svg/symbols.svg#close" />
+                                    </svg>
+                                    <span class="slds-assistive-text">Close</span>
+                                </button>
+                                <h2 id="modal-heading-01" class="slds-text-heading_medium slds-hyphenate">Email Preview</h2>
+                            </header>
+                            <div class="slds-modal__content slds-p-around_medium" id="modal-content-id-1">
+                                <p>
+                                    <apex:pageMessages id="popUpErr"></apex:pageMessages>
+                                    <div class="slds-form--horizontal">
+                                        <div class="slds-form-element">
+                                            <label class="slds-form-element__label" for="to"><b>To</b></label>
+                                            <div class="slds-form-element__control">
+                                                <apex:actionRegion > 
+                                                    <apex:inputText id="to" value="{!toAdr}" styleClass="slds-input search" >
+                                                    </apex:inputText>
+                                                    <b style="color:red;"> Additional email address must be semi-colon(;) separated. </b>
+                                                </apex:actionRegion> 
+                                            </div>
+                                        </div>
+                                </div>
+                                <div class="slds-form--horizontal">
+                                    <div class="slds-form-element">
+                                        <label class="slds-form-element__label" for="cc"><b>CC</b></label>
+                                        <div class="slds-form-element__control">
+                                            <apex:actionRegion > 
+                                                <apex:inputText id="cc" value="{!ccAdr}" styleClass="slds-input search" >
+                                                </apex:inputText>
+                                                <b style="color:red;"> Additional email address must be semi-colon(;) separated.  </b>
+                                            </apex:actionRegion> 
+                                        </div>
+                                    </div>
+                                </div> 
+                                <div class="slds-form--horizontal">
+                                    <div class="slds-form-element">
+                                        <label class="slds-form-element__label" for="bcc"><b>BCC</b></label>
+                                        <div class="slds-form-element__control">
+                                            <apex:actionRegion > 
+                                                <apex:inputText id="bcc" value="{!bccAdr}" styleClass="slds-input search" >
+                                                </apex:inputText>
+                                                <b style="color:red;"> Additional email address must be semi-colon(;) separated. </b>
+                                            </apex:actionRegion> 
+                                        </div>
+                                    </div>
+                                </div> 
+                                <div class="slds-form--horizontal">
+                                    <div class="slds-form-element">
+                                        <label class="slds-form-element__label" for="salesRep"><b>Customer Service Assignment Email</b></label>
+                                        <div class="slds-form-element__control">
+                                            <apex:actionRegion > 
+                                                <apex:inputText id="salesRep" value="{!salesRepEmail}" styleClass="slds-input search" >
+                                                </apex:inputText>
+                                                <b style="color:red;"> Please provide Customer Sevice Representative email address. </b>
+                                            </apex:actionRegion> 
+                                        </div>
+                                    </div>
+                                </div>  
+                                <br/>
+                                
+                                <apex:outputText id="ckeditor" value="{!emailContentBefore}" styleClass="slds-output" escape="false"/>
+                                <apex:outputField value="{!projectItem.Over_400_Description__c}">
+                                    <!-- ...with an inline-edit enabled dependent field -->
+                                    <apex:inlineEditSupport event="ondblClick" />
+                                </apex:outputField>
+                                <br/><br/>
+                                <apex:variable value="{!1}" var="num"/>
+                                <table cellspacing="10">
+                                    <apex:repeat value="{!bidWrapperList}" var="projectItemBid" >
+                                        <tr>
+                                            <td width="20%">
+                                                {!projectItemBid.vendorName}: 
+                                            </td>
+                                            <td>
+                                                <apex:outputField value="{!projectItemBid.bid.SOW_Description__c}">
+                                                    <!-- ...with an inline-edit enabled dependent field -->
+                                                    <apex:inlineEditSupport event="ondblClick" />
+                                                </apex:outputField> 
+                                            </td>
+                                            <td>
+                                                <apex:outputText value="${0, number, ###,###,##0.00}" styleClass="slds-output" >
+                                                    <apex:param value="{!IF(AND(projectItemBid.bid.Repair_Cost__c == null,projectItemBid.bid.Markup_Amount__c == null), 0, IF(AND(projectItemBid.bid.Repair_Cost__c != null,projectItemBid.bid.Markup_Amount__c != null), (projectItemBid.bid.Repair_Cost__c + projectItemBid.bid.Markup_Amount__c), IF(projectItemBid.bid.Repair_Cost__c == null, projectItemBid.bid.Markup_Amount__c, projectItemBid.bid.Repair_Cost__c)))}"/>
+                                                </apex:outputText>
+                                            </td>
+                                        </tr>
+                                        <apex:variable value="{!num + 1}" var="num"/>
+                                    </apex:repeat>  
+                                </table>
+                                
+                                <apex:outputText id="ckeditorAfter" value="{!emailContentAfter}" styleClass="slds-output" escape="false"/>                                      
+                            </p>
+                        </div> 
+                        <footer class="slds-modal__footer emailModalFooter">
+                            <apex:commandButton value="Send Email" onclick="$('[id$=spinner]').css('display','block');" oncomplete="$('[id$=spinner]').css('display','none');" action="{!sendEmail}" styleClass="slds-button slds-button_brand" reRender="popUpErr, emailModal, itemDescription"/> 
+                            
+                            <apex:commandButton value="Cancel sent previously" action="{!closePopupModal}" styleClass="slds-button slds-button_neutral" reRender="emailModal, itemDescription"/> 
+                        </footer>  
+                    </div> 
+                </section>          
+                <div class="slds-backdrop mailPreview slds-backdrop--open"></div>
+            </div>
+        </apex:outputPanel>
+    </apex:form>
+</html>
+</apex:page>

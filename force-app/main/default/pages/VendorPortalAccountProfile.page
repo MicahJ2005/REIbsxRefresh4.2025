@@ -1,0 +1,1187 @@
+<!--
+  @description       : 
+  @author            : Michael Lloyd (Demand Chain)
+  @group             : 
+  @last modified on  : 01-27-2022
+  @last modified by  : Michael Lloyd (Demand Chain)
+-->
+<apex:page controller="VendorPortalAccountProfileController"  sidebar="false" cache="false" id="pg"  docType="html-5.0" showHeader="false">
+    <apex:slds />
+    <apex:composition template="CommunitiesTemplate">
+        <apex:define name="header">
+            <c:VendorPortalHeader ariaSelHome="false" ariaSelWO="true" ariaSelInvoice="false" ariaSelHWO="false" />
+        </apex:define>
+        <apex:define name="body">
+            <html xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+                <head>
+                    <style>
+                        .textAreaCls{padding: 5px 1rem 0px 0.75rem !important;}
+                        .slds-scope:not(html), .slds-scope body {
+                        font-size: 1.3rem !important;                        
+                        }
+                        .buttonCls {    
+                        height: 2.8rem !important;
+                        font-size: 1.2rem !important;
+                        }
+                        .helpTextCls {
+                        font-size: 12px !important;
+                        }
+                        .sectionCls {
+                        width: 100%;
+                        line-height: 2.875rem !important;
+                        text-align: left !important;
+                        text-transform: uppercase;
+                        font-size: 1.2rem !important;
+                        } 
+                        .sectionCls1 {
+                        width: 100%;
+                        line-height: 2.875rem !important;
+                        text-align: left !important;
+                        font-size: 1.2rem !important;
+                        } 
+                        .slds-scope .slds-table {                    
+                        font-size: small !important;
+                        }
+                        .slds-scope .slds-input {                       
+                        min-height: calc(2.875rem + (1px * 2)) !important;
+                        font: 400 13.3333px Arial !important;
+                        }
+                        .slds-scope .slds-form-element__label {                    
+                        font-size: 1.2rem !important;
+                        /*  font: 400 13.3333px Arial !important; */                   
+                        }
+                        .bPageBlock {
+                        border-top: 4px solid #1b5297;
+                        }
+                        .slds-scope .slds-button+.slds-button {
+                        margin-left: 0px;
+                        }
+                        .bPageBlock .requiredInput .requiredBlock {display: none;}
+                        .addressBoxCls {
+                        background-color: lightgrey;
+                        width: -1px;
+                        border: 1px solid lightgrey;
+                        padding: 15px;
+                        margin: 10px;        
+                        }
+                        .required-symbol{
+                        border-left:2px solid  red !important;
+                        } 
+                        .requiredInput a{
+                        border:none !important;
+                        }
+                        .datePicker{
+                        z-index: 99999 ;
+                        }
+                        .dateFormat {
+                        padding: 0 2px;
+                        display: none;
+                        }
+                        .outputbackgColorCls{background-color: rgb(245,245,245) !important;}
+                        .slds-scope .slds-p-horizontal--small {
+                        padding-left: 1.50rem;
+                        padding-right: .75rem;
+                        }
+                        .Custom32Tab .secondaryPalette, .individualPalette .Custom32Block .secondaryPalette {
+                        background-color: #e5c130;
+                        border-color: #1b5297;
+                        }
+                        .custom-file-upload {
+                        border: 1px solid #ccc;
+                        display: inline-block;
+                        padding: 6px 12px;
+                        cursor: pointer;
+                        border-radius: 6px;
+                        background: #1161a5;
+                        color: #fff;
+                        }   
+                        a:focus,a:active,a:hover {
+                        color:#2a94d6 !important;
+                        }             
+                    </style>
+                </head>
+                <body onload ="disableinput();">
+                    
+                    
+                    <apex:form id="fromid"  >
+                        <apex:actionStatus id="sts" style="align:center;">
+                            <apex:facet name="start">
+                                <div style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; opacity: 0.25; z-index: 1000; background-color: black;">
+                                    &nbsp;
+                                </div>
+                                <div style="position: fixed; left: 0; top: 0; bottom: 0; right: 0; z-index: 1001; margin: 15% 50%">
+                                    <div style="display: inline-block; padding: 2px; background-color: #fff; width: 125px;">
+                                        <img src="/img/loading.gif" style="float: left; margin: 8px;" />
+                                        <span style="display: inline-block; padding: 10px 0px;">Please Wait...</span>
+                                    </div>
+                                </div>
+                            </apex:facet>
+                        </apex:actionStatus>
+                        <div class="slds-spinner_container" id="spinner" style="display:none;position: fixed;">
+                            <div class="slds-spinner--brand slds-spinner slds-spinner--medium" aria-hidden="false" role="alert" style="    position: fixed;">
+                                <div class="slds-spinner__dot-a"></div>
+                                <div class="slds-spinner__dot-b"></div>
+                            </div>
+                        </div>
+                        <br/>                             
+                        <div class="slds-col slds-box col2" style=" box-shadow: 1px 1px 25px rgba(0, 0, 0, 0.35);max-width: 90%;margin: 0px auto;background-color: white;" >
+                            <center>
+                                <b>
+                                    <h1 style="font-size: x-large;">{!langconvertMap['VENDOR PROFILE']}</h1>
+                                </b>
+                            </center>
+                            <br/>
+                            <b style="color:red;font-size: 12px;">{!langconvertMap['NOTE:']} </b> <i style="color:red;font-size: 12px">{!langconvertMap['Please make sure you have saved your progress by clicking the ‘Save’ button before moving to another tab or leaving the site.']}</i>
+                            <br/>
+                            <b>
+                                <i style="font-size:small;color:red;">
+                                    <apex:outputText value="{!langconvertMap['Changes made are Waiting for Approval.']}" rendered="{!wrapperObj.accWrap.Approval_Status__c == 'Waiting for Approval'}"></apex:outputText>
+                                </i>
+                            </b>
+                            <apex:outputPanel id="corporation">
+                                <br/>       
+                                <table width="100%"  >
+                                    <tr width="100%">
+                                        <td width="70%" valign="top" >
+                                        </td>
+                                        <td width="30%" style="text-align: right;" valign="top">
+                                            <apex:commandlink action="{!EnglishLangChange}" value="English" immediate="true" styleClass="buttonCls"/>
+                                            &nbsp;&nbsp;
+                                            <apex:commandlink action="{!SpanishLangChange}" value="Spanish" immediate="true" styleClass="buttonCls"/>
+                                        </td>
+                                    </tr>
+                                </table>
+                                 <hr/>
+                            <apex:pagemessages id="msg" />
+                                        <center>
+                                <apex:commandLink rendered="{!wrapperObj.accWrap.Approval_Status__c == 'In Process' || wrapperObj.accWrap.Approval_Status__c == ''}" action="{!doUpdateVendorProfile}" onclick="$('[id$=spinner]').css('display','block');" oncomplete="$('[id$=spinner]').css('display','none');" reRender="msg">
+                                    <button class="slds-button slds-button_brand buttonCls " >{!langconvertMap['Save']}</button>
+                                </apex:commandLink>
+                                <apex:commandLink action="{!doCancel}" >
+                                    <button class="slds-button slds-button_destructive buttonCls " >{!langconvertMap['Cancel']}</button>
+                                </apex:commandLink>
+                                <apex:commandLink action="{!doSubmitVendorProfile}" onclick="$('[id$=spinner]').css('display','block');" oncomplete="$('[id$=spinner]').css('display','none');" reRender="script-block, msg">
+                                    <button class="slds-button slds-button_success buttonCls " >{!langconvertMap['Submit']}</button>               
+                                </apex:commandLink>
+                            </center>
+                                <br/>
+                                <div class="slds-grid slds-gutters_small">
+                                    <div class="slds-col slds-has-flexi-truncate slds-grid" role="listitem">
+                                        <fieldset class="slds-form-element slds-form_compound slds-is-required slds-is-editing slds-form-element_stacked">
+                                            <legend class="slds-form-element__legend slds-form-element__label"></legend>
+                                            <div class="slds-form-element__control">
+                                                <div class="slds-form-element__group">
+                                                    <div class="slds-form-element__row">
+                                                        <div class="slds-form-element slds-size_1-of-1">
+                                                            <label class="slds-form-element__label" for="form-element-id-04">{!langconvertMap['Legal Business Name']}:</label>
+                                                            <div class="mouseOverInfoOuter" id="searchInvoiceHelper" onfocus="addMouseOver(this)" onmouseover="addMouseOver(this)" tabindex="0">
+                                                                <img src="/s.gif" alt="" class="infoIcon" title="" />
+                                                                <div class="mouseOverInfo" id="searchInvoiceHelperText" style="display: none; opacity: -0.19999999999999996; left: 16px;">
+                                                                    <div class="body helpTextCls" >
+                                                                        {!langconvertMap['Name as shown on your income tax return and on Line 1 of your W9.']}
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                            <div class="slds-form-element__control">
+                                                                <apex:inputfield value="{!wrapperObj.accWrap.Name}" html-autocomplete="off" styleClass="slds-input required-symbol " rendered="{!AND(wrapperObj.accWrap.Approval_Status__c != 'Approved', wrapperObj.accWrap.Approval_Status__c != 'Waiting for Approval')}"/>
+                                                                <apex:outputfield value="{!wrapperObj.accWrap.Name}" html-autocomplete="off" styleClass="slds-input" rendered="{!OR(wrapperObj.accWrap.Approval_Status__c == 'Approved', wrapperObj.accWrap.Approval_Status__c == 'Waiting for Approval')}"/>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </fieldset>
+                                    </div>
+                                    <div class="slds-col slds-has-flexi-truncate slds-grid" role="listitem">
+                                        <fieldset class="slds-form-element slds-form_compound slds-is-required slds-is-editing slds-form-element_stacked">
+                                            <legend class="slds-form-element__legend slds-form-element__label"></legend>
+                                            <div class="slds-form-element__control">
+                                                <div class="slds-form-element__group">
+                                                    <div class="slds-form-element__row">
+                                                        <div class="slds-form-element slds-size_1-of-1">
+                                                            <label class="slds-form-element__label" for="form-element-id-04">{!langconvertMap['Doing Business As (DBA) Name']}:</label>
+                                                            <div class="mouseOverInfoOuter" id="searchInvoiceHelper" onfocus="addMouseOver(this)" onmouseover="addMouseOver(this)" tabindex="0">
+                                                                <img src="/s.gif" alt="" class="infoIcon" title="" />
+                                                                <div class="mouseOverInfo" id="searchInvoiceHelperText" style="display: none; opacity: -0.19999999999999996; left: 16px;">
+                                                                    <div class="body helpTextCls">
+                                                                        {!langconvertMap['Name under which you operate your business, if different from the Legal Business Name, and as shown on Line 2 of your W9.']}
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                            <div class="slds-form-element__control">
+                                                                <apex:inputfield value="{!wrapperObj.accWrap.Business_Name__c}" html-autocomplete="off" styleClass="slds-input" rendered="{!AND(wrapperObj.accWrap.Approval_Status__c != 'Approved', wrapperObj.accWrap.Approval_Status__c != 'Waiting for Approval')}"/>
+                                                                <apex:outputfield value="{!wrapperObj.accWrap.Business_Name__c}" html-autocomplete="off" styleClass="slds-input" rendered="{!OR(wrapperObj.accWrap.Approval_Status__c == 'Approved', wrapperObj.accWrap.Approval_Status__c == 'Waiting for Approval')}"/>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </fieldset>
+                                    </div>
+                                    <div class="slds-col slds-has-flexi-truncate slds-grid" role="listitem">
+                                        <fieldset class="slds-form-element slds-form_compound slds-is-editing slds-form-element_stacked">
+                                            <legend class="slds-form-element__legend slds-form-element__label"></legend>
+                                            <div class="slds-form-element__control">
+                                                <div class="slds-form-element__group">
+                                                    <div class="slds-form-element__row">
+                                                        <div class="slds-form-element slds-size_1-of-1">
+                                                            <label class="slds-form-element__label" for="form-element-id-04">{!langconvertMap['Taxpayer Identification Number (TIN)']}:</label>
+                                                            <div class="mouseOverInfoOuter" id="searchInvoiceHelper" onfocus="addMouseOver(this)" onmouseover="addMouseOver(this)" tabindex="0">
+                                                                <img src="/s.gif" alt="" class="infoIcon" title="" />
+                                                                <div class="mouseOverInfo" id="searchInvoiceHelperText" style="display: none; opacity: -0.19999999999999996; left: 16px;">
+                                                                    <div class="body helpTextCls">
+                                                                        {!langconvertMap['The TIN provided must match the Legal Business Name given and the Taxpayer Identification Number as shown in Part 1 of your W-9.']}
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                            <div class="slds-form-element__control">
+                                                                <apex:inputText value="{!tinNum}" html-autocomplete="off" styleClass="slds-input required-symbol" rendered="{!AND(wrapperObj.accWrap.Approval_Status__c != 'Approved', wrapperObj.accWrap.Approval_Status__c != 'Waiting for Approval')}"/>
+                                                                <apex:outputText value="{!tinNum}" html-autocomplete="off" styleClass="slds-output" rendered="{!OR(wrapperObj.accWrap.Approval_Status__c == 'Approved', wrapperObj.accWrap.Approval_Status__c == 'Waiting for Approval')}"/>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </fieldset>
+                                    </div>
+                                </div>
+                                <div class="slds-grid slds-gutters_small">
+                                    <div class="slds-col slds-has-flexi-truncate slds-grid" role="listitem">
+                                        <fieldset class="slds-form-element slds-form_compound slds-is-required slds-is-editing slds-form-element_stacked">
+                                            <legend class="slds-form-element__legend slds-form-element__label"></legend>
+                                            <div class="slds-form-element__control">
+                                                <div class="slds-form-element__group">
+                                                    <div class="slds-form-element__row">
+                                                        <div class="slds-form-element slds-size_1-of-2">
+                                                            <label class="slds-form-element__label" for="bPhone">{!langconvertMap['Phone']}:</label>
+                                                            <div class="slds-form-element__control">
+                                                                <apex:inputfield id="bPhone" value="{!wrapperObj.accWrap.Phone}" html-autocomplete="off" onchange="phonenumber(this)" styleClass="slds-input" />
+                                                            </div>
+                                                        </div>
+                                                        <div class="slds-form-element slds-size_1-of-2">
+                                                            <label class="slds-form-element__label" for="bEmail">{!langconvertMap['Email']}:</label>
+                                                            <div class="slds-form-element__control">
+                                                                <apex:inputfield id="bEmail" value="{!wrapperObj.accWrap.Vendor_Email__c}" html-autocomplete="off" styleClass="slds-input" />
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </fieldset>
+                                    </div>
+                                </div>
+                                <div class="slds-grid slds-gutters_small">
+                                    <div class="slds-col slds-has-flexi-truncate slds-grid" role="listitem">
+                                        <fieldset class="slds-form-element slds-form_compound slds-is-editing slds-form-element_stacked">
+                                            <legend class="slds-form-element__legend slds-form-element__label"></legend>
+                                            <div class="slds-form-element__control">
+                                                <div class="slds-form-element__group">
+                                                    <div class="slds-form-element__row">
+                                                        <div class="slds-form-element slds-size_1-of-1">
+                                                            <label class="slds-form-element__label" for="shipStreet">{!langconvertMap['Street']}:</label>
+                                                            <div class="slds-form-element__control">
+                                                                <apex:inputfield id="shipStreet" value="{!wrapperObj.accWrap.ShippingStreet}" html-autocomplete="off" styleClass="slds-input textAreaCls"/>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="slds-form-element__row">
+                                                        <div class="slds-form-element slds-size_1-of-3">
+                                                            <label class="slds-form-element__label" for="shipCity">{!langconvertMap['City']}:</label>
+                                                            <div class="slds-form-element__control">
+                                                                <apex:inputfield id="shipCity" value="{!wrapperObj.accWrap.ShippingCity}" html-autocomplete="off" styleClass="slds-input"/>
+                                                            </div>
+                                                        </div>
+                                                        <div class="slds-form-element slds-size_1-of-3">
+                                                            <label class="slds-form-element__label" for="shipState">{!langconvertMap['State']}:</label>
+                                                            <div class="slds-form-element__control">
+                                                                <apex:inputfield id="shipState" value="{!wrapperObj.accWrap.ShippingState}" html-autocomplete="off" onkeyup="this.value = this.value.toUpperCase();" html-maxlength="2" styleClass="slds-input"  />
+                                                            </div>
+                                                        </div>
+                                                        <div class="slds-form-element slds-size_1-of-3">
+                                                            <label class="slds-form-element__label" for="shipZip">{!langconvertMap['Zip Code']}:</label>
+                                                            <div class="slds-form-element__control">
+                                                                <apex:inputfield id="shipZip" value="{!wrapperObj.accWrap.ShippingPostalCode}" html-autocomplete="off" styleClass="slds-input"/>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </fieldset>
+                                    </div>
+                                </div>
+                                <apex:outputPanel id="categoryPanel">
+                                    <div class="slds-grid slds-gutters_small">
+                                        <div class="slds-col slds-has-flexi-truncate slds-grid" role="listitem">
+                                            <fieldset class="slds-form-element slds-form_compound slds-is-required slds-is-editing slds-form-element_stacked">
+                                                <legend class="slds-form-element__legend slds-form-element__label"></legend>
+                                                <div class="slds-form-element__control">
+                                                    <div class="slds-form-element__group">
+                                                        <div class="slds-form-element__row">
+                                                            <div class="slds-form-element slds-size_1-of-2">
+                                                                <label class="slds-form-element__label" for="web">{!langconvertMap['Website']}:</label>
+                                                                <div class="slds-form-element__control">
+                                                                    <apex:inputfield id="web" value="{!wrapperObj.accWrap.Website}" html-autocomplete="off" styleClass="slds-input" />
+                                                                </div>
+                                                                <br/>
+                                                                <label class="slds-form-element__label" for="type">{!langconvertMap['Type']}:</label>
+                                                                <div class="slds-form-element__control">
+                                                                    <apex:inputfield id="type" value="{!wrapperObj.accWrap.Type}" html-autocomplete="off"  styleClass="slds-input" >
+                                                                        <apex:actionSupport event="onchange" action="{!callMethodNew}" onsubmit="$('[id$=spinner]').css('display','block');" oncomplete="$('[id$=spinner]').css('display','none');" reRender="pg:CommunitiesTemplate:fromid:categoryPanel, FileList"/>
+                                                                    </apex:inputfield>
+                                                                </div>
+                                                                <br/>
+                                                                <i>
+                                                                    <apex:outputText style="font-size: 12px;" value="{!langconvertMap['Rehab & Maintenance Vendors will be interviewed and approved by REI Nation & PPMG.']} {!langconvertMap['Do not declare new skillsets without first discussing with the proper Management teams as certain categories may require training, certifications and insurance.']}" />
+                                                                </i>
+                                                            </div>
+                                                            <div class="slds-form-element slds-size_1-of-2">
+                                                                <label class="slds-form-element__label" for="form-element-id-04">
+                                                                    {!langconvertMap['Markets']}: 
+                                                                    <apex:outputText style="font-weight:bold;" id="mkt" value="{!marketString}"/>
+                                                                </label>
+                                                                <div class="slds-form-element__control">
+                                                                    <div Class="slds-input new_input" style="overflow-y: scroll;height:180px;">
+                                                                        <apex:repeat value="{!marketWrapList}" var="wrapper" >
+                                                                            <apex:inputCheckbox value="{!wrapper.isSelected}" disabled="{!wrapperObj.accWrap.Approval_Status__c == 'Waiting for Approval'}" >
+                                                                                <apex:actionSupport event="onchange" action="{!marketValues}" rerender="mkt, FileList" onsubmit="$('[id$=spinner]').css('display','block');" oncomplete="$('[id$=spinner]').css('display','none');"/>
+                                                                            </apex:inputCheckbox>
+                                                                            {!wrapper.label}<br/> 
+                                                                        </apex:repeat>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <div class="slds-form-element__row">
+                                                            <div class="slds-form-element slds-size_1-of-2">
+                                                                <label class="slds-form-element__label" for="cat">
+                                                                    {!langconvertMap['Rehab Categories']}: 
+                                                                    <apex:outputText style="font-weight:bold;" id="rehabCat" value="{!rehabCatString}"/>
+                                                                </label>
+                                                                <div class="slds-form-element__control">
+                                                                    <div class="slds-input new_input" style="overflow-y: scroll;height:180px;">
+                                                                        <apex:outputPanel id="rehab">
+                                                                            <apex:repeat value="{!lst_rehabContractorTrades}" var="rehabWrap">
+                                                                                <apex:inputCheckbox id="cat" value="{!rehabWrap.isSelected}" disabled="{!OR(wrapperObj.accWrap.Type == 'Maintenance',wrapperObj.accWrap.Approval_Status__c == 'Waiting for Approval')}" >
+                                                                                    <apex:actionSupport event="onchange" action="{!rehabCatValues}" rerender="rehabCat, FileList" onsubmit="$('[id$=spinner]').css('display','block');" oncomplete="$('[id$=spinner]').css('display','none');"/>
+                                                                                </apex:inputCheckbox>
+                                                                                {!rehabWrap.label}<br/> 
+                                                                            </apex:repeat>
+                                                                        </apex:outputPanel>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                            <div class="slds-form-element slds-size_1-of-2">
+                                                                <label class="slds-form-element__label" for="mCat">
+                                                                    {!langconvertMap['Maintenance Categories']}: 
+                                                                    <apex:outputText style="font-weight:bold;" id="maintCat" value="{!maintCatString}"/>
+                                                                </label>
+                                                                <div class="slds-form-element__control">
+                                                                    <div Class="slds-input new_input" style="overflow-y: scroll;height:180px;">
+                                                                        <apex:outputPanel id="maintenance">
+                                                                            <apex:repeat value="{!lst_maintenanceProviderTrades}" var="maintWrap">
+                                                                                <apex:inputCheckbox id="mCat" value="{!maintWrap.isSelected}" disabled="{!OR(wrapperObj.accWrap.Type == 'Rehab', wrapperObj.accWrap.Approval_Status__c == 'Waiting for Approval')}" >
+                                                                                    <apex:actionSupport event="onchange" action="{!maintCatValues}" rerender="maintCat, FileList" onsubmit="$('[id$=spinner]').css('display','block');" oncomplete="$('[id$=spinner]').css('display','none');"/>
+                                                                                </apex:inputCheckbox>
+                                                                                {!maintWrap.label}<br/> 
+                                                                            </apex:repeat>
+                                                                        </apex:outputPanel>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <div class="slds-form-element__row">
+                                                            <div class="slds-form-element slds-size_1-of-2">
+                                                                <label class="slds-form-element__label" for="license">
+                                                                    {!langconvertMap['License #']}
+                                                                </label>
+																<div class="mouseOverInfoOuter" id="searchInvoiceHelper" onfocus="addMouseOver(this)" onmouseover="addMouseOver(this)" tabindex="0">
+                                                                <img src="/s.gif" alt="" class="infoIcon" title="" />
+                                                                <div class="mouseOverInfo" id="searchInvoiceHelperText" style="display: none; opacity: -0.19999999999999996; left: 16px;">
+                                                                    <div class="body helpTextCls">
+                                                                        {!langconvertMap['Professional / Trade License Number']}
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                                <div class="slds-form-element__control">
+                                                                    <apex:inputField value="{!wrapperObj.accWrap.License__c}" html-autocomplete="off" styleClass="slds-input"/>
+                                                                </div>
+                                                            </div>
+                                                            <div class="slds-form-element slds-size_1-of-2">
+                                                            </div>
+                                                        </div>
+                                                        
+                                                    </div>
+                                                </div>
+                                            </fieldset>
+                                        </div>
+                                    </div>
+                                </apex:outputPanel>
+                            </apex:outputPanel>
+                            <hr/>
+                            <br/>  
+                            <div class="slds-button_brand sectionCls1">
+                                <b style="text-transform: uppercase;">{!langconvertMap['PRIMARY CONTACT INFORMATION']}</b> &nbsp;&nbsp; 
+                                <div class="mouseOverInfoOuter" id="searchInvoiceHelper" onfocus="addMouseOver(this)" onmouseover="addMouseOver(this)" tabindex="0">
+                                    <img src="/s.gif" alt="" class="infoIcon" title="" />
+                                    <div class="mouseOverInfo" id="searchInvoiceHelperText" style="display: none; opacity: -0.19999999999999996; left: 16px;">
+                                        <div class="body helpTextCls" >
+                                            {!langconvertMap['The Primary Contact will have the authority to change, modify, or create new Contacts, Banking Information, Business Address & Phone Numbers, along with all filed documents to this Vendor Master Record.']} {!langconvertMap['Please carefully consider the Primary Contact assignment.']}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <br/>              
+                            <div class="slds-grid slds-gutters_small">
+                                <div class="slds-col slds-has-flexi-truncate slds-grid" role="listitem">
+                                    <fieldset class="slds-form-element slds-form_compound slds-is-required slds-is-editing slds-form-element_stacked">
+                                        <legend class="slds-form-element__legend slds-form-element__label"></legend>
+                                        <div class="slds-form-element__control">
+                                            <div class="slds-form-element__group">
+                                                <div class="slds-form-element__row">
+                                                    <div class="slds-form-element slds-size_1-of-1">
+                                                        <label class="slds-form-element__label" for="form-element-id-04">{!langconvertMap['First Name']}:</label>
+                                                        <div class="slds-form-element__control">
+                                                            <apex:inputfield value="{!wrapperObj.primaryConWrap.FirstName}" html-autocomplete="off" styleClass="slds-input required-symbol"/>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="slds-form-element__row">
+                                                    <div class="slds-form-element slds-size_1-of-1">
+                                                        <label class="slds-form-element__label" for="form-element-id-04">{!langconvertMap['Cell Phone']}:</label>
+                                                        <div class="slds-form-element__control">
+                                                            <apex:inputfield value="{!wrapperObj.primaryConWrap.MobilePhone}" html-autocomplete="off" styleClass="slds-input"/>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="slds-form-element__row">
+                                                    <div class="slds-form-element slds-size_1-of-1">
+                                                        <label class="slds-form-element__label" for="form-element-id-04">{!langconvertMap['Email Address']}:</label>
+                                                        <div class="slds-form-element__control">
+                                                            <apex:inputfield value="{!wrapperObj.primaryConWrap.Email}" html-autocomplete="off" styleClass="slds-input required-symbol"/>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </fieldset>
+                                </div>
+                                <div class="slds-col slds-has-flexi-truncate slds-grid" role="listitem">
+                                    <fieldset class="slds-form-element slds-form_compound slds-is-editing slds-form-element_stacked">
+                                        <legend class="slds-form-element__legend slds-form-element__label"></legend>
+                                        <div class="slds-form-element__control">
+                                            <div class="slds-form-element__group">
+                                                <div class="slds-form-element__row">
+                                                    <div class="slds-form-element slds-size_1-of-1">
+                                                        <label class="slds-form-element__label" for="form-element-id-04">{!langconvertMap['Last Name']}:</label>
+                                                        <div class="slds-form-element__control">
+                                                            <apex:inputfield value="{!wrapperObj.primaryConWrap.LastName}" required="false" html-autocomplete="off" styleClass="slds-input required-symbol"/>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="slds-form-element__row">
+                                                    <div class="slds-form-element slds-size_1-of-1">
+                                                        <label class="slds-form-element__label" for="form-element-id-04">{!langconvertMap['Phone']}:</label>
+                                                        <div class="slds-form-element__control">
+                                                            <apex:inputfield value="{!wrapperObj.primaryConWrap.Phone}" html-autocomplete="off" styleClass="slds-input"/>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </fieldset>
+                                </div>
+                            </div>
+                            <hr/>
+                            <p Class="slds-button_brand sectionCls"><b>{!langconvertMap['ADDITIONAL CONTACTS']}</b></p>
+                            <br/>              
+                            <apex:pageBlock id="dataTable1" >
+                                <apex:variable var="rownum" value="{!0}"/>
+                                <apex:pageblocktable value="{!wrapperObj.conListWrap}" var="objWrapper" styleClass="slds-table slds-table_bordered slds-table_cell-buffer" id="dataTable">
+                                    <apex:column HeaderValue="{!langconvertMap['Action']}">
+                                        <apex:commandLink title="Remove line" action="{!removeWrapperRow}"  status="sts" rerender="dataTable1" >
+                                            <!--<apex:image url="{!URLFOR($Resource.AcctSeed__accounting_resources, 'images/red-x.png')}" alt="Remove line" />-->
+                                            <apex:param name="listIndex" value="{!rownum}"/>
+                                            <apex:variable var="rownum" value="{!rownum+1}"/>
+                                        </apex:commandLink>
+                                    </apex:column>
+                                    <apex:column headerValue="{!langconvertMap['Department']}">
+                                        <apex:inputField value="{!objWrapper.Department__c}" html-autocomplete="off" styleClass="slds-input " />
+                                    </apex:column>
+                                    <apex:column headerValue="{!langconvertMap['First Name']}">
+                                        <apex:inputField value="{!objWrapper.FirstName}" html-autocomplete="off" required="false" styleClass="slds-input  required-symbol" />
+                                    </apex:column>
+                                    <apex:column headerValue="{!langconvertMap['Last Name']}">
+                                        <apex:inputField value="{!objWrapper.LastName}" required="false" html-autocomplete="off" styleClass="slds-input required-symbol"  />
+                                    </apex:column>
+                                    <apex:column HeaderValue="{!langconvertMap['Phone']}">
+                                        <apex:inputField value="{!objWrapper.Phone}" required="false" html-autocomplete="off" styleClass="slds-input  required-symbol"  />
+                                    </apex:column>
+                                    <apex:column HeaderValue="{!langconvertMap['Email']}">
+                                        <apex:inputField value="{!objWrapper.Email}" required="false" html-autocomplete="off" styleClass="slds-input required-symbol"  />
+                                    </apex:column>
+                                </apex:pageblocktable>
+                                <br/>
+                                <div class="slds-form-element__group">
+                                    <div class="slds-form-element__row slds-grid slds-wrap">
+                                        <div class="slds-p-horizontal--small slds-size--1-of-1 slds-medium-size--4-of-12 slds-large-size--1-of-3">
+                                            <apex:commandLink title="Add line" action="{!addWrapperRow}" status="sts" rerender="dataTable1"  >
+                                                <!--<apex:image url="{!URLFOR($Resource.AcctSeed__accounting_resources, 'images/green-cross.png')}" alt="Add line" />-->
+                                            </apex:commandLink>
+                                        </div>
+                                        <div class="slds-p-horizontal--small slds-size--1-of-1 slds-medium-size--4-of-12 slds-large-size--1-of-3">
+                                        </div>
+                                        <div class="slds-p-horizontal--small slds-size--1-of-1 slds-medium-size--4-of-12 slds-large-size--1-of-3">
+                                        </div>
+                                    </div>
+                                </div>
+                            </apex:pageBlock>
+                            <hr/>
+                            <p Class="slds-button_brand sectionCls" ><b>{!langconvertMap['ePAYMENT/BANKING INFORMATION']}</b></p>
+                            <br/> 
+                            <div class="slds-grid slds-gutters_small">
+                                <div class="slds-col slds-has-flexi-truncate slds-grid" role="listitem">
+                                    <fieldset class="slds-form-element slds-form_compound slds-is-editing slds-form-element_stacked">
+                                        <legend class="slds-form-element__legend slds-form-element__label"></legend>
+                                        <div class="slds-form-element__control">
+                                            <div class="slds-form-element__group">
+                                                <div class="slds-form-element__row">
+                                                    <div class="slds-form-element slds-size_1-of-2">
+                                                        <label class="slds-form-element__label" for="bank">{!langconvertMap['Bank Name']}:</label>
+                                                        <div class="slds-form-element__control">
+                                                            <apex:inputfield id="bank" value="{!wrapperObj.accWrap.Bank_Name__c}" html-autocomplete="off" styleClass="slds-input required-symbol"/>
+                                                        </div>
+                                                    </div>
+                                                    <div class="slds-form-element slds-size_1-of-2">
+                                                        <label class="slds-form-element__label" for="accType">{!langconvertMap['Account Type']}:</label>
+                                                        <div class="slds-form-element__control">
+                                                            <apex:inputfield id="accType" value="{!wrapperObj.accWrap.Account_Type__c}" html-autocomplete="off" styleClass="slds-input required-symbol"/>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="slds-form-element__row">
+                                                    <div class="slds-form-element slds-size_1-of-2">
+                                                        <label class="slds-form-element__label" for="routNum">{!langconvertMap['Routing Number']}:</label>
+                                                        <div class="slds-form-element__control">
+                                                            <apex:inputfield id="routNum" value="{!wrapperObj.accWrap.Routing_Number__c}" onkeyup="this.value=this.value.replace(/[^\d]/,'')" html-autocomplete="off" styleClass="slds-input required-symbol"/>
+                                                        </div>
+                                                    </div>
+                                                    <div class="slds-form-element slds-size_1-of-2">
+                                                        <label class="slds-form-element__label" for="accNum">{!langconvertMap['Account Number']}:</label>
+                                                        <div class="slds-form-element__control">
+                                                            <apex:inputfield id="accNum" value="{!wrapperObj.accWrap.Account_Number__c}" onkeyup="this.value=this.value.replace(/[^\d]/,'')" html-autocomplete="off" styleClass="slds-input required-symbol"/>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </fieldset>
+                                </div>
+                            </div>
+                            <hr/>
+                            <table width="100%"  >
+                                <tr width="100%">
+                                    <td width="20%" valign="top" >
+                                        <i style="font-size: 14px !important;">{!langconvertMap['Billing Information']}</i>
+                                    </td>
+                                    <td width="80%" style="text-align: left;" valign="top">
+                                        <apex:inputCheckbox value="{!shippingAddressCheck}"  >
+                                            <apex:actionSupport event="onchange" action="{!shippingAddressCopy}" rerender="fromid1"/>
+                                        </apex:inputCheckbox>
+                                        Copy Above Address
+                                    </td>
+                                </tr>
+                            </table>
+                            <apex:outPutPanel id="fromid1">
+                                <div class="slds-grid slds-gutters_small">
+                                    <div class="slds-col slds-has-flexi-truncate slds-grid" role="listitem">
+                                        <fieldset class="slds-form-element slds-form_compound slds-is-editing slds-form-element_stacked">
+                                            <legend class="slds-form-element__legend slds-form-element__label"></legend>
+                                            <div class="slds-form-element__control">
+                                                <div class="slds-form-element__group">
+                                                    <div class="slds-form-element__row">
+                                                        <div class="slds-form-element slds-size_1-of-1">
+                                                            <label class="slds-form-element__label" for="billStreet">{!langconvertMap['Billing Street']}:</label>
+                                                            <div class="mouseOverInfoOuter" id="searchInvoiceHelper" onfocus="addMouseOver(this)" onmouseover="addMouseOver(this)" tabindex="0">
+                                                                <img src="/s.gif" alt="" class="infoIcon" title="" />
+                                                                <div class="mouseOverInfo" id="searchInvoiceHelperText" style="display: none; opacity: -0.19999999999999996; left: 16px;">
+                                                                    <div class="body helpTextCls">
+                                                                        Bank Statement Address.
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                            <div class="slds-form-element__control">
+                                                                <apex:inputfield id="billStreet" value="{!wrapperObj.accWrap.BillingStreet}" html-autocomplete="off" styleClass="slds-input textAreaCls required-symbol"/>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="slds-form-element__row">
+                                                        <div class="slds-form-element slds-size_1-of-4">
+                                                            <label class="slds-form-element__label" for="billCity">{!langconvertMap['Billing City']}:</label>
+                                                            <div class="slds-form-element__control">
+                                                                <apex:inputfield id="billCity" value="{!wrapperObj.accWrap.BillingCity}" html-autocomplete="off" styleClass="slds-input required-symbol"/>
+                                                            </div>
+                                                        </div>
+                                                        <div class="slds-form-element slds-size_1-of-4">
+                                                            <label class="slds-form-element__label" for="billState">{!langconvertMap['Billing State']}:</label>
+                                                            <div class="slds-form-element__control">
+                                                                <apex:inputfield id="billState" value="{!wrapperObj.accWrap.BillingState}" onkeyup="this.value = this.value.toUpperCase();" html-maxlength="2" html-autocomplete="off" styleClass="slds-input required-symbol"/>
+                                                            </div>
+                                                        </div>
+                                                        <div class="slds-form-element slds-size_1-of-4">
+                                                            <label class="slds-form-element__label" for="billZip">{!langconvertMap['Billing PostalCode']}:</label>
+                                                            <div class="slds-form-element__control">
+                                                                <apex:inputfield id="billZip" value="{!wrapperObj.accWrap.BillingPostalCode}" html-autocomplete="off" styleClass="slds-input required-symbol"/>
+                                                            </div>
+                                                        </div>
+                                                        <div class="slds-form-element slds-size_1-of-4">
+                                                            <label class="slds-form-element__label" for="billEmail">{!langconvertMap['Billing Email']}:</label>
+                                                            <div class="mouseOverInfoOuter" id="searchInvoiceHelper" onfocus="addMouseOver(this)" onmouseover="addMouseOver(this)" tabindex="0">
+                                                                <img src="/s.gif" alt="" class="infoIcon" title="" />
+                                                                <div class="mouseOverInfo" id="searchInvoiceHelperText" style="display: none; opacity: -0.19999999999999996; left: 16px;">
+                                                                    <div class="body helpTextCls">
+                                                                        {!langconvertMap['Email address to send Deposit Pending Notifications and other ePayment type Notifications']}.
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                            <div class="slds-form-element__control">
+                                                                <apex:inputfield id="billEmail" value="{!wrapperObj.accWrap.Billing_Email__c}" html-autocomplete="off" styleClass="slds-input required-symbol"/>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </fieldset>
+                                    </div>
+                                </div>
+                            </apex:outPutPanel>
+                            <hr/>
+                            <br/>
+                            <p Class="slds-button_brand sectionCls" ><b>{!langconvertMap['Required Documents']}</b></p>
+                            <br/>              
+                            <div class="demo-only" style="/*height:4rem*/">
+                                <div class="slds-notify_container slds-is-relative slds-hide">
+                                    <div class="slds-notify slds-notify_toast slds-theme_error" role="status">
+                                        <span class="slds-assistive-text">error</span>
+                                        <span class="slds-icon_container slds-icon-utility-error slds-m-right_small slds-no-flex slds-align-top" title="Description of icon when needed">
+                                            <svg class="slds-icon slds-icon_small" aria-hidden="true">
+                                                <use xlink:href="/assets/icons/utility-sprite/svg/symbols.svg#error"></use>
+                                            </svg>
+                                        </span>
+                                        <div class="slds-notify__content">
+                                            <h2 class="slds-text-heading_small" style="color:#FFFFFF !important;font-size:1.5rem !important;"></h2>
+                                        </div>
+                                        <div class="slds-notify__close">
+                                            <button class="slds-button slds-button_icon slds-button_icon-inverse" title="Close">
+                                                <svg class="slds-button__icon slds-button__icon_large" aria-hidden="true">
+                                                    <use xlink:href="/assets/icons/utility-sprite/svg/symbols.svg#close"></use>
+                                                </svg>
+                                                <span class="slds-assistive-text">Close</span>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <b style="color:red;font-size: 12px;">{!langconvertMap['NOTE:']} </b> <i style="color:red;font-size: 12px">{!langconvertMap['Document ‘Types’ in Blue are links that will take you directly to the document for download. If any of your Required Documents reach a status of expired, we will not be able to utilize your services until you can provide current documents.']}</i>
+                            <apex:pageBlock id="FileList">
+                                <table class="slds-table slds-table_fixed-layout slds-table--bordered slds-max-small-table--stacked-horizontal" >
+                                    <thead>
+                                        <th style="width:30%" class="slds-size_1-of-3 slds-border_bottom slds-border_left slds-border_right" scope="col">
+                                            <div class="slds-text-align_center slds-truncate"><b>{!langconvertMap['Type']}</b></div>
+                                        </th>
+                                        <th style="width:15%" class="slds-size_1-of-3 slds-border_bottom slds-border_left slds-border_right" scope="col">
+                                            <div class="slds-text-align_center slds-truncate"><b>{!langconvertMap['Expiration Date']}</b></div>
+                                        </th>
+                                        <th style="width:20%" class="slds-size_1-of-3 slds-border_bottom slds-border_left" scope="col">
+                                            <div class="slds-truncate slds-text-align_center"><b>{!langconvertMap['File Name']}</b></div>
+                                        </th>
+                                        <th style="width:10%" class="slds-size_1-of-3 slds-border_bottom slds-border_left" scope="col">
+                                            <div class="slds-truncate slds-text-align_center"><b>{!langconvertMap['Status']}</b></div>
+                                        </th>
+                                        <th style="width:25%" class="slds-size_1-of-3 slds-border_bottom slds-border_left" scope="col">
+                                        </th>
+                                    </thead>
+                                    <tbody>
+                                        <apex:repeat value="{!cvWrapList}" var="docu" id="cvWrap">
+                                            <tr>
+                                                <td style="width:30%" class="slds-border_bottom slds-border_left slds-text-align_center" scope="col">
+                                                    <div class="slds-text-align_left slds-truncate">
+                                                        <apex:outputPanel rendered="{!IF(docu.attachType == 'W9' , true, false)}">
+                                                        	<a target="_blank" href="https://www.irs.gov/pub/irs-pdf/fw9.pdf">{!docu.attachType}</a>
+                                                        </apex:outputPanel>
+                                                        <apex:outputPanel rendered="{!IF(docu.attachType == 'Direct Deposit Agreement' , true, false)}">
+                                                        	<a target="_blank" href="https://ppmg.my.salesforce.com/sfc/p/30000000pfXl/a/4V0000005mrp/tiC2.CmdfajeWOM2b0.9fPhzE7OwQ7LShC1aF5zdSpw">{!docu.attachType}</a>
+                                                        </apex:outputPanel>
+                                                        <apex:outputPanel rendered="{!IF(docu.attachType == 'Insurance Agreement' , true, false)}">
+                                                        	<a target="_blank" href="https://ppmg.my.salesforce.com/sfc/p/#30000000pfXl/a/4V000000mzn1/F1ASwnntLcaNKiGYe8_mgy1GlFnDTFud7ECgIajv3mc">{!docu.attachType}</a>
+                                                        </apex:outputPanel>
+                                                        <!--<apex:outputPanel rendered="{!IF(docu.attachType == 'Insurance Agreement Premier' , true, false)}">
+                                                        	<a target="_blank" href="https://ppmg.my.salesforce.com/sfc/p/#30000000pfXl/a/4V000000mzn1/F1ASwnntLcaNKiGYe8_mgy1GlFnDTFud7ECgIajv3mc">{!docu.attachType}</a>
+                                                        </apex:outputPanel>	
+                                                        <apex:outputPanel rendered="{!IF(docu.attachType == 'Insurance Agreement PPMG TX' , true, false)}">
+                                                        	<a target="_blank" href="https://ppmg.my.salesforce.com/sfc/p/#30000000pfXl/a/4V000000mzn1/F1ASwnntLcaNKiGYe8_mgy1GlFnDTFud7ECgIajv3mc">{!docu.attachType}</a>
+                                                        </apex:outputPanel>-->
+                                                        <apex:outputPanel rendered="{!IF(docu.attachType == 'Hold Harmless Agreement' , true, false)}">
+                                                        	<a target="_blank" href="https://ppmg.my.salesforce.com/sfc/p/#30000000pfXl/a/4V000000mzn0/Zwv2eX8o.AzzHCuG8rPWsKRBsoKZh6b65yUx9UaE4SQ">{!docu.attachType}</a>
+                                                        </apex:outputPanel>
+                                                        <!--<apex:outputPanel rendered="{!IF(docu.attachType == 'Hold Harmless Agreement Premier' , true, false)}">
+                                                        	<a target="_blank" href="https://ppmg.my.salesforce.com/sfc/p/#30000000pfXl/a/4V000000mzn0/Zwv2eX8o.AzzHCuG8rPWsKRBsoKZh6b65yUx9UaE4SQ">{!docu.attachType}</a>
+                                                        </apex:outputPanel>
+                                                        <apex:outputPanel rendered="{!IF(docu.attachType == 'Hold Harmless Agreement PPMG TX' , true, false)}">
+                                                        	<a target="_blank" href="https://ppmg.my.salesforce.com/sfc/p/#30000000pfXl/a/4V000000mzn0/Zwv2eX8o.AzzHCuG8rPWsKRBsoKZh6b65yUx9UaE4SQ">{!docu.attachType}</a>
+                                                        </apex:outputPanel>-->
+                                                        <apex:outputPanel rendered="{!IF(docu.attachType == 'Permits' , true, false)}">
+                                                        	<a target="_blank" href="https://ppmg.my.salesforce.com/sfc/p/#30000000pfXl/a/4V0000005mkM/Bei2go2abXn6zrd5hIbvBtXUMKubZaVArPSSGoOvrXc">{!docu.attachType}</a>
+                                                        </apex:outputPanel>
+                                                        <apex:outputPanel rendered="{!IF(docu.attachType == 'Payment Agreement' , true, false)}">
+                                                        	<a target="_blank" href="https://ppmg.my.salesforce.com/sfc/p/30000000pfXl/a/PZ00000BqZZd/r0ZaC0pkpxxNM04T.N3OWyQr23Ubvt1Rc2.V5kjhwro">{!docu.attachType}</a>
+                                                        </apex:outputPanel> 
+                                                        <apex:outputPanel rendered="{!AND(docu.attachType != 'Payment Agreement', docu.attachType != 'W9', docu.attachType != 'Direct Deposit Agreement', docu.attachType != 'Insurance Agreement',
+                                                                                    docu.attachType != 'Insurance Agreement Premier',docu.attachType != 'Insurance Agreement PPMG TX',docu.attachType != 'Hold Harmless Agreement',
+                                                                                    docu.attachType != 'Hold Harmless Agreement Premier', docu.attachType != 'Hold Harmless Agreement PPMG TX', docu.attachType != 'Permits')}">
+                                                            {!docu.attachType}
+                                                        </apex:outputPanel>     
+                                                    </div>
+                                                </td>
+                                                <td style="width:15%" class="slds-border_bottom slds-border_left slds-border_right slds-text-align_center" scope="col">
+                                                    <div class="slds-text-align_left slds-truncate" id="attdesc">
+                                                        <apex:input type="date" styleClass="slds-input licen" value="{!docu.expDt}" onblur="addDateToAttachment('{!docu.attachType}');" rendered="{!OR(docu.attachType == 'License', docu.attachType == 'Licencia')}"/>
+                                                        <apex:input type="date" styleClass="slds-input dl" value="{!docu.expDt}" onblur="addDateToAttachment('{!docu.attachType}');" rendered="{!OR(CONTAINS(docu.attachType,'Driver'), docu.attachType == 'Licencia de conducir')}"/>
+                                                        <apex:input type="date" styleClass="slds-input gl" value="{!docu.expDt}" onblur="addDateToAttachment('{!docu.attachType}');" rendered="{!OR(docu.attachType == 'Certificate of Insurance - General Liability', docu.attachType == 'Certificado de seguro - Responsabilidad general')}" />
+                                                        <apex:input type="date" styleClass="slds-input wc" value="{!docu.expDt}" onblur="addDateToAttachment('{!docu.attachType}');" rendered="{!OR(docu.attachType == 'Certificate of Insurance or Waiver - Workers Comp',docu.attachType == 'Certificado de Seguro o Renuncia - Compensación de Trabajadores')}" />
+                                                    </div>
+                                                </td>
+                                                <td style="width:20%" class="slds-border_bottom slds-border_left slds-text-align_center" scope="col">
+                                                    <div class="slds-text-align_left slds-truncate">{!docu.title}</div>
+                                                </td>
+                                                <td style="width:10%" class="slds-border_bottom slds-border_left slds-text-align_center" scope="col">
+                                                    <div class="slds-text-align_left slds-truncate">{!docu.status}</div>
+                                                </td>
+                                                <td style="width:25%" class="slds-border_bottom slds-border_left slds-text-align_center" scope="col">
+                                                    <input type="file" id="fileId{!docu.attachType}" name="{!docu.attachType}" onchange="$('[id$=spinner]').css('display','block'); uploadFile('{!docu.recId}','{!docu.conDocId}','{!docu.attachType}');" oncomplete="$('[id$=spinner]').css('display','none');"  required="true" />
+                                                </td>
+                                            </tr>
+                                        </apex:repeat>
+                                    </tbody>
+                                </table>
+                            </apex:pageBlock>
+                            <hr/>
+                            <p Class="slds-button_brand sectionCls"><b>{!langconvertMap['ADDITIONAL DOCUMENTS']}</b></p>
+                            <br/>
+                            <apex:pageBlock id="FileListAdditional">
+                                <table class="slds-table slds-table_fixed-layout slds-table--bordered slds-max-small-table--stacked-horizontal" >
+                                    <thead>
+                                        <th style="width:30%" class="slds-size_1-of-5 slds-border_bottom slds-border_left slds-border_right" scope="col">
+                                            <div class="slds-text-align_center slds-truncate"><b>{!langconvertMap['Type']}</b></div>
+                                        </th>
+                                        <th style="width:15%" class="slds-size_1-of-5 slds-border_bottom slds-border_left slds-border_right" scope="col">
+                                            <div class="slds-text-align_center slds-truncate"><b>{!langconvertMap['Expiration Date']}</b></div>
+                                        </th>
+                                        <th style="width:20%" class="slds-size_1-of-5 slds-border_bottom slds-border_left" scope="col">
+                                            <div class="slds-truncate slds-text-align_center"><b>{!langconvertMap['File Name']}</b></div>
+                                        </th>
+                                        <th style="width:10%" class="slds-size_1-of-5 slds-border_bottom slds-border_left" scope="col">
+                                            <div class="slds-truncate slds-text-align_center"><b>{!langconvertMap['Status']}</b></div>
+                                        </th>
+                                        <th style="width:25%" class="slds-size_1-of-5 slds-border_bottom slds-border_left" scope="col">
+                                        </th>
+                                    </thead>
+                                    <tbody>
+                                        <apex:repeat value="{!cvWrapAdditionalList}" var="docu" id="cvWrap">
+                                            <tr>
+                                                <td style="width:30%" class="slds-border_bottom slds-border_left slds-text-align_center" scope="col">
+                                                    <div class="slds-text-align_left slds-truncate">{!docu.attachType}</div>
+                                                </td>
+                                                <td style="width:15%" class="slds-border_bottom slds-border_left slds-border_right slds-text-align_center" scope="col">
+                                                </td>
+                                                <td style="width:20%" class="slds-border_bottom slds-border_left slds-text-align_center" scope="col">
+                                                    <div class="slds-text-align_left slds-truncate">{!docu.title}</div>
+                                                </td>
+                                                <td style="width:10%" class="slds-border_bottom slds-border_left slds-text-align_center" scope="col">
+                                                    <div class="slds-text-align_left slds-truncate">{!docu.status}</div>
+                                                </td>
+                                                <td style="width:25%" class="slds-border_bottom slds-border_left slds-text-align_center" scope="col">
+                                                    <input type="file" id="fileId{!docu.attachType}" name="{!docu.attachType}" onchange="$('[id$=spinner]').css('display','block'); uploadFile('{!docu.recId}','{!docu.conDocId}','{!docu.attachType}');" oncomplete="$('[id$=spinner]').css('display','none');"  required="true" />
+                                                </td>
+                                            </tr>
+                                        </apex:repeat>
+                                    </tbody>
+                                </table>
+                            </apex:pageBlock>
+                           
+                            <center>
+                                <apex:commandLink rendered="{!wrapperObj.accWrap.Approval_Status__c == 'In Process' || wrapperObj.accWrap.Approval_Status__c == ''}" action="{!doUpdateVendorProfile}" onclick="$('[id$=spinner]').css('display','block');" oncomplete="$('[id$=spinner]').css('display','none');" reRender="msg">
+                                    <button class="slds-button slds-button_brand buttonCls " >{!langconvertMap['Save']}</button>
+                                </apex:commandLink>
+                                <apex:commandLink action="{!doCancel}" >
+                                    <button class="slds-button slds-button_destructive buttonCls " >{!langconvertMap['Cancel']}</button>
+                                </apex:commandLink>
+                                <apex:commandLink action="{!doSubmitVendorProfile}" onclick="$('[id$=spinner]').css('display','block');" oncomplete="$('[id$=spinner]').css('display','none');" reRender="script-block, msg">
+                                    <button class="slds-button slds-button_success buttonCls " >{!langconvertMap['Submit']}</button>               
+                                </apex:commandLink>
+                            </center>
+                        </div>
+                        <apex:actionFunction name="attachFileFunction" action="{!attachFileFunction}" reRender="renderError,FileList" oncomplete="stopSpinner();">
+                            <apex:param name="attachid" value="" assignTo="{!attachId}"/>
+                            <apex:param name="attachmentTypeVal" value="" assignTo="{!attachTypeVal}"/>
+                            <apex:param name="expDate" value="" assignTo="{!expirationDate}"/>
+                        </apex:actionFunction>
+                        <div style="height:640px">
+                            <section role="dialog" tabindex="-1" aria-labelledby="modal-heading-01" aria-modal="true" aria-describedby="modal-content-id-1" class="slds-modal legalAck slds-fade-in-close">
+                                <div class="slds-modal__container">
+                                    <header class="slds-modal__header">
+                                        <button class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse" title="Close">
+                                            <svg class="slds-button__icon slds-button__icon_large" aria-hidden="true">
+                                                <use xlink:href="/assets/icons/utility-sprite/svg/symbols.svg#close"></use>
+                                            </svg>
+                                            <span class="slds-assistive-text">Close</span>
+                                        </button>
+                                        <h2 id="modal-heading-01" class="slds-text-heading_medium slds-hyphenate" style="font-size: 1.8rem !important;">{!langconvertMap['Legal Acknowledgment']}</h2>
+                                    </header>
+                                    <div class="slds-modal__content slds-p-around_medium" id="modal-content-id-1">
+                                        <p style="font-size: 1.5rem !important;">
+                                            <apex:inputCheckbox value="{!wrapperObj.accWrap.Home_Depot_Rapid_Pass_Acknowledgement__c}" rendered="{!!wrapperObj.accWrap.Home_Depot_Rapid_Pass_Acknowledgement__c}" />
+                                            &nbsp; 
+                                            <apex:outputText value="{!langconvertMap['I/We have reviewed the Home Depot Rapid Pass materials and training.']} {!langconvertMap['Furthermore, all job site materials that will be invoiced to REI Nation for reimbursement will be acquired from Home Depot using the Rapid Pass process.']} {!langconvertMap['I/We understand that there may not be any material reimbursement fees paid if this process is not followed.']}" rendered="{!!wrapperObj.accWrap.Home_Depot_Rapid_Pass_Acknowledgement__c}"></apex:outputText>
+                                            <br/>
+                                            <apex:inputCheckbox value="{!wrapperObj.accWrap.Legal_Acknowledgment__c}" />
+                                            &nbsp; {!langconvertMap['I certify that the information provided is true and correct to the best of my knowledge. I further understand that any false statements may result in the termination of use of my services.']}
+                                        </p>
+                                    </div>
+                                    <footer class="slds-modal__footer">
+                                        <!--<apex:commandButton styleClass="slds-button slds-button_neutral buttonCls " onclick="closeModal()" value="Cancel" immediate="true"/>-->
+                                        <apex:commandLink onclick="SubmitForm(true); $('[id$=spinner]').css('display','block');" oncomplete="$('[id$=spinner]').css('display','none');" reRender="script-block, msg">
+                                            <button class="slds-button slds-button_brand buttonCls ">Agree</button>
+                                        </apex:commandLink>
+                                    </footer>
+                                </div>
+                            </section>
+                            <div class="slds-backdrop slds-backdrop_close"></div>
+                        </div>
+                        <apex:actionFunction action="{!submitForm}" name="SubmitForm" >
+                            <apex:param name="firstParam" value="" />
+                        </apex:actionFunction>
+                    </apex:form>
+                </body>
+                <apex:outPutPanel layout="block" id="script-block">
+                    <script>
+                    console.log('{!error}');
+                    if('{!error}' == '' || '{!error}' == null || '{!error}' == 'undefined'){
+                        openModal();
+                    }
+                    function disableinput() {
+                        if('{!isFieldDisabled}' == 'true'){
+                            
+                            var inputs = document.getElementsByTagName("input"); 
+                            
+                            for (var i = 0; i < inputs.length; i++) { 
+                                inputs[i].disabled = "disabled";
+                            }
+                            
+                            var selects = document.getElementsByTagName("select");
+                            for (var i = 0; i < selects.length; i++) {
+                                selects[i].disabled = "disabled";
+                            }
+                            var textareas = document.getElementsByTagName("textarea"); 
+                            for (var i = 0; i < textareas.length; i++) { 
+                                textareas[i].disabled = "disabled";
+                            }
+                            var buttons = document.getElementsByTagName("button");
+                            for (var i = 0; i < buttons.length; i++) {
+                                buttons[i].disabled = "disabled";
+                            }
+                        }
+                    }
+                    
+                    
+                    </script>
+                </apex:outPutPanel>
+                <!-- Javascript that needs refresh -->
+                <apex:outputPanel id="renderError">
+                    <script>
+                    if('{!error}' != '' && '{!error}' != null && '{!error}' != 'undefined'){
+                        showError('{!error}');
+                    }
+                    </script>
+                </apex:outputPanel>
+                <script>
+                function phonenumber(inputtxt) {
+                    var phoneno = /^\(?([0-9]{3})\)?[-. ]?([0-9]{3})[-. ]?([0-9]{4})$/;
+                    if(inputtxt.value.match(phoneno)) {
+                        return true;
+                    }
+                    else {
+                        inputtxt.value = '';
+                        alert("Phone number format must be XXX-XXX-XXXX");
+                        return false;
+                    }
+                }
+                function openModal(){
+                    $('[id$=spinner]').css('display','none');
+                    $(".legalAck.slds-modal").addClass('slds-fade-in-open');
+                    $(".slds-backdrop").addClass('slds-backdrop--open');
+                }
+                
+                function closeModal(){
+                    $(".legalAck.slds-modal").removeClass('slds-fade-in-open');
+                    $(".slds-backdrop").removeClass('slds-backdrop--open');
+                }
+                
+                function showError(error) {
+                    $(".slds-notify_container h2").each(function() {
+                        $(this).text(error);
+                    });
+                    $(".slds-notify_container").removeClass('slds-hide');
+                    setTimeout(function() {
+                        $(".slds-notify_container").addClass('slds-hide');
+                    }, 8000);
+                }
+                // ******* Attachment Script Start ******
+                
+                var blobfile;
+                var conDocId;
+                var attType;
+                var cvId;
+                var expDtDL = null;
+                var expDtGL = null;
+                var expDtWC = null;
+                var expDtLicense = null;
+                var docTypeToAttachIdMap = new Map([
+                    ["License", ""], 
+                    ["Driver’s License/Photo Id" ,"" ],
+                    ["Certificate of Insurance - General Liability" ,"" ],
+                    ["Certificate of Insurance or Waiver - Workers Comp" ,"" ]
+                ]);
+                
+                function uploadFile(cvId, cdId, attachType){
+                    
+                    var fbody= document.getElementById("fileId"+attachType).files[0];
+                    cvId = cvId;
+                    conDocId = cdId;
+                    attType = attachType;
+                    getAsText(fbody);
+                    
+                }
+                function getAsText(readFile) {
+                    
+                    var reader = new FileReader();
+                    if(readFile == undefined){
+                        showError(' Please input a valid file. ');
+                        $('[id$=spinner]').css('display','none');
+                        return;
+                    }else{
+                        reader.readAsDataURL(readFile);
+                        reader.onload = attLoadedNew;
+                    }
+                    
+                }
+                
+                //verify the file extension, throw error if other than given values below
+                // creates attachment
+                
+                function attLoadedNew(evt) {  
+                    sforce.connection.serverUrl = '{!$Site.Prefix}/services/Soap/u/40.0';
+                    sforce.connection.sessionId = '{!$Api.Session_ID}';
+                    console.log(evt.target);
+                    var fileString = evt.target.result;
+                    var extension;
+                    var blobfile = fileString;
+                    var input = document.getElementById("fileId"+attType);
+                    
+                    filename= input.value;
+                    console.log('filename------'+filename);
+                    extension = filename.substring(filename.lastIndexOf(".") + 1, filename.length).toLowerCase();
+                    console.log('extension------'+extension);
+                    
+                    //var attachmentTypeVal = document.getElementById('pg:CommunitiesTemplate:fromid:attachmentType').value; 
+                    var attachmentTypeVal = attType;                                                      
+                    //var expDt= document.getElementById('pg:CommunitiesTemplate:fromid:expDt').value; 
+                    var element = document.getElementsByClassName("licen");
+                    if (element[0] != null && element[0] != undefined) {
+                        expDtLicense= element[0].value;
+                    }
+                    element = document.getElementsByClassName("dl");                         
+                    if (element[0] != null && element[0] != undefined) {
+                        expDtDL= element[0].value;
+                    }
+                    element = document.getElementsByClassName("gl");
+                    if (element[0] != null && element[0] != undefined) {
+                        expDtGL= element[0].value;
+                    }
+                    element = document.getElementsByClassName("wc");
+                    console.log('element------'+element);
+                    if (element[0] != null && element[0] != undefined) {
+                        expDtWC = element[0].value;
+                    }   
+                    console.log('attachmentTypeVal------'+attachmentTypeVal);
+                    console.log('expDtGL------'+expDtGL);
+                    
+                    if(extension != 'pdf' && extension != 'xlsx' &&
+                       extension != 'xls' && extension !='csv' && 
+                       extension !='doc' && extension != 'docx' &&
+                       extension !='ppt' && extension !='pptx' && extension !='png' &&
+                       extension != 'jpg' && extension != 'jpeg' && extension != 'jfif'){
+                        stopSpinner();
+                        showError('Attachments can only be in xlsx, xls, csv, doc, docx, pdf, ppt, pptx, png, and jpg formats.');
+                        
+                    }
+                    else{
+                        console.log('conDocId------'+conDocId);
+                        var attach = new sforce.SObject('ContentVersion');
+                        attach.origin       = 'H'; 
+                        if(cvId != null && cvId != ''){
+                            attach.Id = cvId;
+                        }
+                        if(conDocId != null && conDocId != ''){
+                            attach.ContentDocumentId = conDocId;
+                        }
+                        else{                                    
+                            attach.FirstPublishLocationId= '{!wrapperObj.accWrap.Id}';                          
+                        }
+                        
+                        attach.Title= filename.replace(/.*[\/\\]/, '');
+                        attach.PathOnClient= filename.replace(/.*[\/\\]/, '');
+                        attach.VersionData= blobfile.split(',')[1];
+                        attach.Status__c = 'Uploaded';
+                        
+                        if(attachmentTypeVal == "License" && expDtLicense != null && expDtLicense != ''){
+                            attach.Expiration_Date__c = expDtLicense;
+                            console.log('attach.Expiration_Date__c-----'+attach.Expiration_Date__c);
+                        }
+                        if(attachmentTypeVal == "Driver’s License/Photo Id" && expDtDL != null && expDtDL != ''){
+                            attach.Expiration_Date__c = expDtDL;
+                            console.log('attach.Expiration_Date__c-----'+attach.Expiration_Date__c);
+                        }
+                        else if(attachmentTypeVal == "Certificate of Insurance - General Liability" && expDtGL != null && expDtGL != ''){
+                            attach.Expiration_Date__c = expDtGL;
+                        } 
+                            else if(attachmentTypeVal == "Certificate of Insurance or Waiver - Workers Comp" && expDtWC != null && expDtWC != ''){
+                                attach.Expiration_Date__c = expDtWC;
+                            } 
+                        attach.Attachment_Type__c = attachmentTypeVal;
+                        var result = sforce.connection.upsert("Id",[attach],{onSuccess : success, onFailure : failure});
+                    }
+                }
+                
+                function addDateToAttachment(attachType) {  
+                    sforce.connection.serverUrl = '{!$Site.Prefix}/services/Soap/u/40.0';
+                    sforce.connection.sessionId = '{!$Api.Session_ID}';
+                    attType = attachType;
+                    
+                    console.log("attType: " + attType);
+                    console.log("expDtLicense BEFORE: " + expDtLicense);
+                    var attachmetnId = getAttachmentId();
+                    console.log("attachmetnId: " + attachmetnId);
+                    
+                    var attach = new sforce.SObject('ContentVersion');
+                    if(attachmetnId != null && attachmetnId != ''){
+                        attach.Id = attachmetnId;
+                    }
+                    
+                    if(attType == "License" && expDtLicense != null && expDtLicense != ''){
+                        attach.Expiration_Date__c = expDtLicense;
+                    }
+                    if(attType == "Driver’s License/Photo Id" && expDtDL != null && expDtDL != ''){
+                        attach.Expiration_Date__c = expDtDL;
+                    }
+                    else if(attType == "Certificate of Insurance - General Liability" && expDtGL != null && expDtGL != ''){
+                        attach.Expiration_Date__c = expDtGL;
+                    } 
+                    else if(attType == "Certificate of Insurance or Waiver - Workers Comp" && expDtWC != null && expDtWC != ''){
+                        attach.Expiration_Date__c = expDtWC;
+                    } 
+                    
+                    console.log(attach);
+                    if(attach.Id != null && attach.Id != '') {
+                        var result = sforce.connection.upsert("Id",[attach],{onSuccess : successAddDate, onFailure : failure});
+                    }
+                }
+                
+                function getAttachmentId() {
+                    var element = document.getElementsByClassName("licen");
+                    if (element[0] != null && element[0] != undefined) {
+                        expDtLicense= element[0].value;
+                    }
+                    element = document.getElementsByClassName("dl");                         
+                    if (element[0] != null && element[0] != undefined) {
+                        expDtDL= element[0].value;
+                    }
+                    element = document.getElementsByClassName("gl");
+                    if (element[0] != null && element[0] != undefined) {
+                        expDtGL= element[0].value;
+                    }
+                    element = document.getElementsByClassName("wc");
+                    console.log('element------'+element);
+                    if (element[0] != null && element[0] != undefined) {
+                        expDtWC = element[0].value;
+                    }
+                    
+                    return docTypeToAttachIdMap.get(attType);
+                }
+                
+                function success(result){
+                    var relatedDateFieldClass;                    
+                    error='';
+                    var expDt = '';
+                    console.log('attType-----'+attType);
+                    
+                    if(attType == "License"){
+                        expDt = expDtLicense;
+                        relatedDateFieldClass = 'slds-input licen';
+                    }
+                    else if(attType == "Driver’s License/Photo Id"){
+                        expDt = expDtDL;
+                        relatedDateFieldClass = 'slds-input dl';
+                    }
+                    else if(attType == "Certificate of Insurance - General Liability"){
+                        expDt = expDtGL;
+                        relatedDateFieldClass = 'slds-input gl';
+                    } 
+                    else if(attType == "Certificate of Insurance or Waiver - Workers Comp"){
+                        expDt = expDtWC;
+                        relatedDateFieldClass = 'slds-input wc';
+                    }  
+                    
+                    if(expDt == null || expDt == ''){
+                        expDt = null;
+                    } 
+                    console.log('result[0]------'+result[0]);      
+                    console.log('expDt------'+expDt);
+                    
+                    if(relatedDateFieldClass != undefined) {
+                        var dateFieldElems = document.getElementsByClassName(relatedDateFieldClass);
+                        if(dateFieldElems.length > 0) {
+                            docTypeToAttachIdMap.set(attType, result[0].id);
+                        }
+                    }
+                    attachFileFunction(result[0].id, attType, expDt);
+                }
+                
+                function successAddDate(result){
+                    console.log('SUCCESS------');
+                }
+                    
+                function failure(error){
+                    console.log('error------'+error);
+                    showError(error);
+                }
+                
+                
+                // ******* Attachment Script End ******
+                
+                $(document).ready(function(){
+                    //$('.custom-file-upload').click(function(){ $('.fileIdBtn').trigger('click'); });
+                });
+                
+                function stopSpinner(){
+                    $('[id$=spinner]').css('display','none');
+                }
+                
+                </script>
+            </html>
+            <br/>
+        </apex:define>
+        <apex:define name="footer">
+            <c:VendorPortalFooter />
+        </apex:define>
+    </apex:composition>
+</apex:page>

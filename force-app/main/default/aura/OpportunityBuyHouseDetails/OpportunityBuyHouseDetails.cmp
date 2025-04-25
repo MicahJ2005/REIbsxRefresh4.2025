@@ -1,0 +1,118 @@
+<aura:component Controller="OpportunityBuyHouseDetailsCtrl" implements="force:lightningQuickAction,force:hasRecordId,flexipage:availableForAllPageTypes" access="global" >
+    
+    <aura:attribute name="HouseRecordList" type="House__c[]" />
+    <aura:attribute name="recordId" type="string" />
+    <aura:attribute name="SAAvg" type="Decimal" default= "0.00" />
+    <aura:attribute name="RentAvg" type="Decimal" default= "0.00"/>
+    <aura:attribute name="OpprecordId" type="string" />
+    
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}"/>
+    
+    
+    <!-- Display a lightning card with details about the record -->
+    <div class="Record Details"> 
+        <lightning:card variant="Narrow" iconName="standard:account" title="Comp Details" class="slds-size_11-of-11" >
+            <table class="slds-table slds-table_cell-buffer slds-table_bordered">
+                <thead>
+                    <tr class="slds-line-height_reset">
+                        <th class="" scope="col">
+                            <div class="slds-truncate" title="Opportunity Name">Name</div>
+                        </th>
+                        <th class="" scope="col">
+                            <div class="slds-truncate" title="Opportunity Name">BD/BA/CAR/YR/SF</div>
+                        </th>
+                        <th class="" scope="col">
+                            <div class="slds-truncate" title="Opportunity Name">AP/SA Amt</div>
+                        </th>
+                        <th class="" scope="col">
+                            <div class="slds-truncate" title="Opportunity Name">Date</div>
+                        </th>
+                        <th class="" scope="col">
+                            <div class="slds-truncate" title="Opportunity Name">$/SF</div>
+                        </th>
+                        <th class="" scope="col">
+                            <div class="slds-truncate" title="Opportunity Name">Rent</div>
+                        </th>
+                        <th class="" scope="col">
+                            <div class="slds-truncate" title="Opportunity Name">SF</div>
+                        </th>
+                        <th class="" scope="col">
+                            <div class="slds-truncate" title="Opportunity Name">LCD</div>
+                        </th>
+                        <th class="" scope="col">
+                            <div class="slds-truncate" title="Opportunity Name">Source</div>
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <aura:iteration items="{!v.HouseRecordList}" var="row">
+                        <tr class="slds-hint-parent">
+                            <td data-label="Name">
+                                <lightning:formattedText value="{!row.Name}" />
+                            </td> 
+                            <td data-label="Name">
+                                {!row.Bedrooms__c}/{!row.Bathrooms__c}/{!row.Car_Storage_Parking__c}/{!row.Year_Built__c}/{!row.Sq_Feet__c}
+                            </td>         
+                            <td data-label="Name">
+                                <aura:if isTrue="{!row.Appraised_Amount__c > 0}">
+                                    A- <lightning:formattedNumber value="{!row.Appraised_Amount__c}" maximumFractionDigits="0"  minimumFractionDigits="0" style="currency" currencyCode="USD" currencyDisplayAs="symbol"/> 
+                                    <aura:set attribute="else">
+                                        <aura:if isTrue="{!row.Sale_Amount__c > 0}">
+                                            S -<lightning:formattedNumber value="{!row.Sale_Amount__c}"  maximumFractionDigits="0"  minimumFractionDigits="0" style="currency" currencyCode="USD" currencyDisplayAs="symbol"/>
+                                        </aura:if>
+                                    </aura:set>
+                                </aura:if>
+                                
+                            </td>    
+                            <td data-label="Name">
+								<aura:if isTrue="{!not(empty(row.Appraised_Date__c))}">
+											<lightning:formattedDateTime value="{!row.Appraised_Date__c}" year="numeric" month="numeric" /> 
+                                    <aura:set attribute="else">
+								<aura:if isTrue="{!not(empty(row.Sales_Date__c))}">
+                                            <lightning:formattedDateTime value="{!row.Sales_Date__c}" year="numeric" month="numeric" />
+                                        </aura:if>
+                                    </aura:set>
+                                </aura:if>
+                            </td>  
+							
+                            <td data-label="Name">
+								<aura:if isTrue="{!row.Appraised_SqFt__c > 0}">
+											<lightning:formattedNumber value="{!row.Appraised_SqFt__c}" maximumFractionDigits="0"  minimumFractionDigits="0" style="currency" currencyCode="USD" currencyDisplayAs="symbol"/> 
+                                    <aura:set attribute="else">
+                                        <aura:if isTrue="{!row.Sale_Amount_SqFt__c > 0}">
+                                            <lightning:formattedNumber value="{!row.Sale_Amount_SqFt__c}" maximumFractionDigits="0"  minimumFractionDigits="0" style="currency" currencyCode="USD" currencyDisplayAs="symbol"/>
+                                        </aura:if>
+                                    </aura:set>
+                                </aura:if>
+                            </td> 
+                            <td data-label="Name">
+                                <lightning:formattedNumber value="{!row.Rent_Year_1__c}" maximumFractionDigits="0"  minimumFractionDigits="0" style="currency" currencyCode="USD" currencyDisplayAs="symbol"/>
+                            </td> 
+                            <td data-label="Name">
+                                <lightning:formattedNumber value="{!row.Rent_SqFt__c}"  style="currency" currencyCode="USD" currencyDisplayAs="symbol"/>
+                            </td> 
+                            <td data-label="Name">
+                                <lightning:formattedDateTime value="{!row.Lease_Closing_Date__c}" year="numeric" month="numeric" />
+                            </td> 
+                            <td data-label="Name">
+                                <lightning:formattedText value="{!row.Source__c}" />
+                            </td> 
+                        </tr> 
+                    </aura:iteration>
+                    <tr>
+                         <td></td>
+                         <td></td>
+                         <td></td>
+                         <td></td>
+                         <td class="slds-text-title_bold"> <lightning:formattedNumber value="{!v.SAAvg}" maximumFractionDigits="0"  minimumFractionDigits="0" style="currency" currencyCode="USD" currencyDisplayAs="symbol"/></td>
+                         <td></td>
+                         <td class ="slds-text-title_bold"> <lightning:formattedNumber value="{!v.RentAvg}" style="currency" currencyCode="USD" currencyDisplayAs="symbol"/></td>
+                         <td></td>
+                         <td></td>
+                    </tr>
+                </tbody>
+            </table>
+        </lightning:card>
+    </div>
+    
+</aura:component>

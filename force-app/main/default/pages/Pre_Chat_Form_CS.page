@@ -1,0 +1,61 @@
+<apex:page showHeader="false"> 
+<!-- This script takes the endpoint URL parameter passed from the deployment 
+  page and makes it the action for the form -->
+<script type="text/javascript">
+(function() { 
+    function handlePageLoad() {
+        var endpointMatcher = new RegExp("[\\?\\&]endpoint=([^&#]*)");
+        document.getElementById('prechatForm').setAttribute('action',
+        decodeURIComponent(endpointMatcher.exec(document.location.search)[1]));
+    }
+    if (window.addEventListener) {
+        window.addEventListener('load', handlePageLoad, false);
+    } else {
+        window.attachEvent('onload', handlePageLoad, false);
+    }
+})(); 
+</script>
+<h1>Pre-chat Form</h1> 
+<form method='post' id='prechatForm'> 
+      First Name: <input type='text' name='liveagent.prechat:FirstNameDetail' /><br />
+      Last Name: <input type='text' name='liveagent.prechat:LastNameDetail' /><br />
+      Email Address: <input type='text' name='liveagent.prechat:EmailDetail' /><br />
+      Department: <select name="liveagent.prechat.buttons">
+          <!-- Values are LiveChatButton IDs. -->
+          <option value="5733A0000005Ppi">Customer Service</option>
+          
+      </select><br />
+
+      <!-- Map FirstNameDetail, LastNameDetail and EmailDetail custom details 
+         to Contact's FirstName, LastName and Email fields -->
+      <input type="hidden" name="liveagent.prechat.findorcreate.map:Contact"
+        value="FirstName,FirstNameDetail;LastName,LastNameDetail;Email,EmailDetail" />
+      
+      <!-- Specify to query for matching Contact records Email field based on
+        the value of Email -->
+      <input type="hidden" name="liveagent.prechat.findorcreate.map.doFind:Contact"
+        value="Email,true" />
+
+      <!-- Return results only if there is an exact match of Email -->
+      <input type="hidden" name="liveagent.prechat.findorcreate.map.isExactMatch:Contact"
+        value="Email,true" />
+
+      <!-- If no match in search, create a new Contact record with the mapped value
+        of FirstName, LastName and Email -->
+      <input type="hidden" name="liveagent.prechat.findorcreate.map.doCreate:Contact"
+        value="FirstName,true;LastName,true;Email,true" />
+
+      <!-- If a new Contact record has been created, open it as a subtab -->
+      <input type="hidden" name="liveagent.prechat.findorcreate.showOnCreate:Contact"
+        value="true" />
+
+      <!-- Save the Contact id to transcript's field ContactId -->
+      <input type="hidden" name="liveagent.prechat.findorcreate.saveToTranscript:Contact"
+        value="ContactId" />
+
+      <input type='submit' value='Request Chat' id='prechat_submit'/> 
+<style type="text/css"> 
+p {font-weight: bolder } 
+</style> 
+</form> 
+</apex:page>

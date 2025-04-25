@@ -1,0 +1,59 @@
+<apex:page controller="UserAuditReportController"  standardStylesheets="false" showHeader="false" contenttype="application/vnd.ms-excel#Report/Export.xls;charset=UTF-8" >
+  <style>
+      th div{width: 197px;overflow: hidden;font-weight: bold !important;padding: 12px 5px;background: #beebf2 !important; }
+      th { border-bottom-width: 0px; overflow: hidden;font-weight: bold !important; }
+      .table-bordered tbody td { font-size: 14px !important; }
+      .table-bordered tbody td span { white-space: nowrap; width: 207px !important; overflow: dgdfg; text-overflow: ellipsis; overflow: hidden; display: block; width: 190px; }
+      .table-bordered > thead > tr > th { border: 1px solid #beebf2; }
+      .header-reporting.header-filter select { border-radius: 0px; height:36px; }
+      .header-reporting.header-filter .btn-info { background: none; border: solid 1px #ccc; color: #333; }
+      .header-reporting.header-filter .lang { margin: 38px 0px 10px }
+      .lang { margin: 34px 0px 7px }
+      .pbBottomButtons table { width: 100%; text-align: center }
+      .pbBottomButtons table td table { margin: 0px auto; }
+      .header-reporting.header-filter .btn-custom-right .btn-info { background: none;border: solid 1px #0097c7;color: #0097c7;}
+      .numberlist{float:left;}
+      .ct{
+      text-align:center !important;
+      }
+   </style>
+   <apex:form >
+      <apex:pageBlock id="refreshtable">
+         <h2 style="margin: 0px;">User Audit Report</h2>
+         <h3 style="text-align:left;">
+            Date Of Export:-    
+            <apex:outputText value="{0,date,dd'/'MM'/'yyyy}">
+               <apex:param value="{!TODAY()}" />
+            </apex:outputText>
+         </h3>
+         
+         <apex:variable value="{!0}" var="SNO"/>
+         <apex:dataTable value="{!wrpList}" var="wrp" id="listform1" border="1" cellspacing="4"  columnsWidth="0%" >
+            <apex:column headerValue="S.No" style="vertical-align:center;text-align:center;">               
+               <apex:variable value="{!SNO+1}"  var="SNO"/>
+               <apex:outputText value="{!SNO}"></apex:outputText>
+            </apex:column>
+            <apex:column headerValue="User Name" style="vertical-align:center;text-align:center;">               
+               <apex:outputfield value="{!wrp.sObjectRecord['CreatedById']}"/>
+            </apex:column>
+            <apex:column headerValue="Object Name" style="vertical-align:center;text-align:center;">               
+               <apex:outputText value="{!wrp.objectName}" />
+            </apex:column>
+            <apex:column headerValue="Record" style="vertical-align:center;text-align:center;">               
+               <apex:outputLink value="/{!wrp.sObjectRecord['Id']}" id="theLinkcase" >
+                  <apex:outputtext value="{! if(wrp.objectName == 'Case',wrp.sObjectRecord['CaseNumber'],if(wrp.objectName =='Task' || wrp.objectName =='Event',wrp.sObjectRecord['Subject'],if(wrp.objectName !='Task' || wrp.objectName !='Event' || wrp.objectName !='Case',wrp.sObjectRecord['Name'],wrp.sObjectRecord['Name'])))}" />
+               </apex:outputLink>
+            </apex:column>
+            <apex:column headerValue="Type" style="vertical-align:center;text-align:center;">               
+              <apex:outputText value="{!wrp.type}"/> 
+            </apex:column>
+            <apex:column headerValue="Date" style="vertical-align:center;text-align:center;">               
+               <apex:outputText value="{0,date,MM/dd/yyyy HH:mm}">
+                  <apex:param value="{!wrp.typeDate}" />
+               </apex:outputText>
+            </apex:column>
+                        
+         </apex:dataTable>
+      </apex:pageBlock>
+   </apex:form>
+</apex:page>

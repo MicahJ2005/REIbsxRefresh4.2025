@@ -1,0 +1,17 @@
+<aura:component implements="force:lightningQuickAction,force:hasRecordId,flexipage:availableForAllPageTypes" access="global"  >
+    
+    <article class="slds-card"> 
+        <div style="text-align:center" class ="slds-text-title_bold" ><a  href="javascript:void(0)" onmouseover="{!c.openPop}" onmouseout="{!c.closePop}">
+            Comp Detail</a>
+    	</div>
+        </article>
+    <section aura:id="pop"  style="position: absolute; right:10%; width: 80%; "
+             class="slds-popover slds-nubbin_top slds-hide" role="dialog" aria-labelledby="dialog-heading-id-1" aria-describedby="dialog-body-id-6">
+        
+        <div class="slds-popover__body" id="dialog-body-id-6">
+            <c:OpportunityBuyHouseDetails OpprecordId = "{!v.recordId}"/>
+        </div>
+        <footer class="slds-popover__footer">
+        </footer>
+    </section>
+</aura:component>

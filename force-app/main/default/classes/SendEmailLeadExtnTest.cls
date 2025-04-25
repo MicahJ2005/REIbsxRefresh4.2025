@@ -1,0 +1,84 @@
+@isTest
+public class SendEmailLeadExtnTest {
+    
+    @testSetup 
+    static void setup() {
+        
+        Account accVendor = TestDataFactory.createAccount('Investor acc', Schema.SObjectType.Account.getRecordTypeInfosByName().get('Vendor').getRecordTypeId(), '');
+        insert accVendor;
+        
+        Contact conVendor = TestDataFactory.createContact('Vendor', 'Tester', '9879654321', 'testaccVendorsf@tester.com', accVendor.Id, 
+            Schema.SObjectType.Contact.getRecordTypeInfosByName().get('Vendor').getRecordTypeId()
+        );
+        insert conVendor;
+        
+        Account accInvestor = TestDataFactory.createAccount('Investor acc', Schema.SObjectType.Account.getRecordTypeInfosByName().get('Investor Owner').getRecordTypeId(), 'Customer');
+        //accInvestor.Customer_Service_Assignment__c = UserInfo.getUserId();
+        insert accInvestor;
+        
+        Contact conInvestor = TestDataFactory.createContact('Investor', 'Tester', '9879654321', 'testInvestorsf@tester.com', accInvestor.Id, 
+            Schema.SObjectType.Contact.getRecordTypeInfosByName().get('Investor').getRecordTypeId()
+        );
+        conInvestor.Phone = '1234567890';
+        conInvestor.MobilePhone = '123456789';
+        conInvestor.Email = 'test@abc.com';
+        conInvestor.Birthdate = date.today();
+        conInvestor.MailingStreet = 'test street';
+        conInvestor.MailingCity = 'NY';
+        conInvestor.MailingState = 'Alabama';
+        conInvestor.MailingPostalCode  = '12345';
+        insert conInvestor;
+        
+        House__c house = TestDataFactory.createHouse('Test Property', 'Test Property', 'Test Streeet', 'Memphis', 'TN', '39876', 'US');
+        house.Investor__c = accInvestor.Id;
+        insert house;
+        
+        Account acc = TestDataFactory.createAccount('Owner acc', Schema.SObjectType.Account.getRecordTypeInfosByName().get('Resident').getRecordTypeId(), '');
+        insert acc;
+        
+        Contact con = TestDataFactory.createContact('Test', 'Tester', '9879654321', 'testsf@tester.com', acc.Id, 
+            Schema.SObjectType.Contact.getRecordTypeInfosByName().get('Resident').getRecordTypeId()
+        );
+        insert con;
+        
+        Schema.DescribeFieldResult catGlobal = SObjectType.Case.fields.CategoryGlobal__c;
+        List<Schema.PicklistEntry> categoryEntries = catGlobal.getPicklistValues();
+
+        Case cs = TestDataFactory.createCase(Schema.SObjectType.Case.getRecordTypeInfosByName().get('Maintenance').getRecordTypeId(), 'Open', 
+            con.Id, house.Id, 'Test desc.', '9998887878', System.now(), false, System.now().addMonths(1), categoryEntries[0].getValue()
+        );
+        insert cs;
+        
+        Id maintenanceProjectRecTypeId = Schema.SObjectType.Project__c.getRecordTypeInfosByName().get('Maintenance').getRecordTypeId();
+                
+        Project__c project = new Project__c(House__c=house.Id,
+                                                    Description__c='Test desc.', Account__c= acc.Id,
+                                                    Case__c=cs.Id, RecordTypeId=maintenanceProjectRecTypeId);
+        insert project;
+        
+        Project_Item__c projectItem = new Project_Item__c(Project__c=project.Id, Case__c=cs.Id, Description__c='Test desc.', Maintenance_Status__c ='Active Dispatched',
+                                                         MaintenanceCategoryGlobal__c = 'Flooring',
+                                                          MaintenanceSubCategoryGlobal__c = 'Water Extraction',
+                                                         Name='WO-MEM-00001303-01');
+        insert projectItem;
+        
+        Project_Item_Bid__c bid = new Project_Item_Bid__c(Project_Item__c=projectItem.Id, SOW_Description__c='sow test', Owner_Accepted__c=true);
+        insert bid;
+    }
+    
+    @isTest
+    static void testMethod1(){
+        
+        Project_Item__c projectItem = [SELECT Id FROM Project_Item__c LIMIT 1];
+        
+        PageReference pageRef = Page.SendEmailProjectItem;
+        Test.setCurrentPage(pageRef);
+        
+        ApexPages.currentPage().getParameters().put('relatedId', projectItem.Id);
+        
+        ApexPages.StandardController sc = new ApexPages.StandardController(projectItem);
+        SendEmailLeadExtn sendEmailObjCtrl = new SendEmailLeadExtn(sc);
+        sendEmailObjCtrl.sendMail();
+    }
+
+}
