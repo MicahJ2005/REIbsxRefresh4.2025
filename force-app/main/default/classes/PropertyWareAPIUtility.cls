@@ -5,6 +5,12 @@ public with sharing class PropertyWareAPIUtility implements Schedulable, Databas
     }
 
     public static void getBuildings() {
+
+
+        PW_Portfolio__c defaultPortfolio = [SELECT Id, PW_Portfolio_Entity_ID__c FROM PW_Portfolio__c WHERE Name = 'Default PW Portfolio' LIMIT 1];
+
+        House__c defaultHouse = [ SELECT Id, Name FROM House__c WHERE Name = 'Default House' LIMIT 1];
+
         Http http = new Http();
         HttpRequest request = new HttpRequest();
         Datetime now = Datetime.now(); // Current datetime
@@ -34,7 +40,6 @@ public with sharing class PropertyWareAPIUtility implements Schedulable, Databas
         try {
             HttpResponse response = http.send(request);
             if(response.getStatusCode() == 200) {
-                // System.debug('Response body: ' + response.getBody());
                 List<Object> raw = (List<Object>) JSON.deserializeUntyped(response.getBody());
                 System.debug(raw);
                 for(Object o: raw){
@@ -43,7 +48,6 @@ public with sharing class PropertyWareAPIUtility implements Schedulable, Databas
                     PWBuildingWrapper bw = new PWBuildingWrapper();
                     for(String key: building.keySet()){
                         Address addressWrapper = new Address();
-                        // System.debug(key + ': ' + building.get(key));
                         if(key == 'address'){
                             System.debug('Address at 46: ' + building.get(key));
                             Map<String, Object> address = (Map<String, Object>) building.get(key);
@@ -57,6 +61,7 @@ public with sharing class PropertyWareAPIUtility implements Schedulable, Databas
                             
                         }
                     }
+                    bw.propertyType = String.valueOf(building.get('type'));
                     bw.buildingEntityId = String.valueOf(building.get('id'));
                     bw.buildingIdNumber  = String.valueOf(building.get('idNumber'));
                     bw.portfolioID  = String.valueOf(building.get('portfolioID'));
@@ -66,116 +71,150 @@ public with sharing class PropertyWareAPIUtility implements Schedulable, Databas
                     bw.yearBuilt  = String.valueOf(building.get('yearBuilt'));
                     bw.numberOfBedrooms  = Integer.valueOf(building.get('numberOfBedrooms'));
                     bw.numberOfBathrooms  = Double.valueOf(building.get('numberOfBathrooms'));
-                    
+                    bw.totalArea = Double.valueOf(building.get('totalArea'));
+                    String fullAddress = bw.address + ', ' + bw.city + ', ' + bw.stateRegion + ' ' + bw.postalCode;
+                    String placeId = GooglePlacesService.getPlaceIdFromAddress(fullAddress);
+                    system.debug('placeId'+ placeId);
+                    bw.googlePlaceId = placeId;
+
                     System.debug('id: '+ building.get('id'));
                     System.debug('idNumber: '+ building.get('idNumber'));
                     PWIdAndAddress.put(bw.buildingEntityId , bw);
                 }
-                // List<PWBuildingWrapper> PWBuildings = (List<PWBuildingWrapper>) JSON.deserialize(response.getBody(), List<PWBuildingWrapper>.class);
-                // System.debug(PWBuildings);
-                // syncBuildingsFromPW(PWBuildings);
-                // List<Object> buildings = (List<Object>) responseMap.get('buildings');
-
-                // System.debug(buildings);
 
             }
         } catch (Exception e) {
             System.debug('Callout error: ' + e.getMessage());
         }
 
-
-
         System.debug('PWIdAndAddress: '+ PWIdAndAddress);
-        map<string, PW_Building__c> currentFSPWBuildingMap = getCurrentPRBuildings(PWIdAndAddress);
-        // map<string, House__c> currentFSPWHouseMap = getCurrentHouses(PWIdAndAddress);
-        map<string, PW_Portfolio__c> pwIdToSFPortfolio = new map<string, PW_Portfolio__c>();
-        List<PW_Building__c> buildingsToUpsert = syncBuildingsFromPW(PWIdAndAddress);
-        system.debug('buildingsToUpsert: '+buildingsToUpsert);
-        if(buildingsToUpsert.size() > 0){
-            insert buildingsToUpsert;
-        }
-        // getPWBuildingByPWId(PWIdAndAddress);
-    }
-    
-    // public static void getPWBuildingByPWId(Map<String, PWBuildingWrapper> PWIdAndAddress){
-    //     System.debug('PWIdAndAddress: '+ PWIdAndAddress);
-    //     ////Need to Select buildings by PW Id
-    // }
-    public static Map<String, PW_Building__c> getCurrentPRBuildings(Map<String, PWBuildingWrapper> buildings) {
-        List<PW_Building__c> pwBuildingsToSync = [SELECT Id , Name, PW_Building_ID__c FROM PW_Building__c WHERE PW_Building_Entity_ID1__c IN :buildings.keySet()];
-        // List<PW_Building__c> pwBuildingsToSync = [SELECT Id , Name, PW_Building_ID__c, PW_Building_Entity_ID1__c FROM PW_Building__c WHERE PW_Building_Entity_ID1__c = '253001846'];
-        System.debug('pwBuildingsToSync' +pwBuildingsToSync);
 
-        ///map current buildings
-        Map<String, PW_Building__c> currentBuildingMap = new Map<String, PW_Building__c>();
-        for(PW_Building__c pwBuilding : pwBuildingsToSync){
-            currentBuildingMap.put(pwBuilding.PW_Building_ID__c, pwBuilding);
+        ///Get Portfolios
+        Map<String, PW_Portfolio__c> currentSFPWPortfolioMap = getCurrentPortfolios(PWIdAndAddress);
+        System.debug('currentSFPWPortfolioMap: '+ currentSFPWPortfolioMap);
+        List<Database.UpsertResult> resultsPortfolio = Database.upsert(currentSFPWPortfolioMap.values(), false);
+
+        set<string> upsertedPortfolioIds = new Set<string>();
+         Map<String, PW_Portfolio__c> mapOfUpsertPortfoliosToPass = new  Map<String, PW_Portfolio__c>();
+        // Now you can get the Ids
+        for (Integer i = 0; i < resultsPortfolio.size(); i++) {
+            if (resultsPortfolio[i].isSuccess()) {
+                System.debug('Record was upserted with Id: ' + resultsPortfolio[i].getId());
+                upsertedPortfolioIds.add(resultsPortfolio[i].getId());
+            } else {
+                // Handle errors
+                for (Database.Error err : resultsPortfolio[i].getErrors()) {
+                    System.debug('Error: ' + err.getMessage());
+                }
+            }
         }
 
-        return currentBuildingMap;
-    }
+         for(PW_Portfolio__c pw: [SELECT Id, Name, PW_Portfolio_Entity_ID__c, PW_Active__c 
+                                    FROM PW_Portfolio__c 
+                                    WHERE Id IN: upsertedPortfolioIds ]){
 
-    // public static Map<String, House__c> getCurrentHouses(Map<String, PWBuildingWrapper> buildings) {
+             mapOfUpsertPortfoliosToPass.put(pw.PW_Portfolio_Entity_ID__c, pw);
+         }
 
-    //     List<PW_Building__c> pwBuildingsToSync = [SELECT Id , Name, PW_Building_ID__c FROM PW_Building__c WHERE PW_Building_Entity_ID1__c IN :buildings.keySet()];
-    //     // List<PW_Building__c> pwBuildingsToSync = [SELECT Id , Name, PW_Building_ID__c, PW_Building_Entity_ID1__c FROM PW_Building__c WHERE PW_Building_Entity_ID1__c = '253001846'];
-    //     System.debug('pwBuildingsToSync' +pwBuildingsToSync);
+         //Get Houses
+         Map<String, House__c> currentSFgooglePlaceIdToPWHouseMap = getCurrentHouses(PWIdAndAddress);
+         System.debug('currentSFgooglePlaceIdToPWHouseMap: '+ currentSFgooglePlaceIdToPWHouseMap);
+         
+         List<Database.UpsertResult> resultsHouse = Database.upsert(currentSFgooglePlaceIdToPWHouseMap.values(), false);
 
-    //     ///map current buildings
-    //     Map<String, PW_Building__c> currentBuildingMap = new Map<String, PW_Building__c>();
-    //     for(PW_Building__c pwBuilding : pwBuildingsToSync){
-    //         currentBuildingMap.put(pwBuilding.PW_Building_ID__c, pwBuilding);
-    //     }
+         set<string> upsertedHouseIds = new Set<string>();
+         Map<String, House__c> mapOfUpsertHousesToPass = new  Map<String, House__c>();
+        // Now you can get the Ids
+        for (Integer i = 0; i < resultsHouse.size(); i++) {
+            if (resultsHouse[i].isSuccess()) {
+                System.debug('Record was upserted with Id: ' + resultsHouse[i].getId());
+                upsertedHouseIds.add(resultsHouse[i].getId());
+            } else {
+                // Handle errors
+                for (Database.Error err : resultsHouse[i].getErrors()) {
+                    System.debug('Error: ' + err.getMessage());
+                }
+            }
+        }
 
-    //     return currentBuildingMap;
-    // }
+        for(House__c h: [SELECT 
+                                    Id,
+                                    Name,
+                                    Street_Address__c,
+                                    City__c,
+                                    State__c,
+                                    Zip_Code__c,
+                                    House_Type__c,
+                                    Bedrooms__c,
+                                    Bathrooms__c,
+                                    Sq_Feet__c,
+                                    Status__c,
+                                    Google_Place_ID__c
+                                FROM 
+                                    House__c 
+                                WHERE 
+                                     Id IN :upsertedHouseIds]){
+                                          
+                                        mapOfUpsertHousesToPass.put(h.Google_Place_ID__c, h);
+                                     }
 
-    public static List<PW_Building__c> syncBuildingsFromPW(Map<String, PWBuildingWrapper> buildings) {
-        system.debug('buildings syncBuildingsFromPW:'+ buildings);
-        List<PW_Building__c> buildingsToReturn = new List<PW_Building__c>();
+        //Get Buildings
+        List<Map<String, PW_Building__c>> currentSFPWBuildingMap = getCurrentPWBuildings(PWIdAndAddress, defaultPortfolio.Id, defaultHouse.Id, mapOfUpsertPortfoliosToPass, mapOfUpsertHousesToPass);
 
-        List<PW_Building__c> pwBuildingsToSync = [SELECT Id , Name, PW_Building_ID__c FROM PW_Building__c WHERE PW_Building_Entity_ID1__c IN :buildings.keySet()];
-        // List<PW_Building__c> pwBuildingsToSync = [SELECT Id , Name, PW_Building_ID__c, PW_Building_Entity_ID1__c FROM PW_Building__c WHERE PW_Building_Entity_ID1__c = '253001846'];
-        System.debug('pwBuildingsToSync' +pwBuildingsToSync);
 
-        ///map current buildings
-        Map<String, PW_Building__c> currentBuildingMap = new Map<String, PW_Building__c>();
-        for(PW_Building__c pwBuilding : pwBuildingsToSync){
-            currentBuildingMap.put(pwBuilding.PW_Building_ID__c, pwBuilding);
+        
+        System.debug('currentSFPWBuildingMap List 1: '+ currentSFPWBuildingMap[0]);
+        System.debug('currentSFPWBuildingMap List 2: '+ currentSFPWBuildingMap[1]);
+
+        List<PW_Building__c> buildingsToUpsert = new List<PW_Building__c>();
+
+        for (Map<String, PW_Building__c> buildingMap : currentSFPWBuildingMap) {
+            for (PW_Building__c building : buildingMap.values()) {
+                buildingsToUpsert.add(building);
+            }
         }
         
-        ///map new buildings
-        // Map<String, PWBuildingWrapper> newBuildingMap = new Map<String, PWBuildingWrapper>();
-        // for(String buildingId : buildings.keySet()){
-        //     if(!buildingMap.containsKey(buildingId)){
-        //         newBuildingMap.put(buildingId, buildings.get(buildingId));
-        //     }
-        // }
+        List<Database.UpsertResult> resultsBuildings = Database.upsert(buildingsToUpsert, false);
 
+    }
+    
+    public static List<Map<String, PW_Building__c>> getCurrentPWBuildings(Map<String, PWBuildingWrapper> buildings, 
+                                                                            Id defaultPorfolioId, 
+                                                                            Id defaultHouseId, 
+                                                                            Map<String, PW_Portfolio__c> currentSFPWPortfolioMap,
+                                                                            Map<String, House__c> currentSFgooglePlaceIdToPWHouseMap) {
+        List<Map<String, PW_Building__c>> AllBuildingReturn = new List<Map<String, PW_Building__c>>();
 
+        List<PW_Building__c> pwBuildingsToSync = [SELECT Id , Name, PW_Building_ID__c, PW_Building_Entity_ID1__c, Google_Place_ID__c, PW_Zip__c, PW_State__c, PW_City__c, PW_Address__c FROM PW_Building__c WHERE PW_Building_Entity_ID1__c IN :buildings.keySet()];
+        System.debug('pwBuildingsToSync' +pwBuildingsToSync);
 
-        for (String buildingId : buildings.keySet()) {
-            system.debug('buildingId:'+ buildingId);
-            System.debug(buildings.get(buildingId));
-            // Step 1: Ensure Portfolio Exists or Create It
-            PW_Portfolio__c portfolio = getOrCreatePortfolio(buildings.get(buildingId));
-            system.debug('portfolio'+ portfolio);
+        ///map current buildings
+        Map<String, PW_Building__c> currentBuildingMap = new Map<String, PW_Building__c>();
+        for(PW_Building__c pwBuilding : pwBuildingsToSync){
+            currentBuildingMap.put(pwBuilding.PW_Building_Entity_ID1__c, pwBuilding);
+        }
 
-            // Step 2: Ensure House Exists or Create It
-            House__c house = getOrCreateHouse(buildings.get(buildingId));
-            system.debug('house'+ house);
+        Map<String, PW_Building__c> noBuildingsToMap = new Map<String, PW_Building__c>();
+        for(string buildingId: buildings.keySet()){
+            if(!currentBuildingMap.containsKey(buildingId)){
+                string houseId = defaultHouseId;
+                string portfolioId = defaultPorfolioId;
+                
+                System.debug('googleId from currentSFgooglePlaceIdToPWHouseMap: '+currentSFgooglePlaceIdToPWHouseMap.get(buildings.get(buildingId).googlePlaceID));
+                System.debug('Building from currentSFPWPortfolioMap: '+currentSFPWPortfolioMap.get(buildings.get(buildingId).portfolioID));
+                if(currentSFgooglePlaceIdToPWHouseMap.containsKey(buildings.get(buildingId).googlePlaceID)) {
+                    houseId = currentSFgooglePlaceIdToPWHouseMap.get(buildings.get(buildingId).googlePlaceID).Id;
+                }
+                if(currentSFPWPortfolioMap.containsKey(buildingId)) {
+                    portfolioId = currentSFPWPortfolioMap.get(buildings.get(buildingId).portfolioID).Id;
+                }
 
-            // // Step 3: Check if PW Building exists
-            if(buildingId != null){
-                PW_Building__c existingBuilding = getBuildingByEntityId(buildingId);
-                system.debug('existingBuilding: '+ existingBuilding + 'with Building Id: '+ buildingId);
-                if (existingBuilding == null) {
-                    PW_Building__c newBuilding = new PW_Building__c(
+                PW_Building__c newBuilding = new PW_Building__c(
                         Name = buildings.get(buildingId).name,
                         PW_Status__c = buildings.get(buildingId).status,
                         PW_Active__c = buildings.get(buildingId).active,
-                        House__c = house.Id,
-                        PW_Portfolio__c = portfolio.Id,
+                        House__c = houseId,
+                        PW_Portfolio__c = portfolioId,
                         PW_Building_Market__c = '',
                         PW_Address__c = buildings.get(buildingId).address,
                         PW_City__c = buildings.get(buildingId).city,
@@ -187,82 +226,134 @@ public with sharing class PropertyWareAPIUtility implements Schedulable, Databas
                         PW_Building_Entity_ID1__c = buildingId,
                         PW_Portfolio_Entity_ID1__c = String.valueOf(buildings.get(buildingId).portfolioID),
                         PW_Portfolio_Entity_ID__c = Double.valueOf(buildings.get(buildingId).portfolioID),
-                        PW_Building_ID_Number__c = Integer.valueOf(buildings.get(buildingId).buildingIdNumber)
+                        PW_Building_ID_Number__c = Integer.valueOf(buildings.get(buildingId).buildingIdNumber),
+                        Google_Place_ID__c = String.valueOf(buildings.get(buildingId).googlePlaceId)
                         // PW_Portfolio__c = portfolio.Id
                     );
-                    buildingsToReturn.add(newBuilding);
-                }
+                    
+                    // buildingsToReturn.add(newBuilding);
+                    noBuildingsToMap.put(buildingId, newBuilding);
             }
-            
+        
         }
-        return buildingsToReturn;
+
+        AllBuildingReturn.add(currentBuildingMap);
+        AllBuildingReturn.add(noBuildingsToMap);
+
+
+        return AllBuildingReturn;
     }
 
-    // private static PW_Portfolio__c getOrCreatePortfolio(PWBuildingWrapper building) {
-    private static PW_Portfolio__c getOrCreatePortfolio(PWBuildingWrapper building) {
-        system.debug('building getOrCreatePortfolio'+ building);
-        PW_Portfolio__c portfolio = new PW_Portfolio__c();
-        List<PW_Portfolio__c> existing = [
-            SELECT Id, PW_Portfolio_Entity_ID__c FROM PW_Portfolio__c WHERE PW_Portfolio_Entity_ID__c = :building.portfolioID LIMIT 1
-        ];
-        if (!existing.isEmpty()){
-            portfolio = existing[0];
-        } 
-        else{
-            List<PW_Portfolio__c> defaultPortfolio = [
-                SELECT Id, PW_Portfolio_Entity_ID__c FROM PW_Portfolio__c WHERE Name = 'Default PW Portfolio' LIMIT 1
-            ];
-            portfolio = defaultPortfolio[0];
+    public static Map<String, House__c> getCurrentHouses(Map<String, PWBuildingWrapper> buildings) {
+
+        set<String> googleIdSet = new set<string>();
+        for(string id: buildings.keySet()){
+            googleIdSet.add(buildings.get(id).googlePlaceId);
+        }
+
+        List<House__c> pwBuildingsToSync = [SELECT Id , Name, PW_ID_Number__c, Google_Place_ID__c FROM House__c WHERE Google_Place_ID__c IN :googleIdSet];
+        // List<PW_Building__c> pwBuildingsToSync = [SELECT Id , Name, PW_Building_ID__c, PW_Building_Entity_ID1__c FROM PW_Building__c WHERE PW_Building_Entity_ID1__c = '253001846'];
+        System.debug('pwBuildingsToSync' +pwBuildingsToSync);
+
+        ///map current buildings
+        Map<String, House__c> currentBuildingMap = new Map<String, House__c>();
+        for(House__c pwBuilding : pwBuildingsToSync){
+            currentBuildingMap.put(pwBuilding.Google_Place_ID__c, pwBuilding);
+        }
+
+        for(string buildingId: buildings.keySet()){
+            if(!currentBuildingMap.containsKey(buildings.get(buildingId).googlePlaceId)){
+                system.debug('buildingId'+ buildingId + ' number of bedrooms'+buildings.get(buildingId).numberOfBedrooms);
+                House__c house = new House__c(
+                    // Market__c = building.Market,
+                    Name = buildings.get(buildingId).name,
+                    Street_Address__c = buildings.get(buildingId).address,
+                    City__c = buildings.get(buildingId).city,
+                    State__c = buildings.get(buildingId).stateRegion,
+                    Zip_Code__c = buildings.get(buildingId).postalCode,
+                    House_Type__c = buildings.get(buildingId).PropertyType,
+                    Bedrooms__c = String.valueOf(buildings.get(buildingId).numberOfBedrooms),
+                    Bathrooms__c = String.valueOf(buildings.get(buildingId).numberOfBathrooms),
+                    // Car_Storage__c = null, // Set as needed
+                    Sq_Feet__c = buildings.get(buildingId).TotalArea,
+                    // Year_Built__c = buildings.get(buildingId).YearBuilt,
+                    Status__c = 'Managed',
+                    Google_Place_ID__c = buildings.get(buildingId).googlePlaceId
+                );
+                currentBuildingMap.put(buildings.get(buildingId).googlePlaceId, house);
+            }
+       
+        }
+        return currentBuildingMap;
+    }
+
+    private static Map<String, PW_Portfolio__c> getCurrentPortfolios(Map<String, PWBuildingWrapper> buildings) {
+        system.debug('building getOrCreatePortfolio'+ buildings);
+        Set<String> protfolioIdSet = new Set<String>();
+        for(string id: buildings.keySet()){
+            protfolioIdSet.add(String.valueOf(buildings.get(id).portfolioID));
+        }
+
+        Map<String, PW_Portfolio__c> portfolioMap = new Map<String, PW_Portfolio__c>();
+        for(PW_Portfolio__c p: [SELECT Id, PW_Portfolio_Entity_ID__c FROM PW_Portfolio__c WHERE PW_Portfolio_Entity_ID__c IN: protfolioIdSet]){
+            portfolioMap.put(p.PW_Portfolio_Entity_ID__c, p);
+        }
+        for(string buildingId: buildings.keySet()){
+            if(!portfolioMap.containsKey(buildings.get(buildingId).portfolioID)){
+
+                PW_Portfolio__c newPortfolio = getPortfolioInPW(buildings.get(buildingId).portfolioID);
+                portfolioMap.put(newPortfolio.PW_Portfolio_Entity_ID__c, newPortfolio);
+            }
+       
         }
         
-        return portfolio;
+        return portfolioMap;
     }
 
-    private static House__c getOrCreateHouse(PWBuildingWrapper building) {
-        String fullAddress = building.address + ', ' + building.city + ', ' + building.stateRegion + ' ' + building.postalCode;
-        String placeId = GooglePlacesService.getPlaceIdFromAddress(fullAddress);
-        system.debug('placeId'+ placeId);
-        House__c houseToReturn = new House__c();
+    public static PW_Portfolio__c getPortfolioInPW(string portfolioId) {
+        Http http = new Http();
+        HttpRequest request = new HttpRequest();
+        Datetime now = Datetime.now(); // Current datetime
+        // String toDateTime = now.addHours(-1).formatGMT('yyyy-MM-dd\'T\'HH:mm:ss\'Z\''); // 1 hour ago
+        String fromDateTime = now.addHours(-2).formatGMT('yyyy-MM-dd\'T\'HH:mm:ss\'Z\''); // 24 hours ago
 
-        List<House__c> existing = [
-            SELECT Id FROM House__c WHERE Google_Place_ID__c = :placeId LIMIT 1
-        ];
-        system.debug('existing house'+ existing);
-        if (!existing.isEmpty()){
-            houseToReturn = existing[0];
-        } 
-        else{
-            List<House__c> defaultHouse = [
-                SELECT Id, Name FROM House__c WHERE Name = 'Default House' LIMIT 1
-            ];
-            houseToReturn = defaultHouse[0];
+        string dateTimeParameters = '?lastModifiedDateTimeStart='+ EncodingUtil.urlEncode(fromDateTime, 'UTF-8');
+        System.debug(dateTimeParameters);
+
+        request.setEndpoint('https://api.propertyware.com/pw/api/rest/v1/portfolios'+ portfolioId);
+        request.setMethod('GET');
+
+        // Set required headers
+        request.setHeader('x-propertyware-client-id', '5654c21f-3490-49bb-9521-251b7e8d547c');
+        request.setHeader('x-propertyware-client-secret', '57bb14b8-3659-4cc8-8f4e-dd778a7b3a66');
+        request.setHeader('x-propertyware-system-id', '20348933');
+
+        // Optional common headers
+        request.setHeader('Accept', '*/*');
+        request.setHeader('Accept-Encoding', 'gzip, deflate, br');
+        request.setHeader('Connection', 'keep-alive');
+
+
+        PW_Portfolio__c newPortfolio = new PW_Portfolio__c();
+
+        try {
+            HttpResponse response = http.send(request);
+            if(response.getStatusCode() == 200) {
+                List<Object> raw = (List<Object>) JSON.deserializeUntyped(response.getBody());
+                System.debug('Portfolio: '+raw);
+                
+                for(Object o: raw){
+                    Map<String, Object> Portfolio = (Map<String, Object>) o;
+                    newPortfolio.Name = String.valueOf(Portfolio.get('name'));
+                    newPortfolio.PW_Portfolio_Entity_ID__c = String.valueOf(Portfolio.get('id'));
+                    newPortfolio.PW_Active__c = Boolean.valueOf(Portfolio.get('active'));
+                }
+            }
+        } catch (Exception e) {
+            System.debug('Callout error: ' + e.getMessage());
         }
-        return houseToReturn;
-    //     House__c house = new House__c(
-    //         // Market__c = building.Market,
-    //         Name = building.Name,
-    //         Street_Address__c = building.Address,
-    //         City__c = building.City,
-    //         State__c = building.State,
-    //         Zip_Code__c = building.postalCode,
-    //         // House_Type__c = building.PropertyType,
-    //         // Bedrooms__c = building.Bedrooms,
-    //         // Bathrooms__c = building.Bathrooms,
-    //         // Car_Storage__c = null, // Set as needed
-    //         // Sq_Feet__c = building.TotalArea,
-    //         // Year_Built__c = building.YearBuilt,
-    //         Status__c = 'Managed',
-    //         Google_Place_ID__c = placeId
-    //     );
-    //     insert house;
-    //     return house;
-    }
-
-    private static PW_Building__c getBuildingByEntityId(String entityId) {
-        List<PW_Building__c> records = [
-            SELECT Id, PW_Building_ID__c FROM PW_Building__c WHERE PW_Building_ID__c = :entityId LIMIT 1
-        ];
-        return records.isEmpty() ? null : records[0];
+        
+        return newPortfolio;
     }
 
 
@@ -274,6 +365,7 @@ public with sharing class PropertyWareAPIUtility implements Schedulable, Databas
         public String stateRegion;
         public String postalCode;
         public String country;
+        public String googlePlaceId;
         // public String lastModifiedBy;
         // public Datetime lastModifiedDateTime;
         // public String createdBy;
@@ -284,12 +376,12 @@ public with sharing class PropertyWareAPIUtility implements Schedulable, Databas
         public String name;
         // public String abbreviation;
         // public Address address;
-        // public String type;
+        public String propertyType;
         // public String category;
         // public Integer floorNumber;
         // public Integer numberFloors;
         // public String neighborhood;
-        // public Double totalArea;
+        public Double totalArea;
         // public String areaUnits;
         // public String county;
         // public Boolean ready;
