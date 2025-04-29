@@ -6,7 +6,16 @@ public with sharing class PropertyWareAPIUtility implements Schedulable, Databas
 
     public static void getBuildings() {
 
-
+        PropertyWare_Setting__mdt PWsetting = [
+                                            SELECT 
+                                                MasterLabel,
+                                                DeveloperName,
+                                                IntegerValue__c
+                                            FROM PropertyWare_Setting__mdt
+                                            WHERE DeveloperName = 'PWgetBuildingHoursSpan'
+                                            LIMIT 1
+                                                ];
+        system.debug('PropertyWare_Setting__mdt: '+PWsetting.IntegerValue__c);
         PW_Portfolio__c defaultPortfolio = [SELECT Id, PW_Portfolio_Entity_ID__c FROM PW_Portfolio__c WHERE Name = 'Default PW Portfolio' LIMIT 1];
 
         House__c defaultHouse = [ SELECT Id, Name FROM House__c WHERE Name = 'Default House' LIMIT 1];
@@ -205,7 +214,7 @@ public with sharing class PropertyWareAPIUtility implements Schedulable, Databas
                 if(currentSFgooglePlaceIdToPWHouseMap.containsKey(buildings.get(buildingId).googlePlaceID)) {
                     houseId = currentSFgooglePlaceIdToPWHouseMap.get(buildings.get(buildingId).googlePlaceID).Id;
                 }
-                if(currentSFPWPortfolioMap.containsKey(buildingId)) {
+                if(currentSFPWPortfolioMap.containsKey(buildings.get(buildingId).portfolioID)) {
                     portfolioId = currentSFPWPortfolioMap.get(buildings.get(buildingId).portfolioID).Id;
                 }
 
