@@ -113,6 +113,18 @@ public with sharing class PropertyWareAPIUtility2 implements Schedulable, Databa
                                         bw.groupHOI = String.valueOf(temp.get('value'));
                                     }
                                 }
+                                if(temp.get('fieldName') == 'Is Owner Selling? notes'){
+                                    if(temp.get('value') != '' && temp.get('value') != null){
+                                        System.debug('Is Owner Selling? notes: '+String.valueOf(temp.get('value')));
+                                        // bw.groupHOI = String.valueOf(temp.get('value'));
+                                    }
+                                }
+                                if(temp.get('fieldName') == 'Is Owner Selling? Closing Date'){
+                                    if(temp.get('value') != '' && temp.get('value') != null){
+                                        System.debug('Is Owner Selling? Closing Date: '+String.valueOf(temp.get('value')));
+                                        // bw.groupHOI = String.valueOf(temp.get('value'));
+                                    }
+                                }
                             }
                             // List<Object> customFieldsList = (List<Object>) JSON.deserializeUntyped(String.valueOf(building.get(key)));
                             // // Map<String, Object> customFields = (Map<String, Object>) building.get(key);
