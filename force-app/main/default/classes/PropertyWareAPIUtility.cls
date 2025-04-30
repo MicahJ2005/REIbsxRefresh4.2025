@@ -24,12 +24,12 @@ public with sharing class PropertyWareAPIUtility implements Schedulable, Databas
         HttpRequest request = new HttpRequest();
         Datetime now = Datetime.now(); // Current datetime
         // String toDateTime = now.addHours(-1).formatGMT('yyyy-MM-dd\'T\'HH:mm:ss\'Z\''); // 1 hour ago
-        String fromDateTime = now.addHours(-2).formatGMT('yyyy-MM-dd\'T\'HH:mm:ss\'Z\''); // 24 hours ago
+        String fromDateTime = now.addHours(Integer.valueOf(PWsetting.IntegerValue__c)).formatGMT('yyyy-MM-dd\'T\'HH:mm:ss\'Z\''); // 24 hours ago
 
         string dateTimeParameters = '?lastModifiedDateTimeStart='+ EncodingUtil.urlEncode(fromDateTime, 'UTF-8');
         System.debug(dateTimeParameters);
 
-        request.setEndpoint('https://api.propertyware.com/pw/api/rest/v1/buildings'+ dateTimeParameters);
+        request.setEndpoint('https://api.propertyware.com/pw/api/rest/v1/buildings'+ dateTimeParameters+'&includeDeactivated=true&includeCustomFields=true');
         request.setMethod('GET');
 
         // Set required headers
@@ -69,7 +69,38 @@ public with sharing class PropertyWareAPIUtility implements Schedulable, Databas
                             bw.postalCode = String.valueOf(address.get('postalCode'));
                             
                         }
+                        if(key == 'marketing'){
+                            System.debug('marketing: ' + building.get(key));
+                            Map<String, Object> marketing = (Map<String, Object>) building.get(key);
+                            System.debug(marketing);
+                            bw.publishedForRent = Boolean.valueOf(marketing.get('publishedForRent'));
+                        }
+                        if(key == 'customFields'){
+                            System.debug('customFields: ' + building.get(key));
+                            for(object o2: (List<Object>) building.get(key)){
+                                Map<String, Object> temp = (Map<String, Object>) o2;
+                                // System.debug('temp: ' + temp);
+                                if(temp.get('fieldName') == 'Building Market'){
+                                    if(temp.get('value') != '' && temp.get('value') != null){
+                                        bw.market = String.valueOf(temp.get('value'));
+                                    }
+                                }
+                                if(temp.get('fieldName') == 'Group HOI DO NOT EDIT'){
+                                    if(temp.get('value') != '' && temp.get('value') != null){
+                                        bw.groupHOI = String.valueOf(temp.get('value'));
+                                    }
+                                }
+                            }
+                            // List<Object> customFieldsList = (List<Object>) JSON.deserializeUntyped(String.valueOf(building.get(key)));
+                            // // Map<String, Object> customFields = (Map<String, Object>) building.get(key);
+                            // System.debug('customFields: '+ customFieldsList);
+                            // CustomFieldWrapper wrapper = (CustomFieldWrapper) JSON.deserialize(String.valueOf(building.get(key)), CustomFieldWrapper.class);
+                            // system.debug('wrapper: '+ wrapper);
+                            // bw.publishedForRent = Boolean.valueOf(marketing.get('publishedForRent'));
+                        }
                     }
+                    bw.PwCreatedDate = String.valueOf(building.get('createdDateTime'));
+                    bw.PwLastModifiedDateTime = String.valueOf(building.get('lastModifiedDateTime'));
                     bw.propertyType = String.valueOf(building.get('type'));
                     bw.buildingEntityId = String.valueOf(building.get('id'));
                     bw.buildingIdNumber  = String.valueOf(building.get('idNumber'));
@@ -81,6 +112,7 @@ public with sharing class PropertyWareAPIUtility implements Schedulable, Databas
                     bw.numberOfBedrooms  = Integer.valueOf(building.get('numberOfBedrooms'));
                     bw.numberOfBathrooms  = Double.valueOf(building.get('numberOfBathrooms'));
                     bw.totalArea = Double.valueOf(building.get('totalArea'));
+                    
                     String fullAddress = bw.address + ', ' + bw.city + ', ' + bw.stateRegion + ' ' + bw.postalCode;
                     String placeId = GooglePlacesService.getPlaceIdFromAddress(fullAddress);
                     system.debug('placeId'+ placeId);
@@ -218,24 +250,28 @@ public with sharing class PropertyWareAPIUtility implements Schedulable, Databas
                     portfolioId = currentSFPWPortfolioMap.get(buildings.get(buildingId).portfolioID).Id;
                 }
 
+                System.debug( 'GOOGLE PLACE ID HERE: '+ String.valueOf(buildings.get(buildingId).googlePlaceId));
                 PW_Building__c newBuilding = new PW_Building__c(
                         Name = buildings.get(buildingId).name,
                         PW_Status__c = buildings.get(buildingId).status,
                         PW_Active__c = buildings.get(buildingId).active,
                         House__c = houseId,
                         PW_Portfolio__c = portfolioId,
-                        PW_Building_Market__c = '',
+                        PW_Building_Market__c = buildings.get(buildingId).market,
                         PW_Address__c = buildings.get(buildingId).address,
                         PW_City__c = buildings.get(buildingId).city,
                         PW_State__c = buildings.get(buildingId).stateRegion,
                         PW_Zip__c = buildings.get(buildingId).postalCode,
-                        // PW_Year_Built__c = Integer.valueOf(buildings.get(buildingId).yearBuilt),
+                        PW_Year_Built1__c = String.valueOf(buildings.get(buildingId).yearBuilt),
                         PW_Bedrooms__c = buildings.get(buildingId).numberOfBedrooms,
                         PW_Bathroos__c = buildings.get(buildingId).numberOfBathrooms,
                         PW_Building_Entity_ID1__c = buildingId,
                         PW_Portfolio_Entity_ID1__c = String.valueOf(buildings.get(buildingId).portfolioID),
-                        PW_Portfolio_Entity_ID__c = Double.valueOf(buildings.get(buildingId).portfolioID),
                         PW_Building_ID_Number__c = Integer.valueOf(buildings.get(buildingId).buildingIdNumber),
+                        PW_Created_Date_in_Propetyware__c = buildings.get(buildingId).PwCreatedDate,
+                        PW_Last_Modified_in_Propertyware__c = buildings.get(buildingId).PwLastModifiedDateTime,
+                        Published_For_Rent__c = buildings.get(buildingId).publishedForRent,
+                        Group_HOI__c = buildings.get(buildingId).groupHOI,
                         Google_Place_ID__c = String.valueOf(buildings.get(buildingId).googlePlaceId)
                         // PW_Portfolio__c = portfolio.Id
                     );
@@ -274,13 +310,13 @@ public with sharing class PropertyWareAPIUtility implements Schedulable, Databas
             if(!currentBuildingMap.containsKey(buildings.get(buildingId).googlePlaceId)){
                 system.debug('buildingId'+ buildingId + ' number of bedrooms'+buildings.get(buildingId).numberOfBedrooms);
                 House__c house = new House__c(
-                    // Market__c = building.Market,
+                    Market__c = buildings.get(buildingId).market,
                     Name = buildings.get(buildingId).name,
                     Street_Address__c = buildings.get(buildingId).address,
                     City__c = buildings.get(buildingId).city,
                     State__c = buildings.get(buildingId).stateRegion,
                     Zip_Code__c = buildings.get(buildingId).postalCode,
-                    House_Type__c = buildings.get(buildingId).PropertyType,
+                    // House_Type__c = buildings.get(buildingId).PropertyType,
                     Bedrooms__c = String.valueOf(buildings.get(buildingId).numberOfBedrooms),
                     Bathrooms__c = String.valueOf(buildings.get(buildingId).numberOfBathrooms),
                     // Car_Storage__c = null, // Set as needed
@@ -356,6 +392,7 @@ public with sharing class PropertyWareAPIUtility implements Schedulable, Databas
                     newPortfolio.Name = String.valueOf(Portfolio.get('name'));
                     newPortfolio.PW_Portfolio_Entity_ID__c = String.valueOf(Portfolio.get('id'));
                     newPortfolio.PW_Active__c = Boolean.valueOf(Portfolio.get('active'));
+                    newPortfolio.PW_Org__c = 'Premier Property Management Group';
                 }
             }
         } catch (Exception e) {
@@ -367,8 +404,12 @@ public with sharing class PropertyWareAPIUtility implements Schedulable, Databas
 
 
     public class PWBuildingWrapper {
+        public Boolean publishedForRent;
         public String buildingEntityId;
         public String address;
+        public String PwCreatedDate;
+        public String PwLastModifiedDateTime;
+        public String groupHOI;
         // public String addressCont;
         public String city;
         public String stateRegion;
@@ -409,6 +450,7 @@ public with sharing class PropertyWareAPIUtility implements Schedulable, Databas
         // public Boolean syndicate;
         // public String website;
         public String yearBuilt;
+        public String market;
         // public Marketing marketing;
         // public List<PropertyManager> propertyManagerList;
         // public Management management;
@@ -488,4 +530,15 @@ public with sharing class PropertyWareAPIUtility implements Schedulable, Databas
     //     public String accountNumber;
     //     public String accountCode;
     // }
+
+    public class CustomFieldWrapper {
+        public List<CustomField> customFields;
+    }
+    
+    public class CustomField {
+        public String dataType;
+        public Long definitionID;
+        public String fieldName;
+        public Object value;
+    }
 }
