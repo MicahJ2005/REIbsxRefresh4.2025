@@ -232,6 +232,7 @@ public with sharing class PropertyWareAPIUtility implements Schedulable, Databas
         ///map current buildings
         Map<String, PW_Building__c> currentBuildingMap = new Map<String, PW_Building__c>();
         for(PW_Building__c pwBuilding : pwBuildingsToSync){
+            pwBuilding.PW_Last_Modified_in_Propertyware__c = buildings.get(pwBuilding.PW_Building_Entity_ID1__c).PwLastModifiedDateTime;
             currentBuildingMap.put(pwBuilding.PW_Building_Entity_ID1__c, pwBuilding);
         }
 
@@ -267,7 +268,7 @@ public with sharing class PropertyWareAPIUtility implements Schedulable, Databas
                         PW_Bathroos__c = buildings.get(buildingId).numberOfBathrooms,
                         PW_Building_Entity_ID1__c = buildingId,
                         PW_Portfolio_Entity_ID1__c = String.valueOf(buildings.get(buildingId).portfolioID),
-                        PW_Building_ID_Number__c = Integer.valueOf(buildings.get(buildingId).buildingIdNumber),
+                        PW_Building_ID__c = String.valueOf(buildings.get(buildingId).buildingIdNumber),
                         PW_Created_Date_in_Propetyware__c = buildings.get(buildingId).PwCreatedDate,
                         PW_Last_Modified_in_Propertyware__c = buildings.get(buildingId).PwLastModifiedDateTime,
                         Published_For_Rent__c = buildings.get(buildingId).publishedForRent,
