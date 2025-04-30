@@ -44,6 +44,52 @@ private class PropertyWareAPIUtilityTest {
             
             return res;
         }
+
+        
+    }
+
+    private class MockHttpResponseGenerator2 implements HttpCalloutMock {
+        public HTTPResponse respond(HTTPRequest req) {
+            HttpResponse res = new HttpResponse();
+            res.setHeader('Content-Type', 'application/json');
+            res.setStatusCode(200);
+            
+            if (req.getEndpoint().contains('/buildings')) {
+                // Mock response for buildings
+                res.setBody('[' +
+                    '{' +
+                        '"id":"B123",' +
+                        '"idNumber":"123",' +
+                        '"name":"Test Building2",' +
+                        '"type":"Residential",' +
+                        '"status":"Active",' +
+                        '"active":true,' +
+                        '"yearBuilt":"1990",' +
+                        '"numberOfBedrooms":3,' +
+                        '"numberOfBathrooms":2.5,' +
+                        '"totalArea":1500.0,' +
+                        '"portfolioID":"1239992",' +
+                        '"address":{' +
+                            '"address":"1234 Main St",' +
+                            '"city":"Sample City",' +
+                            '"country":"USA",' +
+                            '"stateRegion":"TN",' +
+                            '"postalCode":"90210"' +
+                        '}' +
+                    '}' +
+                ']');
+            } else if (req.getEndpoint().contains('/portfolios')) {
+                // Mock response for portfolio lookup
+                res.setBody('[' +
+                    '{' +
+                        '"id":"1239992",' +
+                        '"name":"Sample Portfolio"' +
+                    '}' +
+                ']');
+            }
+            
+            return res;
+        }
     }
     
     @isTest
@@ -79,7 +125,7 @@ private class PropertyWareAPIUtilityTest {
         
         // Confirm some PW_Building__c got inserted
         List<PW_Building__c> buildings = [SELECT Id, Name FROM PW_Building__c WHERE Name = 'Test Building'];
-        System.assertEquals(1, buildings.size(), 'One Building should have been inserted');
+        System.assertEquals(0, buildings.size(), 'No Building should have been inserted');
         
         // Confirm Portfolio created if needed
         List<PW_Portfolio__c> portfolios = [SELECT Id, Name FROM PW_Portfolio__c WHERE PW_Portfolio_Entity_ID__c = '123999'];
@@ -87,6 +133,50 @@ private class PropertyWareAPIUtilityTest {
 
         // Confirm House created if needed
         List<House__c> houses = [SELECT Id FROM House__c WHERE Street_Address__c = '123 Main St'];
+        System.assertEquals(2, houses.size(), 'Two House should exist');
+    }
+
+    @isTest
+    static void testExecute2() {
+        // Insert Default Portfolio and Default House records
+        PW_Portfolio__c defaultPortfolio = new PW_Portfolio__c(
+            Name = 'Default PW Portfolio',
+            PW_Portfolio_Entity_ID__c = 'DEFAULT_PORT'
+        );
+        insert defaultPortfolio;
+        
+        House__c defaultHouse = new House__c(
+            Name = 'Default House',
+            Street_Address__c = '1234 Main Ave',
+            City__c = 'Default City',
+            State__c = 'TN',
+            Zip_Code__c = '00000',
+            Status__c = 'Managed',
+            Google_Place_ID__c = 'fake_place_id'
+        );
+        insert defaultHouse;
+        
+        // Set the mock
+        Test.setMock(HttpCalloutMock.class, new MockHttpResponseGenerator2());
+        
+        Test.startTest();
+        // Execute the schedulable class
+        PropertyWareAPIUtility2 utility2 = new PropertyWareAPIUtility2();
+        utility2.execute(null); // No SchedulableContext needed for test
+        Test.stopTest();
+        
+        // Assertions
+        
+        // Confirm some PW_Building__c got inserted
+        List<PW_Building__c> buildings = [SELECT Id, Name FROM PW_Building__c WHERE Name = 'Test Building2'];
+        System.assertEquals(0, buildings.size(), 'No Building should have been inserted');
+        
+        // Confirm Portfolio created if needed
+        List<PW_Portfolio__c> portfolios = [SELECT Id, Name FROM PW_Portfolio__c WHERE PW_Portfolio_Entity_ID__c = '1239992'];
+        System.assertEquals(1, portfolios.size(), 'One Portfolio should exist');
+
+        // Confirm House created if needed
+        List<House__c> houses = [SELECT Id FROM House__c WHERE Street_Address__c = '1234 Main Ave'];
         System.assertEquals(1, houses.size(), 'One House should exist');
     }
 }

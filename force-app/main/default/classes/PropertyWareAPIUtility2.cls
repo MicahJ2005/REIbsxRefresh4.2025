@@ -1,4 +1,4 @@
-public with sharing class PropertyWareAPIUtility implements Schedulable, Database.AllowsCallouts{
+public with sharing class PropertyWareAPIUtility2 implements Schedulable, Database.AllowsCallouts{
 
     public void execute(SchedulableContext ctx) {
         getBuildings();
@@ -14,30 +14,29 @@ public with sharing class PropertyWareAPIUtility implements Schedulable, Databas
                                                     x_propertyware_client_secret__c,
                                                     x_propertyware_system_id__c
                                                 FROM PropertyWare_Setting__mdt
-                                                WHERE DeveloperName = 'PW_PPMG_Creds'
+                                                WHERE DeveloperName = 'PW_PPMG_of_Texas_Creds'
                                                 LIMIT 1
                                             ];
 
         PropertyWare_Setting__mdt PWgetBuildingHoursSpanMTD = [
-                                                        SELECT 
-                                                            MasterLabel,
-                                                            DeveloperName,
-                                                            IntegerValue__c
-                                                        FROM PropertyWare_Setting__mdt
-                                                        WHERE DeveloperName = 'EndFromHoursAgo'
-                                                        LIMIT 1
-                                                            ];
+            SELECT 
+                MasterLabel,
+                DeveloperName,
+                IntegerValue__c
+            FROM PropertyWare_Setting__mdt
+            WHERE DeveloperName = 'EndFromHoursAgo'
+            LIMIT 1
+                ];
 
         PropertyWare_Setting__mdt PWStartFromHoursAgoMTD = [
-                                                            SELECT 
-                                                                MasterLabel,
-                                                                DeveloperName,
-                                                                IntegerValue__c
-                                                            FROM PropertyWare_Setting__mdt
-                                                            WHERE DeveloperName = 'StartFromHoursAgo'
-                                                            LIMIT 1
-                                                                ];                                
-
+                        SELECT 
+                            MasterLabel,
+                            DeveloperName,
+                            IntegerValue__c
+                        FROM PropertyWare_Setting__mdt
+                        WHERE DeveloperName = 'StartFromHoursAgo'
+                        LIMIT 1
+                            ];           
 
         PW_Portfolio__c defaultPortfolio = [SELECT Id, PW_Portfolio_Entity_ID__c FROM PW_Portfolio__c WHERE Name = 'Default PW Portfolio' LIMIT 1];
 
@@ -363,7 +362,7 @@ public with sharing class PropertyWareAPIUtility implements Schedulable, Databas
                         bathroomTrimmed = '0';
                     }
                 }
-
+                
                 House__c house = new House__c(
                     Market__c = buildings.get(buildingId).market,
                     Name = buildings.get(buildingId).name,
@@ -451,7 +450,7 @@ public with sharing class PropertyWareAPIUtility implements Schedulable, Databas
                     newPortfolio.Name = String.valueOf(Portfolio.get('name'));
                     newPortfolio.PW_Portfolio_Entity_ID__c = String.valueOf(Portfolio.get('id'));
                     newPortfolio.PW_Active__c = Boolean.valueOf(Portfolio.get('active'));
-                    newPortfolio.PW_Org__c = 'Premier Property Management Group';
+                    newPortfolio.PW_Org__c = 'PPMG of Texas, LLC';
                 }
             }
         } catch (Exception e) {
