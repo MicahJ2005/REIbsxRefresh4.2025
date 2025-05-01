@@ -116,22 +116,16 @@ public with sharing class PropertyWareAPIUtility2 implements Schedulable, Databa
                                 if(temp.get('fieldName') == 'Is Owner Selling? notes'){
                                     if(temp.get('value') != '' && temp.get('value') != null){
                                         System.debug('Is Owner Selling? notes: '+String.valueOf(temp.get('value')));
-                                        // bw.groupHOI = String.valueOf(temp.get('value'));
+                                        bw.isOwnerSellingNotes = String.valueOf(temp.get('value'));
                                     }
                                 }
                                 if(temp.get('fieldName') == 'Is Owner Selling? Closing Date'){
                                     if(temp.get('value') != '' && temp.get('value') != null){
                                         System.debug('Is Owner Selling? Closing Date: '+String.valueOf(temp.get('value')));
-                                        // bw.groupHOI = String.valueOf(temp.get('value'));
+                                        bw.isOwnerSellingClosingDate = String.valueOf(temp.get('value'));
                                     }
                                 }
                             }
-                            // List<Object> customFieldsList = (List<Object>) JSON.deserializeUntyped(String.valueOf(building.get(key)));
-                            // // Map<String, Object> customFields = (Map<String, Object>) building.get(key);
-                            // System.debug('customFields: '+ customFieldsList);
-                            // CustomFieldWrapper wrapper = (CustomFieldWrapper) JSON.deserialize(String.valueOf(building.get(key)), CustomFieldWrapper.class);
-                            // system.debug('wrapper: '+ wrapper);
-                            // bw.publishedForRent = Boolean.valueOf(marketing.get('publishedForRent'));
                         }
                     }
                     bw.PwCreatedDate = String.valueOf(building.get('createdDateTime'));
@@ -309,11 +303,10 @@ public with sharing class PropertyWareAPIUtility2 implements Schedulable, Databa
                         PW_Total_Area__c = buildings.get(buildingId).totalArea,
                         Published_For_Rent__c = buildings.get(buildingId).publishedForRent,
                         Group_HOI__c = buildings.get(buildingId).groupHOI,
-                        Google_Place_ID__c = String.valueOf(buildings.get(buildingId).googlePlaceId)
-                        // PW_Portfolio__c = portfolio.Id
+                        Google_Place_ID__c = String.valueOf(buildings.get(buildingId).googlePlaceId),
+                        Is_Owner_Selling_Notes__c = buildings.get(buildingId).isOwnerSellingNotes,
+                        Is_Owner_Selling_Closing_Date__c = buildings.get(buildingId).isOwnerSellingClosingDate
                     );
-                    
-                    // buildingsToReturn.add(newBuilding);
                     noBuildingsToMap.put(buildingId, newBuilding);
             }
         
@@ -321,7 +314,6 @@ public with sharing class PropertyWareAPIUtility2 implements Schedulable, Databa
 
         AllBuildingReturn.add(currentBuildingMap);
         AllBuildingReturn.add(noBuildingsToMap);
-
 
         return AllBuildingReturn;
     }
@@ -334,7 +326,6 @@ public with sharing class PropertyWareAPIUtility2 implements Schedulable, Databa
         }
 
         List<House__c> pwBuildingsToSync = [SELECT Id , Name, PW_ID_Number__c, Google_Place_ID__c FROM House__c WHERE Google_Place_ID__c IN :googleIdSet];
-        // List<PW_Building__c> pwBuildingsToSync = [SELECT Id , Name, PW_Building_ID__c, PW_Building_Entity_ID1__c FROM PW_Building__c WHERE PW_Building_Entity_ID1__c = '253001846'];
         System.debug('pwBuildingsToSync' +pwBuildingsToSync);
 
         ///map current buildings
@@ -428,12 +419,6 @@ public with sharing class PropertyWareAPIUtility2 implements Schedulable, Databa
     public static PW_Portfolio__c getPortfolioInPW(string portfolioId, PropertyWare_Setting__mdt PWPPMGCREDS) {
         Http http = new Http();
         HttpRequest request = new HttpRequest();
-        Datetime now = Datetime.now(); // Current datetime
-        // String toDateTime = now.addHours(-1).formatGMT('yyyy-MM-dd\'T\'HH:mm:ss\'Z\''); // 1 hour ago
-        String fromDateTime = now.addHours(-2).formatGMT('yyyy-MM-dd\'T\'HH:mm:ss\'Z\''); // 24 hours ago
-
-        string dateTimeParameters = '?lastModifiedDateTimeStart='+ EncodingUtil.urlEncode(fromDateTime, 'UTF-8');
-        System.debug(dateTimeParameters);
 
         request.setEndpoint('https://api.propertyware.com/pw/api/rest/v1/portfolios'+ portfolioId);
         request.setMethod('GET');
@@ -521,6 +506,8 @@ public with sharing class PropertyWareAPIUtility2 implements Schedulable, Databa
         // public String website;
         public String yearBuilt;
         public String market;
+        public string isOwnerSellingNotes;
+        public String isOwnerSellingClosingDate;
         // public Marketing marketing;
         // public List<PropertyManager> propertyManagerList;
         // public Management management;

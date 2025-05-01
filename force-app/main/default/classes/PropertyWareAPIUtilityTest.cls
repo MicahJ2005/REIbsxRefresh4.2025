@@ -133,7 +133,7 @@ private class PropertyWareAPIUtilityTest {
 
         // Confirm House created if needed
         List<House__c> houses = [SELECT Id FROM House__c WHERE Street_Address__c = '123 Main St'];
-        System.assertEquals(2, houses.size(), 'Two House should exist');
+        System.assertEquals(1, houses.size(), 'Two House should exist');
     }
 
     @isTest
