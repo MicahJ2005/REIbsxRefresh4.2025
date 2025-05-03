@@ -1,6 +1,6 @@
-public with sharing class PropertyWareAPIUtility implements Schedulable, Database.AllowsCallouts{
+public with sharing class PropertyWareAPIUtility implements Queueable, Database.AllowsCallouts{
 
-    public void execute(SchedulableContext ctx) {
+    public void execute(QueueableContext ctx) {
         getBuildings();
     }
 
@@ -262,7 +262,20 @@ public with sharing class PropertyWareAPIUtility implements Schedulable, Databas
         ///map current buildings
         Map<String, PW_Building__c> currentBuildingMap = new Map<String, PW_Building__c>();
         for(PW_Building__c pwBuilding : pwBuildingsToSync){
-            pwBuilding.PW_Last_Modified_in_Propertyware__c = buildings.get(pwBuilding.PW_Building_Entity_ID1__c).PwLastModifiedDateTime;
+            string formattedPWLastModifiedDate = '';
+            if(buildings.get(pwBuilding.PW_Building_Entity_ID1__c).PwLastModifiedDateTime != null){
+                try{
+                    string modifiedDate = String.ValueOf(buildings.get(pwBuilding.PW_Building_Entity_ID1__c).PwLastModifiedDateTime);
+                    System.debug('modifiedDate:'+ modifiedDate);
+                    DateTime transformedPWLastModifiedDate = DateTime.valueOfGmt(modifiedDate);
+                    formattedPWLastModifiedDate = transformedPWLastModifiedDate.format('M/d/yyyy h:mm a');
+                }  catch (Exception e) {
+                    System.debug('Invalid datetime string: ' + buildings.get(pwBuilding.PW_Building_Entity_ID1__c).PwLastModifiedDateTime);
+                    // Optionally set a fallback
+                    formattedPWLastModifiedDate = buildings.get(pwBuilding.PW_Building_Entity_ID1__c).PwLastModifiedDateTime;
+                }
+            }
+            pwBuilding.PW_Last_Modified_in_Propertyware__c = formattedPWLastModifiedDate;
             currentBuildingMap.put(pwBuilding.PW_Building_Entity_ID1__c, pwBuilding);
         }
 
@@ -280,6 +293,31 @@ public with sharing class PropertyWareAPIUtility implements Schedulable, Databas
                 if(currentSFPWPortfolioMap.containsKey(buildings.get(buildingId).portfolioID)) {
                     portfolioId = currentSFPWPortfolioMap.get(buildings.get(buildingId).portfolioID).Id;
                 }
+                string formattedPWCreatedDate = '';
+                if(buildings.get(buildingId).PwCreatedDate != null){
+                    try{
+                        string createDate = buildings.get(buildingId).PwCreatedDate;
+                        DateTime transformedPWCreatedDate = DateTime.valueOfGmt(createDate);
+                        formattedPWCreatedDate = transformedPWCreatedDate.format('M/d/yyyy h:mm a');
+                    } catch (Exception e) {
+                        System.debug('Invalid datetime string: ' + buildings.get(buildingId).PwCreatedDate);
+                        // Optionally set a fallback
+                        formattedPWCreatedDate = buildings.get(buildingId).PwLastModifiedDateTime;
+                    }
+                }
+                string formattedPWLastModifiedDate = '';
+                if(buildings.get(buildingId).PwLastModifiedDateTime != null){
+                    try{
+                        string modifiedDate = buildings.get(buildingId).PwLastModifiedDateTime;
+                        DateTime transformedPWLastModifiedDate = DateTime.valueOfGmt(modifiedDate);
+                        formattedPWLastModifiedDate = transformedPWLastModifiedDate.format('M/d/yyyy h:mm a');
+                    }  catch (Exception e) {
+                        System.debug('Invalid datetime string: ' + buildings.get(buildingId).PwLastModifiedDateTime);
+                        // Optionally set a fallback
+                        formattedPWLastModifiedDate = buildings.get(buildingId).PwLastModifiedDateTime;
+                    }
+                }
+                
 
                 System.debug( 'GOOGLE PLACE ID HERE: '+ String.valueOf(buildings.get(buildingId).googlePlaceId));
                 PW_Building__c newBuilding = new PW_Building__c(
@@ -299,8 +337,8 @@ public with sharing class PropertyWareAPIUtility implements Schedulable, Databas
                         PW_Building_Entity_ID1__c = buildingId,
                         PW_Portfolio_Entity_ID1__c = String.valueOf(buildings.get(buildingId).portfolioID),
                         PW_Building_ID__c = String.valueOf(buildings.get(buildingId).buildingIdNumber),
-                        PW_Created_Date_in_Propetyware__c = buildings.get(buildingId).PwCreatedDate,
-                        PW_Last_Modified_in_Propertyware__c = buildings.get(buildingId).PwLastModifiedDateTime,
+                        PW_Created_Date_in_Propetyware__c = formattedPWCreatedDate,
+                        PW_Last_Modified_in_Propertyware__c = formattedPWLastModifiedDate,
                         PW_Total_Area__c = buildings.get(buildingId).totalArea,
                         Published_For_Rent__c = buildings.get(buildingId).publishedForRent,
                         Group_HOI__c = buildings.get(buildingId).groupHOI,

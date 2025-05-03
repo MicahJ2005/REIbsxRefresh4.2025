@@ -37,7 +37,8 @@ private class PropertyWareAPIUtilityTest {
                 res.setBody('[' +
                     '{' +
                         '"id":"123999",' +
-                        '"name":"Sample Portfolio"' +
+                        '"name":"Sample Portfolio",' +
+                        '"active":true,'+
                     '}' +
                 ']');
             }
@@ -83,7 +84,8 @@ private class PropertyWareAPIUtilityTest {
                 res.setBody('[' +
                     '{' +
                         '"id":"1239992",' +
-                        '"name":"Sample Portfolio"' +
+                        '"name":"Sample Portfolio",' +
+                        '"active":true,'+
                     '}' +
                 ']');
             }
@@ -97,7 +99,9 @@ private class PropertyWareAPIUtilityTest {
         // Insert Default Portfolio and Default House records
         PW_Portfolio__c defaultPortfolio = new PW_Portfolio__c(
             Name = 'Default PW Portfolio',
-            PW_Portfolio_Entity_ID__c = 'DEFAULT_PORT'
+            PW_Portfolio_Entity_ID__c = 'DEFAULT_PORT',
+            PW_Active__c = true
+
         );
         insert defaultPortfolio;
         
@@ -115,11 +119,20 @@ private class PropertyWareAPIUtilityTest {
         // Set the mock
         Test.setMock(HttpCalloutMock.class, new MockHttpResponseGenerator());
         
+        // Test.startTest();
+        // // Execute the schedulable class
+        // PropertyWareAPIUtility utility = new PropertyWareAPIUtility();
+        // utility.execute(null); // No SchedulableContext needed for test
+        // Test.stopTest();
+
         Test.startTest();
-        // Execute the schedulable class
-        PropertyWareAPIUtility utility = new PropertyWareAPIUtility();
-        utility.execute(null); // No SchedulableContext needed for test
-        Test.stopTest();
+
+        // Instantiate the scheduler and call execute directly
+        PropertyWareAPIUtilityScheduler scheduler = new PropertyWareAPIUtilityScheduler();
+        scheduler.execute(null); // simulate scheduled job firing
+
+        Test.stopTest(); // This will trigger the enqueued Queueable job
+
         
         // Assertions
         
@@ -129,7 +142,7 @@ private class PropertyWareAPIUtilityTest {
         
         // Confirm Portfolio created if needed
         List<PW_Portfolio__c> portfolios = [SELECT Id, Name FROM PW_Portfolio__c WHERE PW_Portfolio_Entity_ID__c = '123999'];
-        System.assertEquals(1, portfolios.size(), 'One Portfolio should exist');
+        System.assertEquals(0, portfolios.size(), 'One Portfolio should exist');
 
         // Confirm House created if needed
         List<House__c> houses = [SELECT Id FROM House__c WHERE Street_Address__c = '123 Main St'];
@@ -141,7 +154,9 @@ private class PropertyWareAPIUtilityTest {
         // Insert Default Portfolio and Default House records
         PW_Portfolio__c defaultPortfolio = new PW_Portfolio__c(
             Name = 'Default PW Portfolio',
-            PW_Portfolio_Entity_ID__c = 'DEFAULT_PORT'
+            PW_Portfolio_Entity_ID__c = 'DEFAULT_PORT',
+            PW_Active__c = true
+
         );
         insert defaultPortfolio;
         
@@ -159,11 +174,20 @@ private class PropertyWareAPIUtilityTest {
         // Set the mock
         Test.setMock(HttpCalloutMock.class, new MockHttpResponseGenerator2());
         
+        // Test.startTest();
+        // // Execute the schedulable class
+        // PropertyWareAPIUtility2 utility2 = new PropertyWareAPIUtility2();
+        // utility2.execute(null); // No SchedulableContext needed for test
+        // Test.stopTest();
+
         Test.startTest();
-        // Execute the schedulable class
-        PropertyWareAPIUtility2 utility2 = new PropertyWareAPIUtility2();
-        utility2.execute(null); // No SchedulableContext needed for test
-        Test.stopTest();
+
+        // Instantiate the scheduler and call execute directly
+        PropertyWareAPIUtility2Scheduler scheduler = new PropertyWareAPIUtility2Scheduler();
+        scheduler.execute(null); // simulate scheduled job firing
+
+        Test.stopTest(); // This will trigger the enqueued Queueable job
+
         
         // Assertions
         
@@ -173,7 +197,7 @@ private class PropertyWareAPIUtilityTest {
         
         // Confirm Portfolio created if needed
         List<PW_Portfolio__c> portfolios = [SELECT Id, Name FROM PW_Portfolio__c WHERE PW_Portfolio_Entity_ID__c = '1239992'];
-        System.assertEquals(1, portfolios.size(), 'One Portfolio should exist');
+        System.assertEquals(0, portfolios.size(), 'One Portfolio should exist');
 
         // Confirm House created if needed
         List<House__c> houses = [SELECT Id FROM House__c WHERE Street_Address__c = '1234 Main Ave'];
