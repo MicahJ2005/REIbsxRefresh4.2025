@@ -261,7 +261,20 @@ public with sharing class PropertyWareAPIUtility2 implements Queueable, Database
         ///map current buildings
         Map<String, PW_Building__c> currentBuildingMap = new Map<String, PW_Building__c>();
         for(PW_Building__c pwBuilding : pwBuildingsToSync){
-            pwBuilding.PW_Last_Modified_in_Propertyware__c = buildings.get(pwBuilding.PW_Building_Entity_ID1__c).PwLastModifiedDateTime;
+            string formattedPWLastModifiedDate = '';
+            try{
+                string zuluLastModified = buildings.get(pwBuilding.PW_Building_Entity_ID1__c).PwLastModifiedDateTime;
+                if(zuluLastModified.contains('T')) {
+                    zuluLastModified = zuluLastModified.replace('T',' ');
+                }
+                DateTime transformedPWLastModifiedDate = DateTime.valueOfGmt(zuluLastModified);
+                formattedPWLastModifiedDate = transformedPWLastModifiedDate.format('M/d/yyyy h:mm a');
+            }  catch (Exception e) {
+                System.debug('Invalid datetime string: ' + buildings.get(pwBuilding.PW_Building_Entity_ID1__c).PwLastModifiedDateTime);
+                // Optionally set a fallback
+                formattedPWLastModifiedDate = buildings.get(pwBuilding.PW_Building_Entity_ID1__c).PwLastModifiedDateTime;
+            }
+            pwBuilding.PW_Last_Modified_in_Propertyware__c = formattedPWLastModifiedDate;
             currentBuildingMap.put(pwBuilding.PW_Building_Entity_ID1__c, pwBuilding);
         }
 
@@ -282,8 +295,11 @@ public with sharing class PropertyWareAPIUtility2 implements Queueable, Database
                 string formattedPWCreatedDate = '';
                 if(buildings.get(buildingId).PwCreatedDate != null){
                     try{
-                        string createDate = buildings.get(buildingId).PwCreatedDate;
-                        DateTime transformedPWCreatedDate = DateTime.valueOfGmt(createDate);
+                        string zuluCreateDate = buildings.get(buildingId).PwCreatedDate;
+                        if(zuluCreateDate.contains('T')) {
+                            zuluCreateDate = zuluCreateDate.replace('T',' ');
+                        }
+                        DateTime transformedPWCreatedDate = DateTime.valueOfGmt(zuluCreateDate);
                         formattedPWCreatedDate = transformedPWCreatedDate.format('M/d/yyyy h:mm a');
                     } catch (Exception e) {
                         System.debug('Invalid datetime string: ' + buildings.get(buildingId).PwCreatedDate);
@@ -294,8 +310,11 @@ public with sharing class PropertyWareAPIUtility2 implements Queueable, Database
                 string formattedPWLastModifiedDate = '';
                 if(buildings.get(buildingId).PwLastModifiedDateTime != null){
                     try{
-                        string modifiedDate = buildings.get(buildingId).PwLastModifiedDateTime;
-                        DateTime transformedPWLastModifiedDate = DateTime.valueOfGmt(modifiedDate);
+                        string zuluLastModified = buildings.get(buildingId).PwLastModifiedDateTime;
+                        if(zuluLastModified.contains('T')) {
+                            zuluLastModified = zuluLastModified.replace('T',' ');
+                        }
+                        DateTime transformedPWLastModifiedDate = DateTime.valueOfGmt(zuluLastModified);
                         formattedPWLastModifiedDate = transformedPWLastModifiedDate.format('M/d/yyyy h:mm a');
                     }  catch (Exception e) {
                         System.debug('Invalid datetime string: ' + buildings.get(buildingId).PwLastModifiedDateTime);
