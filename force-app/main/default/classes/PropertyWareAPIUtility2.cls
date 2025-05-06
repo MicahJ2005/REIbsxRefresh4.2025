@@ -261,19 +261,7 @@ public with sharing class PropertyWareAPIUtility2 implements Queueable, Database
         ///map current buildings
         Map<String, PW_Building__c> currentBuildingMap = new Map<String, PW_Building__c>();
         for(PW_Building__c pwBuilding : pwBuildingsToSync){
-            string formattedPWLastModifiedDate = '';
-            if(buildings.get(pwBuilding.PW_Building_Entity_ID1__c).PwLastModifiedDateTime != null){
-                try{
-                    string modifiedDate = buildings.get(pwBuilding.PW_Building_Entity_ID1__c).PwLastModifiedDateTime;
-                    DateTime transformedPWLastModifiedDate = DateTime.valueOfGmt(modifiedDate);
-                    formattedPWLastModifiedDate = transformedPWLastModifiedDate.format('M/d/yyyy h:mm a');
-                }  catch (Exception e) {
-                    System.debug('Invalid datetime string: ' + buildings.get(pwBuilding.PW_Building_Entity_ID1__c).PwLastModifiedDateTime);
-                    // Optionally set a fallback
-                    formattedPWLastModifiedDate = buildings.get(pwBuilding.PW_Building_Entity_ID1__c).PwLastModifiedDateTime;
-                }
-            }
-            pwBuilding.PW_Last_Modified_in_Propertyware__c = formattedPWLastModifiedDate;
+            pwBuilding.PW_Last_Modified_in_Propertyware__c = buildings.get(pwBuilding.PW_Building_Entity_ID1__c).PwLastModifiedDateTime;
             currentBuildingMap.put(pwBuilding.PW_Building_Entity_ID1__c, pwBuilding);
         }
 
