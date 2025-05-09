@@ -126,6 +126,12 @@ public with sharing class PropertyWareAPIUtility implements Queueable, Database.
                                         bw.isOwnerSellingClosingDate = String.valueOf(temp.get('value'));
                                     }
                                 }
+                                if(temp.get('fieldName') == 'Is Owner Selling?'){
+                                    if(temp.get('value') != '' && temp.get('value') != null){
+                                        System.debug('Is Owner Selling?: '+String.valueOf(temp.get('value')));
+                                        bw.isOwnerSelling = String.valueOf(temp.get('value'));
+                                    }
+                                }
                             }
                         }
                     }
@@ -180,7 +186,7 @@ public with sharing class PropertyWareAPIUtility implements Queueable, Database.
             }
         }
 
-         for(PW_Portfolio__c pw: [SELECT Id, Name, PW_Portfolio_Entity_ID__c, PW_Active__c 
+         for(PW_Portfolio__c pw: [SELECT Id, Name, PW_Portfolio_Entity_ID__c, PW_Active__c, Investor_Owner__c
                                     FROM PW_Portfolio__c 
                                     WHERE Id IN: upsertedPortfolioIds ]){
 
@@ -245,6 +251,7 @@ public with sharing class PropertyWareAPIUtility implements Queueable, Database.
             }
         }
         
+        system.debug('PropertyWareAPIUtility buildingsToUpsert.size(): '+buildingsToUpsert.size());
         List<Database.UpsertResult> resultsBuildings = Database.upsert(buildingsToUpsert, false);
 
     }
@@ -262,19 +269,81 @@ public with sharing class PropertyWareAPIUtility implements Queueable, Database.
         ///map current buildings
         Map<String, PW_Building__c> currentBuildingMap = new Map<String, PW_Building__c>();
         for(PW_Building__c pwBuilding : pwBuildingsToSync){
-            string formattedPWLastModifiedDate = '';
-            try{
-                string zuluLastModified = buildings.get(pwBuilding.PW_Building_Entity_ID1__c).PwLastModifiedDateTime;
-                if(zuluLastModified.contains('T')) {
-                    zuluLastModified = zuluLastModified.replace('T',' ');
-                }
-                DateTime transformedPWLastModifiedDate = DateTime.valueOfGmt(zuluLastModified);
-                formattedPWLastModifiedDate = transformedPWLastModifiedDate.format('M/d/yyyy h:mm a');
-            }  catch (Exception e) {
-                System.debug('Invalid datetime string: ' + buildings.get(pwBuilding.PW_Building_Entity_ID1__c).PwLastModifiedDateTime);
-                // Optionally set a fallback
-                formattedPWLastModifiedDate = buildings.get(pwBuilding.PW_Building_Entity_ID1__c).PwLastModifiedDateTime;
+            string houseId = defaultHouseId;
+            string portfolioId = defaultPorfolioId;
+            string investorOwnerId = null;
+            
+            System.debug('googleId from currentSFgooglePlaceIdToPWHouseMap: '+currentSFgooglePlaceIdToPWHouseMap.get(buildings.get(pwBuilding.PW_Building_Entity_ID1__c).googlePlaceID));
+            System.debug('Building from currentSFPWPortfolioMap: '+currentSFPWPortfolioMap.get(buildings.get(pwBuilding.PW_Building_Entity_ID1__c).portfolioID));
+            if(currentSFgooglePlaceIdToPWHouseMap.containsKey(buildings.get(pwBuilding.PW_Building_Entity_ID1__c).googlePlaceID)) {
+                houseId = currentSFgooglePlaceIdToPWHouseMap.get(buildings.get(pwBuilding.PW_Building_Entity_ID1__c).googlePlaceID).Id;
             }
+            if(currentSFPWPortfolioMap.containsKey(buildings.get(pwBuilding.PW_Building_Entity_ID1__c).portfolioID)) {
+                portfolioId = currentSFPWPortfolioMap.get(buildings.get(pwBuilding.PW_Building_Entity_ID1__c).portfolioID).Id;
+                investorOwnerId = currentSFPWPortfolioMap.get(buildings.get(pwBuilding.PW_Building_Entity_ID1__c).portfolioID).Investor_Owner__c;
+            }
+            
+            string formattedPWCreatedDate = '';
+            if(buildings.get(pwBuilding.PW_Building_Entity_ID1__c).PwCreatedDate != null){
+                try{
+                    string zuluCreateDate = buildings.get(pwBuilding.PW_Building_Entity_ID1__c).PwCreatedDate;
+                    if(zuluCreateDate.contains('T')) {
+                        zuluCreateDate = zuluCreateDate.replace('T',' ');
+                    }
+                    DateTime transformedPWCreatedDate = DateTime.valueOfGmt(zuluCreateDate);
+                    formattedPWCreatedDate = transformedPWCreatedDate.format('M/d/yyyy h:mm a');
+                } catch (Exception e) {
+                    System.debug('Invalid datetime string: ' + buildings.get(pwBuilding.PW_Building_Entity_ID1__c).PwCreatedDate);
+                    // Optionally set a fallback
+                    formattedPWCreatedDate = buildings.get(pwBuilding.PW_Building_Entity_ID1__c).PwCreatedDate;
+                }
+            }
+
+            string formattedPWLastModifiedDate = '';
+            if(buildings.get(pwBuilding.PW_Building_Entity_ID1__c).PwLastModifiedDateTime != null){
+                try{
+                    string zuluLastModified = buildings.get(pwBuilding.PW_Building_Entity_ID1__c).PwLastModifiedDateTime;
+                    if(zuluLastModified.contains('T')) {
+                        zuluLastModified = zuluLastModified.replace('T',' ');
+                    }
+                    DateTime transformedPWLastModifiedDate = DateTime.valueOfGmt(zuluLastModified);
+                    formattedPWLastModifiedDate = transformedPWLastModifiedDate.format('M/d/yyyy h:mm a');
+                }  catch (Exception e) {
+                    System.debug('Invalid datetime string: ' + buildings.get(pwBuilding.PW_Building_Entity_ID1__c).PwLastModifiedDateTime);
+                    // Optionally set a fallback
+                    formattedPWLastModifiedDate = buildings.get(pwBuilding.PW_Building_Entity_ID1__c).PwLastModifiedDateTime;
+                }
+            }
+
+            pwBuilding.Name = buildings.get(pwBuilding.PW_Building_Entity_ID1__c).name;
+            pwBuilding.PW_Status__c = buildings.get(pwBuilding.PW_Building_Entity_ID1__c).status;
+            pwBuilding.PW_Active__c = buildings.get(pwBuilding.PW_Building_Entity_ID1__c).active;
+            pwBuilding.House__c = houseId;
+            pwBuilding.PW_Portfolio__c = portfolioId;
+            pwBuilding.Investor_Owner_Account__c = investorOwnerId;
+            pwBuilding.PW_Building_Market__c = buildings.get(pwBuilding.PW_Building_Entity_ID1__c).market;
+            pwBuilding.PW_Address__c = buildings.get(pwBuilding.PW_Building_Entity_ID1__c).address;
+            pwBuilding.PW_City__c = buildings.get(pwBuilding.PW_Building_Entity_ID1__c).city;
+            pwBuilding.PW_State__c = buildings.get(pwBuilding.PW_Building_Entity_ID1__c).stateRegion;
+            pwBuilding.PW_Zip__c = buildings.get(pwBuilding.PW_Building_Entity_ID1__c).postalCode;
+            pwBuilding.PW_Year_Built1__c = String.valueOf(buildings.get(pwBuilding.PW_Building_Entity_ID1__c).yearBuilt);
+            pwBuilding.PW_Bedrooms__c = buildings.get(pwBuilding.PW_Building_Entity_ID1__c).numberOfBedrooms;
+            pwBuilding.PW_Bathroos__c = buildings.get(pwBuilding.PW_Building_Entity_ID1__c).numberOfBathrooms;
+            pwBuilding.PW_Building_Entity_ID1__c = pwBuilding.PW_Building_Entity_ID1__c;
+            pwBuilding.PW_Portfolio_Entity_ID1__c = String.valueOf(buildings.get(pwBuilding.PW_Building_Entity_ID1__c).portfolioID);
+            pwBuilding.PW_Building_ID__c = String.valueOf(buildings.get(pwBuilding.PW_Building_Entity_ID1__c).buildingIdNumber);
+            pwBuilding.PW_Created_Date_in_Propetyware__c = formattedPWCreatedDate;
+            pwBuilding.PW_Last_Modified_in_Propertyware__c = formattedPWLastModifiedDate;
+            pwBuilding.PW_Total_Area__c = buildings.get(pwBuilding.PW_Building_Entity_ID1__c).totalArea;
+            pwBuilding.Published_For_Rent__c = buildings.get(pwBuilding.PW_Building_Entity_ID1__c).publishedForRent;
+            pwBuilding.Group_HOI__c = buildings.get(pwBuilding.PW_Building_Entity_ID1__c).groupHOI;
+            pwBuilding.Google_Place_ID__c = String.valueOf(buildings.get(pwBuilding.PW_Building_Entity_ID1__c).googlePlaceId);
+            pwBuilding.Is_Owner_Selling_Notes__c = buildings.get(pwBuilding.PW_Building_Entity_ID1__c).isOwnerSellingNotes;
+            pwBuilding.Is_Owner_Selling__c = buildings.get(pwBuilding.PW_Building_Entity_ID1__c).isOwnerSelling;
+            pwBuilding.Is_Owner_Selling_Closing_Date__c = buildings.get(pwBuilding.PW_Building_Entity_ID1__c).isOwnerSellingClosingDate;
+
+
+            // pwBuilding.PW_Status__c = buildings.get(pwBuilding.PW_Building_Entity_ID1__c).status;
             pwBuilding.PW_Last_Modified_in_Propertyware__c = formattedPWLastModifiedDate;
             currentBuildingMap.put(pwBuilding.PW_Building_Entity_ID1__c, pwBuilding);
         }
@@ -284,6 +353,7 @@ public with sharing class PropertyWareAPIUtility implements Queueable, Database.
             if(!currentBuildingMap.containsKey(buildingId)){
                 string houseId = defaultHouseId;
                 string portfolioId = defaultPorfolioId;
+                string InvestorOwnerId = null;
                 
                 System.debug('googleId from currentSFgooglePlaceIdToPWHouseMap: '+currentSFgooglePlaceIdToPWHouseMap.get(buildings.get(buildingId).googlePlaceID));
                 System.debug('Building from currentSFPWPortfolioMap: '+currentSFPWPortfolioMap.get(buildings.get(buildingId).portfolioID));
@@ -292,6 +362,7 @@ public with sharing class PropertyWareAPIUtility implements Queueable, Database.
                 }
                 if(currentSFPWPortfolioMap.containsKey(buildings.get(buildingId).portfolioID)) {
                     portfolioId = currentSFPWPortfolioMap.get(buildings.get(buildingId).portfolioID).Id;
+                    investorOwnerId = currentSFPWPortfolioMap.get(buildings.get(buildingId).portfolioID).Investor_Owner__c;
                 }
                 string formattedPWCreatedDate = '';
                 if(buildings.get(buildingId).PwCreatedDate != null){
@@ -332,6 +403,7 @@ public with sharing class PropertyWareAPIUtility implements Queueable, Database.
                         PW_Active__c = buildings.get(buildingId).active,
                         House__c = houseId,
                         PW_Portfolio__c = portfolioId,
+                        Investor_Owner_Account__c = investorOwnerId,
                         PW_Building_Market__c = buildings.get(buildingId).market,
                         PW_Address__c = buildings.get(buildingId).address,
                         PW_City__c = buildings.get(buildingId).city,
@@ -350,6 +422,7 @@ public with sharing class PropertyWareAPIUtility implements Queueable, Database.
                         Group_HOI__c = buildings.get(buildingId).groupHOI,
                         Google_Place_ID__c = String.valueOf(buildings.get(buildingId).googlePlaceId),
                         Is_Owner_Selling_Notes__c = buildings.get(buildingId).isOwnerSellingNotes,
+                        Is_Owner_Selling__c = buildings.get(buildingId).isOwnerSelling,
                         Is_Owner_Selling_Closing_Date__c = buildings.get(buildingId).isOwnerSellingClosingDate
                         // PW_Portfolio__c = portfolio.Id
                     );
@@ -449,7 +522,7 @@ public with sharing class PropertyWareAPIUtility implements Queueable, Database.
         }
 
         Map<String, PW_Portfolio__c> portfolioMap = new Map<String, PW_Portfolio__c>();
-        for(PW_Portfolio__c p: [SELECT Id, PW_Portfolio_Entity_ID__c FROM PW_Portfolio__c WHERE PW_Portfolio_Entity_ID__c IN: protfolioIdSet]){
+        for(PW_Portfolio__c p: [SELECT Id, PW_Portfolio_Entity_ID__c, Investor_Owner__c FROM PW_Portfolio__c WHERE PW_Portfolio_Entity_ID__c IN: protfolioIdSet]){
             portfolioMap.put(p.PW_Portfolio_Entity_ID__c, p);
         }
         for(string buildingId: buildings.keySet()){
@@ -468,7 +541,7 @@ public with sharing class PropertyWareAPIUtility implements Queueable, Database.
         Http http = new Http();
         HttpRequest request = new HttpRequest();
 
-        request.setEndpoint('https://api.propertyware.com/pw/api/rest/v1/portfolios'+ portfolioId);
+        request.setEndpoint('https://api.propertyware.com/pw/api/rest/v1/portfolios/'+ portfolioId);
         request.setMethod('GET');
 
         // Set required headers
@@ -556,6 +629,7 @@ public with sharing class PropertyWareAPIUtility implements Queueable, Database.
         public String market;
         public string isOwnerSellingNotes;
         public String isOwnerSellingClosingDate;
+        public string isOwnerSelling;
         // public Marketing marketing;
         // public List<PropertyManager> propertyManagerList;
         // public Management management;
