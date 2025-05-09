@@ -554,16 +554,16 @@ public with sharing class PropertyWareAPIUtility2 implements Queueable, Database
         try {
             HttpResponse response = http.send(request);
             if(response.getStatusCode() == 200) {
-                List<Object> raw = (List<Object>) JSON.deserializeUntyped(response.getBody());
+                Object raw = (Object) JSON.deserializeUntyped(response.getBody());
                 System.debug('Portfolio: '+raw);
                 
-                for(Object o: raw){
-                    Map<String, Object> Portfolio = (Map<String, Object>) o;
+                // for(Object o: raw){
+                    Map<String, Object> Portfolio = (Map<String, Object>) raw;
                     newPortfolio.Name = String.valueOf(Portfolio.get('name'));
                     newPortfolio.PW_Portfolio_Entity_ID__c = String.valueOf(Portfolio.get('id'));
                     newPortfolio.PW_Active__c = Boolean.valueOf(Portfolio.get('active'));
                     newPortfolio.PW_Org__c = 'PPMG of Texas, LLC';
-                }
+                // }
             }
         } catch (Exception e) {
             System.debug('Callout error: ' + e.getMessage());
