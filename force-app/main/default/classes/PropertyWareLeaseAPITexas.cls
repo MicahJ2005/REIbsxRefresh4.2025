@@ -64,16 +64,44 @@ public with sharing class PropertyWareLeaseAPITexas implements Queueable, Databa
 
         // Map<String, PWBuildingWrapper> PWIdAndAddress = new Map<String, PWBuildingWrapper>();
 
-
+        Map<String, List<Object>> buildingIdAndLeaseFromPW = new Map<String, List<Object>>();
 
         try {
             HttpResponse response = http.send(request);
             if(response.getStatusCode() == 200) {
                 List<Object> raw = (List<Object>) JSON.deserializeUntyped(response.getBody());
                 system.debug('Texas Leases:'+ raw);
+                for(Object o: raw){
+                    Map<String, Object> lease = (Map<String, Object>) o;
+                    system.debug('Texas Leases in Loop:'+ lease);
+                    if(buildingIdAndLeaseFromPW.containsKey(String.valueOf(lease.get('buildingId')))){
+                        buildingIdAndLeaseFromPW.get(String.valueOf(lease.get('buildingId'))).add(lease);
+                    }else{
+                        buildingIdAndLeaseFromPW.put(String.valueOf(lease.get('buildingId')), new List<Object>{lease});
+                    }
+                }
             }
         } catch (Exception e) {
             System.debug('Callout error: ' + e.getMessage());
         }
+
+       List<PW_Building__c> currentBuildings = getPWBuildings(buildingIdAndLeaseFromPW);
+       system.debug('Texas currentBuildings:'+ currentBuildings);
+       for(PW_Building__c building: currentBuildings){
+           system.debug('building PW MAP'+ buildingIdAndLeaseFromPW.get(building.PW_Building_ID__c));
+        }
+           
+    }
+    
+
+    public static List<PW_Building__c> getPWBuildings(Map<String, Object> buildingIdAndLeaseFromPW) {
+        return [
+            SELECT Id, 
+                Name,   
+                PW_Building_Entity_ID1__c, 
+                PW_Building_ID__c
+                FROM PW_Building__c
+                WHERE PW_Building_ID__c IN :buildingIdAndLeaseFromPW.keySet()
+            ];
     }
 }

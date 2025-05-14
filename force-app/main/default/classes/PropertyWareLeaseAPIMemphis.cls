@@ -71,9 +71,15 @@ public with sharing class PropertyWareLeaseAPIMemphis implements Queueable, Data
             if(response.getStatusCode() == 200) {
                 List<Object> raw = (List<Object>) JSON.deserializeUntyped(response.getBody());
                 system.debug('Memphis Leases:'+ raw);
+                for(Object o: raw){
+                    Map<String, Object> lease = (Map<String, Object>) o;
+                    system.debug('Memphis Leases in Loop:'+ lease);
+                }
             }
         } catch (Exception e) {
             System.debug('Callout error: ' + e.getMessage());
         }
     }
+
+    
 }
