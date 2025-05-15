@@ -74,10 +74,14 @@ public with sharing class PropertyWareLeaseAPITexas implements Queueable, Databa
                 for(Object o: raw){
                     Map<String, Object> lease = (Map<String, Object>) o;
                     system.debug('Texas Leases in Loop:'+ lease);
-                    if(buildingIdAndLeaseFromPW.containsKey(String.valueOf(lease.get('buildingId')))){
-                        buildingIdAndLeaseFromPW.get(String.valueOf(lease.get('buildingId'))).add(lease);
-                    }else{
-                        buildingIdAndLeaseFromPW.put(String.valueOf(lease.get('buildingId')), new List<Object>{lease});
+                    system.debug('Texas Leases in Loop buildingID:'+ lease.get('buildingID'));
+                    if(String.valueOf(lease.get('buildingID')) != null){
+                        if(buildingIdAndLeaseFromPW.containsKey(String.valueOf(lease.get('buildingID')))){
+                            buildingIdAndLeaseFromPW.get(String.valueOf(lease.get('buildingID'))).add(lease);
+                        }else{
+                            buildingIdAndLeaseFromPW.put(String.valueOf(lease.get('buildingID')), new List<Object>());
+                            buildingIdAndLeaseFromPW.get(String.valueOf(lease.get('buildingID'))).add(lease);
+                        }
                     }
                 }
             }
@@ -85,23 +89,59 @@ public with sharing class PropertyWareLeaseAPITexas implements Queueable, Databa
             System.debug('Callout error: ' + e.getMessage());
         }
 
-       List<PW_Building__c> currentBuildings = getPWBuildings(buildingIdAndLeaseFromPW);
-       system.debug('Texas currentBuildings:'+ currentBuildings);
-       for(PW_Building__c building: currentBuildings){
-           system.debug('building PW MAP'+ buildingIdAndLeaseFromPW.get(building.PW_Building_ID__c));
-        }
+       Map<string, PW_Building__c> currentBuildingsMap = getPWBuildings(buildingIdAndLeaseFromPW);
+       system.debug('Texas currentBuildings:'+ currentBuildingsMap);
+
+       Map<string, List<PW_Lease__c>> currentLeasesMap = getLeases(buildingIdAndLeaseFromPW);
+       system.debug('Texas currentLeases:'+ currentLeasesMap);
+       
+       /// Loop through JSON leases
+
+       //// Check if there is a current leas to update
+
+       ///If yes, update info
+
+       //// if no, create new lease
+
+       /// upsert
            
     }
     
 
-    public static List<PW_Building__c> getPWBuildings(Map<String, Object> buildingIdAndLeaseFromPW) {
-        return [
+    public static Map<string, PW_Building__c> getPWBuildings(Map<String, List<Object>> buildingIdAndLeaseFromPW) {
+        Map<string, PW_Building__c> pwBuildingMap = new Map<string, PW_Building__c>();
+        for(PW_Building__c building: [
             SELECT Id, 
                 Name,   
                 PW_Building_Entity_ID1__c, 
                 PW_Building_ID__c
                 FROM PW_Building__c
-                WHERE PW_Building_ID__c IN :buildingIdAndLeaseFromPW.keySet()
-            ];
+                WHERE PW_Building_Entity_ID1__c IN :buildingIdAndLeaseFromPW.keySet()
+            ]){
+                pwBuildingMap.put(building.PW_Building_Entity_ID1__c, building);
+            }
+        return pwBuildingMap;
+    }
+
+    public static Map<string, List<PW_Lease__c>> getLeases(Map<String, List<Object>> buildingIdAndLeaseFromPW){
+
+        Map<string, List<PW_Lease__c>> pwLeaseMap = new Map<string, List<PW_Lease__c>>();
+        for(PW_Lease__c lease: [SELECT Id, Name, PW_Active__c, PW_Lease_Entity_ID__c, 
+                                        PW_Building_Entity_ID__c, PW_Portfolio_Entity_ID__c, 
+                                        PW_Lease_Status__c, PW_Move_In_Date__c,
+                                        PW_Move_Out_Date__c, PW_Notice_Given_Date__c, 
+                                        PW_Start_Date__c, PW_End_Date__c, PW_Last_Modified_in_Propertyware__c, 
+                                        PW_Create_Date_in_Propertyware__c, PW_Lease_Balance__c, PW_Base_Rent__c 
+                                        FROM PW_Lease__c
+                                        WHERE PW_Building_Entity_ID__c IN :buildingIdAndLeaseFromPW.keySet()
+                                        ]){
+                                            if(pwLeaseMap.containsKey(lease.PW_Building_Entity_ID__c)){
+                                                pwLeaseMap.get(lease.PW_Building_Entity_ID__c).add(lease);
+                                            }else{  
+                                                pwLeaseMap.put(lease.PW_Building_Entity_ID__c, new List<PW_Lease__c>());
+                                                pwLeaseMap.get(lease.PW_Building_Entity_ID__c).add(lease);
+                                            }
+                                        }
+        return pwLeaseMap;
     }
 }
