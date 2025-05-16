@@ -62,14 +62,13 @@ public with sharing class PropertyWareLeaseAPITexas implements Queueable, Databa
         request.setHeader('Accept-Encoding', 'gzip, deflate, br');
         request.setHeader('Connection', 'keep-alive');
 
-        // Map<String, PWBuildingWrapper> PWIdAndAddress = new Map<String, PWBuildingWrapper>();
-
         Map<String, List<Object>> buildingIdAndLeaseFromPW = new Map<String, List<Object>>();
 
+        List<Object> raw = new List<Object>();
         try {
             HttpResponse response = http.send(request);
             if(response.getStatusCode() == 200) {
-                List<Object> raw = (List<Object>) JSON.deserializeUntyped(response.getBody());
+                raw = (List<Object>) JSON.deserializeUntyped(response.getBody());
                 system.debug('Texas Leases:'+ raw);
                 for(Object o: raw){
                     Map<String, Object> lease = (Map<String, Object>) o;
@@ -92,9 +91,54 @@ public with sharing class PropertyWareLeaseAPITexas implements Queueable, Databa
        Map<string, PW_Building__c> currentBuildingsMap = getPWBuildings(buildingIdAndLeaseFromPW);
        system.debug('Texas currentBuildings:'+ currentBuildingsMap);
 
-       Map<string, List<PW_Lease__c>> currentLeasesMap = getLeases(buildingIdAndLeaseFromPW);
+       Map<string, PW_Lease__c> currentLeasesMap = getLeases(buildingIdAndLeaseFromPW);
        system.debug('Texas currentLeases:'+ currentLeasesMap);
        
+       List<PW_Lease__c> newLeases = new List<PW_Lease__c>();
+
+       if(raw.size() > 0){
+            // raw = (List<Object>) JSON.deserializeUntyped(response.getBody());
+            system.debug('Texas Leases:'+ raw);
+            for(Object o: raw){
+                Map<String, Object> lease = (Map<String, Object>) o;
+                PW_Lease__c leaseRecord = new PW_Lease__c();
+                
+                if(currentLeasesMap.containsKey(String.valueOf(lease.get('id')))){
+                    leaseRecord.Id = String.valueOf(currentLeasesMap.get(String.valueOf(lease.get('id'))).Id);
+                }
+                if(currentBuildingsMap.containsKey(String.valueOf(lease.get('buildingID')))){
+                    leaseRecord.PW_Building__c = currentBuildingsMap.get(String.valueOf(lease.get('buildingID'))).Id;
+                }
+                
+                leaseRecord.Name = String.valueOf(lease.get('leaseName'));
+                leaseRecord.PW_Active__c = (Boolean) lease.get('active');
+                leaseRecord.PW_Lease_Entity_ID__c = String.valueOf(lease.get('id'));
+                leaseRecord.PW_Building_Entity_ID__c = String.valueOf(lease.get('buildingID'));
+                leaseRecord.PW_Portfolio_Entity_ID__c = String.valueOf(lease.get('portfolioID'));
+                leaseRecord.PW_Lease_Status__c = String.valueOf(lease.get('status'));
+                
+                leaseRecord.PW_Move_In_Date__c = (lease.containsKey('moveInDate') && lease.get('moveInDate') != null)
+                    ? String.valueOf(lease.get('moveInDate')) : null;
+                leaseRecord.PW_Move_Out_Date__c = (lease.containsKey('moveOutDate') && lease.get('moveOutDate') != null)
+                    ? String.valueOf(lease.get('moveOutDate')) : null;
+                leaseRecord.PW_Notice_Given_Date__c = (lease.containsKey('noticeGivenDate') && lease.get('noticeGivenDate') != null)
+                    ? String.valueOf(lease.get('noticeGivenDate')) : null;
+                leaseRecord.PW_Start_Date__c = (lease.containsKey('startDate') && lease.get('startDate') != null)
+                    ? String.valueOf(lease.get('startDate')) : null;
+                leaseRecord.PW_End_Date__c = (lease.containsKey('endDate') && lease.get('endDate') != null)
+                    ? String.valueOf(lease.get('endDate')) : null;
+                leaseRecord.PW_Last_Modified_in_Propertyware__c = (lease.containsKey('lastModifiedDateTime') && lease.get('lastModifiedDateTime') != null)
+                    ? formatZuluDateTime(String.valueOf(lease.get('lastModifiedDateTime'))) : null;
+                leaseRecord.PW_Create_Date_in_Propertyware__c = (lease.containsKey('createdDateTime') && lease.get('createdDateTime') != null)
+                    ? formatZuluDateTime(String.valueOf(lease.get('createdDateTime'))) : null;
+                leaseRecord.PW_Lease_Balance__c = (lease.containsKey('leaseBalance') && lease.get('leaseBalance') != null)
+                    ? String.valueOf(lease.get('leaseBalance')) : null;
+                leaseRecord.PW_Base_Rent__c = (lease.containsKey('baseRent') && lease.get('baseRent') != null)
+                    ? String.valueOf(lease.get('baseRent')) : null;
+
+                newLeases.add(leaseRecord);
+            }
+        }
        /// Loop through JSON leases
 
        //// Check if there is a current leas to update
@@ -102,9 +146,9 @@ public with sharing class PropertyWareLeaseAPITexas implements Queueable, Databa
        ///If yes, update info
 
        //// if no, create new lease
-
-       /// upsert
-           
+        if(newLeases.size() > 0){
+            upsert newLeases;
+        }
     }
     
 
@@ -123,9 +167,9 @@ public with sharing class PropertyWareLeaseAPITexas implements Queueable, Databa
         return pwBuildingMap;
     }
 
-    public static Map<string, List<PW_Lease__c>> getLeases(Map<String, List<Object>> buildingIdAndLeaseFromPW){
+    public static Map<string, PW_Lease__c> getLeases(Map<String, List<Object>> buildingIdAndLeaseFromPW){
 
-        Map<string, List<PW_Lease__c>> pwLeaseMap = new Map<string, List<PW_Lease__c>>();
+        Map<string, PW_Lease__c> pwLeaseMap = new Map<string, PW_Lease__c>();
         for(PW_Lease__c lease: [SELECT Id, Name, PW_Active__c, PW_Lease_Entity_ID__c, 
                                         PW_Building_Entity_ID__c, PW_Portfolio_Entity_ID__c, 
                                         PW_Lease_Status__c, PW_Move_In_Date__c,
@@ -135,13 +179,33 @@ public with sharing class PropertyWareLeaseAPITexas implements Queueable, Databa
                                         FROM PW_Lease__c
                                         WHERE PW_Building_Entity_ID__c IN :buildingIdAndLeaseFromPW.keySet()
                                         ]){
-                                            if(pwLeaseMap.containsKey(lease.PW_Building_Entity_ID__c)){
-                                                pwLeaseMap.get(lease.PW_Building_Entity_ID__c).add(lease);
-                                            }else{  
-                                                pwLeaseMap.put(lease.PW_Building_Entity_ID__c, new List<PW_Lease__c>());
-                                                pwLeaseMap.get(lease.PW_Building_Entity_ID__c).add(lease);
-                                            }
+                                            // if(pwLeaseMap.containsKey(lease.PW_Building_Entity_ID__c)){
+                                                pwLeaseMap.put(lease.PW_Lease_Entity_ID__c, lease);
+                                            // }else{  
+                                            //     pwLeaseMap.put(lease.PW_Building_Entity_ID__c, new List<PW_Lease__c>());
+                                            //     pwLeaseMap.get(lease.PW_Building_Entity_ID__c).add(lease);
+                                            // }
                                         }
         return pwLeaseMap;
+    }
+
+    public static String formatZuluDateTime(String zuluDateTime) {
+        if (String.isBlank(zuluDateTime)) return null;
+
+        try {
+            // Handle ISO 8601 by replacing 'T' with a space if present
+            if (zuluDateTime.contains('T')) {
+                zuluDateTime = zuluDateTime.replace('T', ' ');
+            }
+
+            // Parse into GMT DateTime
+            DateTime parsedDate = DateTime.valueOfGmt(zuluDateTime);
+
+            // Format to human-readable string
+            return parsedDate.format('M/d/yyyy h:mm a');
+        } catch (Exception e) {
+            System.debug('Invalid datetime string: ' + zuluDateTime);
+            return zuluDateTime; // Fallback: return raw string if parsing fails
+        }
     }
 }
