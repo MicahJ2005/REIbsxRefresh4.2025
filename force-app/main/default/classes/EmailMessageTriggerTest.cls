@@ -4,7 +4,7 @@ public class EmailMessageTriggerTest {
     static void testEmailMessageTriggerWithActiveFlag() {
         // Setup: Create Account with customer service assignment
         User currentUser = [SELECT Id FROM User WHERE Id = :UserInfo.getUserId()];
-        Account acct = new Account(Name = 'Test Account', type = 'Investor',Customer_Service_Assignment__c = currentUser.Id);
+        Account acct = new Account(Name = 'Test Account', type = 'Investor', Customer_Service_Assignment__c = currentUser.Id);
         insert acct;
 
         // Create Contact (Investor)
@@ -18,7 +18,7 @@ public class EmailMessageTriggerTest {
         insert investor;
 
         // Create Case
-        Case testCase = new Case(Subject = 'Email Trigger Test Case', Status = 'New', Origin = 'Email');
+        Case testCase = new Case(Subject = 'Email Trigger Test Case', Status = 'New', Origin = 'Email', recordtypeid = Schema.SObjectType.Case.getRecordTypeInfosByName().get('Customer Service').getRecordTypeId());
         insert testCase;
 
         // Insert EmailMessage that should trigger the logic

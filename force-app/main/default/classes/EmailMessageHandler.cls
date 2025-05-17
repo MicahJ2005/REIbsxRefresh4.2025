@@ -41,29 +41,43 @@ public class EmailMessageHandler {
 
 
 
+        Set<Id> caseRecordTypeIds = new Set<Id>();
 
+        for (RecordType rt : [
+            SELECT Id 
+            FROM RecordType 
+            WHERE SobjectType = 'Case' 
+            AND DeveloperName IN ('Customer_Service', 'Email_to_Case')
+        ]) {
+            caseRecordTypeIds.add(rt.Id);
+        }
 
         List<Case> relatedCaseList = [SELECT Id, ContactId, AccountId, OwnerId
                                     FROM Case 
                                     WHERE Id 
-                                    IN :emailToCaseIdMap.values()];
+                                    IN :emailToCaseIdMap.values()
+                                    AND RecordTypeId IN: caseRecordTypeIds];
 
         List<Case> casesToupdate  = new List<Case>();
-
-        for(Case c : relatedCaseList) {
-            for(string email: caseIdToEmailMap.get(c.Id)) {
-                if(emailToContactMap.containsKey(email.toLowerCase())){
-                    c.ContactId = emailToContactMap.get(email.toLowerCase()).Id;
-                    c.AccountId = emailToContactMap.get(email.toLowerCase()).AccountId;
-                    c.OwnerId = emailToContactMap.get(email.toLowerCase()).Account.Customer_Service_Assignment__c;
-                    casesToupdate.add(c);
+        
+       
+        if(relatedCaseList.size() > 0) {
+            for(Case c : relatedCaseList) {
+                for(string email: caseIdToEmailMap.get(c.Id)) {
+                    if(emailToContactMap.containsKey(email.toLowerCase())){
+                        c.ContactId = emailToContactMap.get(email.toLowerCase()).Id;
+                        c.AccountId = emailToContactMap.get(email.toLowerCase()).AccountId;
+                        c.OwnerId = emailToContactMap.get(email.toLowerCase()).Account.Customer_Service_Assignment__c;
+                        casesToupdate.add(c);
+                    }
                 }
             }
         }
      
         system.debug('casesToupdate: '+ casesToupdate);
-        update casesToupdate;
-        // You can also add further logic to link these Contacts to the Case if needed
+        if(casesToupdate.size() > 0) {
+            update casesToupdate;
+        }
     }
 
     private static List<String> parseEmailAddresses(String addresses) {
