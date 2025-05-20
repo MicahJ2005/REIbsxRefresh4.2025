@@ -136,16 +136,53 @@ public with sharing class PropertyWareLeaseAPIMemphis implements Queueable, Data
                 leaseRecord.PW_Base_Rent__c = (lease.containsKey('baseRent') && lease.get('baseRent') != null)
                     ? String.valueOf(lease.get('baseRent')) : null;
 
+                    ///Check for custom fields
+                if (lease.containsKey('customFields') && lease.get('customFields') != null) {
+                    List<Object> customFields = (List<Object>) lease.get('customFields');
+
+                    for (Object cfObj : customFields) {
+                        Map<String, Object> customField = (Map<String, Object>) cfObj;
+                        system.debug('customField: '+ customField);
+                        String fieldName = String.valueOf(customField.get('fieldName'));
+                        Object fieldValue = customField.get('value');
+
+                        if (fieldName == 'Filed to Evict') {
+                            leaseRecord.PW_Filed_to_Evict__c = fieldValue != null ? String.valueOf(fieldValue) : null;
+                        } else if (fieldName == 'Court Date') {
+                            leaseRecord.PW_Court_Date__c = fieldValue != null ? String.valueOf(fieldValue) : null;
+                        } else if (fieldName == 'Court Results') {
+                            leaseRecord.PW_Court_Results__c = fieldValue != null ? String.valueOf(fieldValue) : null;
+                        } else if (fieldName == 'Call Date') {
+                            leaseRecord.PW_Call_Date__c = fieldValue != null ? String.valueOf(fieldValue) : null;
+                        } else if (fieldName == 'Date Renewed') {
+                            leaseRecord.PW_Date_Renewed__c = fieldValue != null ? String.valueOf(fieldValue) : null;
+                        } else if (fieldName == 'Owner Wants Inspection?') {
+                            leaseRecord.PW_Owner_Wants_Inspection__c = fieldValue != null ? String.valueOf(fieldValue) : null;
+                        } else if (fieldName == 'Owner Wants to Renew') {
+                            leaseRecord.PW_Owner_Wants_to_Renew__c = fieldValue != null ? String.valueOf(fieldValue) : null;
+                        } else if (fieldName == 'Payment Contact Method') {
+                            leaseRecord.PW_Payment_Contact_Method__c = fieldValue != null ? String.valueOf(fieldValue) : null;
+                        } else if (fieldName == 'Ordered WRIT') {
+                            leaseRecord.PW_Ordered_WRIT__c = fieldValue != null ? String.valueOf(fieldValue) : null;
+                        } else if (fieldName == 'Put out w/ WRIT') {
+                            leaseRecord.PW_Put_out_w_WRIT__c = fieldValue != null ? String.valueOf(fieldValue) : null;
+                        } else if (fieldName == 'Reason for Leaving') {
+                            leaseRecord.PW_Reason_for_Leaving__c = fieldValue != null ? String.valueOf(fieldValue) : null;
+                        } else if (fieldName == 'Promise to Pay Date') {
+                            leaseRecord.PW_Promise_to_Pay_Date__c = fieldValue != null ? String.valueOf(fieldValue) : null;
+                        } else if (fieldName == 'Market Rent') {
+                            leaseRecord.PW_Market_Rent__c = fieldValue != null ? String.valueOf(fieldValue) : null;
+                        } else if (fieldName == '% Increase') {
+                            leaseRecord.PW_Increase__c = fieldValue != null ? String.valueOf(fieldValue) : null;
+                        } else if (fieldName == 'Total Increase') {
+                            leaseRecord.PW_Total_Increase__c = fieldValue != null ? String.valueOf(fieldValue) : null;
+                        }
+                    }
+                }
                 newLeases.add(leaseRecord);
             }
         }
-       /// Loop through JSON leases
-
-       //// Check if there is a current leas to update
-
-       ///If yes, update info
-
-       //// if no, create new lease
+        
         if(newLeases.size() > 0){
             upsert newLeases;
         }

@@ -59,7 +59,6 @@ public class EmailMessageHandler {
                                     AND RecordTypeId IN: caseRecordTypeIds];
 
         List<Case> casesToupdate  = new List<Case>();
-        
        
         if(relatedCaseList.size() > 0) {
             for(Case c : relatedCaseList) {
@@ -67,7 +66,9 @@ public class EmailMessageHandler {
                     if(emailToContactMap.containsKey(email.toLowerCase())){
                         c.ContactId = emailToContactMap.get(email.toLowerCase()).Id;
                         c.AccountId = emailToContactMap.get(email.toLowerCase()).AccountId;
-                        c.OwnerId = emailToContactMap.get(email.toLowerCase()).Account.Customer_Service_Assignment__c;
+                        if(emailToContactMap.get(email.toLowerCase()).Account.Customer_Service_Assignment__c!=null){
+                            c.OwnerId = emailToContactMap.get(email.toLowerCase()).Account.Customer_Service_Assignment__c;
+                        }
                         casesToupdate.add(c);
                     }
                 }
