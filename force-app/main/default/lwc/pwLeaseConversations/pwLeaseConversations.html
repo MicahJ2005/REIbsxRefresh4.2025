@@ -1,0 +1,59 @@
+<template>
+    <lightning-card title="Propertyware Lease Conversations" class="main-card">
+        <template if:true={conversations.length}>
+            <div class="slds-grid slds-wrap slds-gutters_small" style="width:90%; margin-left:5%">
+                <template for:each={conversations} for:item="conv">
+                    <div key={conv.subject} class="slds-col slds-size_1-of-1 slds-box">
+                        <lightning-card title={conv.subject} class="conv-card slds-m-bottom_medium" >
+                            <div class="slds-p-horizontal_medium slds-p-vertical_small">
+                                <p><strong>Group Type:</strong> {conv.type}</p>
+                                 <p class=" slds-text-color_weak slds-m-bottom_xx-small">
+                                    <strong>Created Date/Time:</strong>
+                                    <lightning-formatted-date-time
+                                        value={conv.createdDateTime}
+                                        year="numeric"
+                                        month="short"
+                                        day="2-digit"
+                                        hour="2-digit"
+                                        minute="2-digit"
+                                        hour12="true">
+                                    </lightning-formatted-date-time>
+                                </p>
+                                <template if:true={conv.comments.length}>
+                                    <div class="slds-m-top_small">
+                                        <template for:each={conv.comments} for:item="comment">
+                                            <div key={comment.text} class="slds-box slds-theme_shade slds-m-vertical_x-small">
+                                               <p class=" slds-text-color_weak slds-m-bottom_xx-small">
+                                                    <strong>Created Date/Time:</strong>
+                                                    <lightning-formatted-date-time
+                                                        value={comment.createdDateTime}
+                                                        year="numeric"
+                                                        month="short"
+                                                        day="2-digit"
+                                                        hour="2-digit"
+                                                        minute="2-digit"
+                                                        hour12="true">
+                                                    </lightning-formatted-date-time>
+                                                </p>
+                                                <p>{comment.text}</p>
+                                            </div>
+                                        </template>
+                                    </div>
+                                </template>
+                            </div>
+                        </lightning-card>
+                    </div>
+                </template>
+            </div>
+        </template>
+
+        <template if:true={error}>
+            <p class="slds-text-color_error slds-p-around_small">{error}</p>
+        </template>
+
+        <template if:false={conversations}>
+            <p class="slds-p-around_small">No conversations found.</p>
+        </template>
+    </lightning-card>
+</template>
+
