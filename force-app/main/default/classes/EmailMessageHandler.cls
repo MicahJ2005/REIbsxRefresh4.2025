@@ -59,6 +59,8 @@ public class EmailMessageHandler {
                                     AND RecordTypeId IN: caseRecordTypeIds];
 
         List<Case> casesToupdate  = new List<Case>();
+        
+        User blake = [SELECT Id FROM User WHERE Name = 'Blake Clothier' AND IsActive = true LIMIT 1];
        
         if(relatedCaseList.size() > 0) {
             for(Case c : relatedCaseList) {
@@ -69,6 +71,11 @@ public class EmailMessageHandler {
                         if(emailToContactMap.get(email.toLowerCase()).Account.Customer_Service_Assignment__c!=null){
                             c.OwnerId = emailToContactMap.get(email.toLowerCase()).Account.Customer_Service_Assignment__c;
                         }
+                        else{
+                            /// default for any case that does not have a related Custom Service Assignment
+                             c.OwnerId = blake.Id;
+                        }
+                        
                         casesToupdate.add(c);
                     }
                 }

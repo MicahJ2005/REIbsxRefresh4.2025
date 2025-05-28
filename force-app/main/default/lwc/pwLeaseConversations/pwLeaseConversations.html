@@ -8,7 +8,7 @@
                             <div class="slds-p-horizontal_medium slds-p-vertical_small">
                                 <p><strong>Group Type:</strong> {conv.type}</p>
                                  <p class=" slds-text-color_weak slds-m-bottom_xx-small">
-                                    <strong>Created Date/Time:</strong>
+                                    <strong>Created Date/Time: </strong>
                                     <lightning-formatted-date-time
                                         value={conv.createdDateTime}
                                         year="numeric"
@@ -24,7 +24,7 @@
                                         <template for:each={conv.comments} for:item="comment">
                                             <div key={comment.text} class="slds-box slds-theme_shade slds-m-vertical_x-small ">
                                                <p class=" slds-text-color_weak slds-m-bottom_xx-small">
-                                                    <strong>Created Date/Time:</strong>
+                                                    <strong>Created Date/Time: </strong>
                                                     <lightning-formatted-date-time
                                                         value={comment.createdDateTime}
                                                         year="numeric"
@@ -56,4 +56,3 @@
         </template>
     </lightning-card>
 </template>
-

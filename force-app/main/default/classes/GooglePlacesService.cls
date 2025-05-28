@@ -11,36 +11,32 @@ public class GooglePlacesService {
         public String place_id;
     }
 
-    @future(callout=true)
-    public static void getPlaceIdFromHouseRecordId(Id recordId) {
-        System.debug('recordId: '+ recordId);
-        // Query the address from the Account record (adjust if you're using another object)
-        House__c acc = [
-            SELECT House_Complete_Address__c, Google_Place_ID__c
-            FROM House__c
-            WHERE Id = :recordId
-            LIMIT 1
-        ];
+    
+    public static void getPlaceIdFromHouseRecordId(map<Id, House__c> newMap, map<Id, House__c> oldMap) {
 
-        // Build the full address
-        String address = '';
-        if(acc.House_Complete_Address__c != null){
-            address = acc.House_Complete_Address__c;
+        List<House__c> houseListToUpdate = new List<House__c>();
+        
+        for(House__c acc: newMap.values()){
+            String address = '';
+            if(acc.House_Complete_Address__c != null){
+                address = acc.House_Complete_Address__c;
+            }
+            
+            address = address.trim();
+            if (address.endsWith(',')) {
+                address = address.substring(0, address.length() - 1);
+            }
+            System.debug('address: '+ address);
+            string placeId = getPlaceIdFromAddress(address);
+            System.debug('placeId: '+ placeId);
+            if(placeId != null){
+                acc.Google_Place_ID__c = placeId;
+                houseListToUpdate.add(acc);
+            }
         }
-
-        // Trim trailing commas/space
-        address = address.trim();
-        if (address.endsWith(',')) {
-            address = address.substring(0, address.length() - 1);
+        if(houseListToUpdate.size() > 0 ){
+            update houseListToUpdate;
         }
-        System.debug('address: '+ address);
-        string placeId = getPlaceIdFromAddress(address);
-        System.debug('placeId: '+ placeId);
-        if(placeId != null){
-            acc.Google_Place_ID__c = placeId;
-            update acc;
-        }
-        // return placeId;
     }
 
     

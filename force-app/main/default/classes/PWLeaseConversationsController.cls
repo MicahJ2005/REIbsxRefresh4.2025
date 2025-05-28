@@ -11,7 +11,6 @@ public with sharing class PWLeaseConversationsController {
 
         ///need to figure out how to query for specific market
 
-        
         PropertyWare_Setting__mdt PWPPMGCREDS = [
                                                 SELECT 
                                                     MasterLabel,
