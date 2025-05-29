@@ -2,7 +2,7 @@ public class HouseCalloutQueueable implements Queueable, Database.AllowsCallouts
     private Set<Id> oldIds;
     private Set<Id> newIds;
 
-    public HouseCalloutQueueable(Set<Id> oldIds, Set<Id> newIds) {
+    public HouseCalloutQueueable(Set<Id> newIds, Set<Id> oldIds) {
         this.oldIds = oldIds;
         this.newIds = newIds;
     }

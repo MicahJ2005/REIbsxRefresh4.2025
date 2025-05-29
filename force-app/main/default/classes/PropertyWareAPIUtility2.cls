@@ -481,6 +481,9 @@ public with sharing class PropertyWareAPIUtility2 implements Queueable, Database
                     }
                 }
                 
+                // String fullAddress = buildings.get(buildingId).address + ', ' + buildings.get(buildingId).city + ', ' + buildings.get(buildingId).stateRegion + ' ' + buildings.get(buildingId).postalCode;
+                // String placeId = GooglePlacesService.getPlaceIdFromAddress(fullAddress);
+
                 House__c house = new House__c(
                     Market__c = buildings.get(buildingId).market,
                     Name = buildings.get(buildingId).name,
@@ -495,7 +498,7 @@ public with sharing class PropertyWareAPIUtility2 implements Queueable, Database
                     Sq_Feet__c = buildings.get(buildingId).TotalArea,
                     // Year_Built__c = buildings.get(buildingId).YearBuilt,
                     Status__c = 'Managed',
-                    Google_Place_ID__c = buildings.get(buildingId).googlePlaceId
+                    Google_Place_ID__c = ''
                 );
                 // Conditionally set Year_Built__c
                 if (buildings.get(buildingId).YearBuilt != null) {

@@ -184,7 +184,17 @@ public with sharing class PropertyWareLeaseAPIMemphis implements Queueable, Data
         }
         
         if(newLeases.size() > 0){
-            upsert newLeases;
+            Database.UpsertResult[] results = Database.upsert(newLeases, false); // allOrNone = false
+
+            for (Integer i = 0; i < results.size(); i++) {
+                if (results[i].isSuccess()) {
+                    System.debug('Record succeeded: ' + newLeases[i].Id);
+                } else {
+                    for (Database.Error err : results[i].getErrors()) {
+                        System.debug('Error on record ' + i + ': ' + err.getMessage());
+                    }
+                }
+            }
         }
     }
     
