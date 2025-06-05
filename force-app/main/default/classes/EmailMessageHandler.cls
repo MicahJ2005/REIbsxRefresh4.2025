@@ -84,7 +84,22 @@ public class EmailMessageHandler {
      
         system.debug('casesToupdate: '+ casesToupdate);
         if(casesToupdate.size() > 0) {
-            update casesToupdate;
+            // update casesToupdate;
+            Map<Id, Case> uniqueCasesMap = new Map<Id, Case>();
+            for (Case c : casesToUpdate) {
+                if (c.Id != null) {
+                    uniqueCasesMap.put(c.Id, c); // later values overwrite earlier ones if Id repeats
+                }
+            }
+
+            // Convert the values back to a list
+            List<Case> uniqueCasesToUpdate = new List<Case>(uniqueCasesMap.values());
+
+            System.debug('uniqueCasesToUpdate: ' + uniqueCasesToUpdate);
+
+            if (!uniqueCasesToUpdate.isEmpty()) {
+                update uniqueCasesToUpdate;
+            }
         }
     }
 

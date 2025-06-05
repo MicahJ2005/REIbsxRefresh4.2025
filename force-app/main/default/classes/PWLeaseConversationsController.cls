@@ -3,11 +3,19 @@ public with sharing class PWLeaseConversationsController {
     public static List<Object> getLeaseConversations(Id leaseId) {
         // Query to get the lease external ID or API ID
         PW_Lease__c lease = [
-            SELECT Id, PW_Lease_Entity_ID__c
+            SELECT Id, PW_Lease_Entity_ID__c, PW_Building__r.PW_Portfolio__r.PW_Org__c
             FROM PW_Lease__c
             WHERE Id = :leaseId
             LIMIT 1
         ];
+
+        string metadataDevName = '';
+        if(lease.PW_Building__r.PW_Portfolio__r.PW_Org__c == 'PPMG of Texas, LLC'){
+            metadataDevName = 'PW_PPMG_of_Texas_Creds';
+        }
+        else if(lease.PW_Building__r.PW_Portfolio__r.PW_Org__c == 'Premier Property Management Group'){
+            metadataDevName = 'PW_PPMG_Creds';
+        }
 
         ///need to figure out how to query for specific market
 
@@ -19,7 +27,7 @@ public with sharing class PWLeaseConversationsController {
                                                     x_propertyware_client_secret__c,
                                                     x_propertyware_system_id__c
                                                 FROM PropertyWare_Setting__mdt
-                                                WHERE DeveloperName = 'PW_PPMG_Creds'
+                                                WHERE DeveloperName =: metadataDevName
                                                 LIMIT 1
                                             ];
        

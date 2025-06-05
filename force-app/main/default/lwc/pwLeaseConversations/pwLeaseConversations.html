@@ -23,6 +23,7 @@
                                     <div class="slds-m-top_small">
                                         <template for:each={conv.comments} for:item="comment">
                                             <div key={comment.text} class="slds-box slds-theme_shade slds-m-vertical_x-small ">
+                                                <p><strong>Created By: </strong> {comment.createdBy}</p>
                                                <p class=" slds-text-color_weak slds-m-bottom_xx-small">
                                                     <strong>Created Date/Time: </strong>
                                                     <lightning-formatted-date-time
@@ -35,6 +36,7 @@
                                                         hour12="true">
                                                     </lightning-formatted-date-time>
                                                 </p>
+                                                
                                                 <p>{comment.text}</p>
                                             </div>
                                         </template>
@@ -52,7 +54,8 @@
         </template>
 
         <template if:false={conversations}>
-            <p class="slds-p-around_small">No conversations found.</p>
+            <p class="slds-p-around_small">No PropertyWare conversations found.</p>
+            <!-- <p class="slds-p-around_small">If you were expecting conversations, please check the "PW Org" field on the related Portfolio.</p> -->
         </template>
     </lightning-card>
 </template>
