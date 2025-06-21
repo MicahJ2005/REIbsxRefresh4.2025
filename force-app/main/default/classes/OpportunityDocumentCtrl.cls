@@ -149,7 +149,9 @@ public class OpportunityDocumentCtrl {
         
         Messaging.SendEmailResult [] emailResult = Messaging.sendEmail(new Messaging.SingleEmailMessage[] {email});   
         
-        List<EmailMessage> activityHistoryList = [SELECT Id FROM EmailMessage ORDER BY CreatedDate DESC LIMIT 1];
+        ///Added the 'WHERE createddate = TODAY' query filter - Micah Johnson - Demand Chain 6.19.2025
+        List<EmailMessage> activityHistoryList = [SELECT Id FROM EmailMessage WHERE createddate = TODAY ORDER BY CreatedDate DESC LIMIT 1];
+        System.debug('activityHistoryList :: ' + activityHistoryList);
         
         List<Attachment> attachmentList = new List<Attachment>();
         for ( ContentVersion cversion : [SELECT title, 

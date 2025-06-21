@@ -192,6 +192,8 @@ public with sharing class PropertyWareLeaseAPIMemphis implements Queueable, Data
                 } else {
                     for (Database.Error err : results[i].getErrors()) {
                         System.debug('Error on record ' + i + ': ' + err.getMessage());
+                        System.debug('Record fields that affected this error: ' + err.getFields());
+                        System.debug('Record Id that affected this error: ' + results[i].Id);
                     }
                 }
             }

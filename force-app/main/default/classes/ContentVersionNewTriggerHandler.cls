@@ -63,7 +63,7 @@ public class ContentVersionNewTriggerHandler{
                 if(!onHoldAccounts.isEmpty()){
                     for(Account acc: onHoldAccounts){
                         acc.Expiration_Date__c = iDContentVersionMap.get(accountContentDocumentIdMap.get(acc.Id)).Expiration_Date__c;
-                        if(acc.Status__c!= 'Onboarding'){
+                        if(acc.Status__c!= 'Onboarding' && acc.Status__c!= 'Inactive'){
                             acc.Status__c = 'On Hold';
                         } 
                         acc.Attachment_Type__c = iDContentVersionMap.get(accountContentDocumentIdMap.get(acc.Id)).Attachment_Type__c;

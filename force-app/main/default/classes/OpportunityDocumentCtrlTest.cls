@@ -1,62 +1,124 @@
 @isTest
 public class OpportunityDocumentCtrlTest {
-    
-    @isTest static void method1(){
-        
-        Lead objLead = new Lead();
-        objLead.Market__c = 'MEM';
-        objLead.Bedrooms__c = '2';
-        objLead.Car_Storage__c = 'DR';
-        objLead.Square_Feet__c = 100;
-        objLead.Year_Built__c = '1960';
-        objLead.FirstName = 'testing';
-        objLead.LastName = 'V1';
-        objLead.Lead_Details__c = 'random testing';
-        objLead.Street = 'teststreet';
-        objLead.State = 'MS';
-        objLead.City = 'testCity';
-        objLead.Country = 'testCountry';
-        objLead.PostalCode = 'test';
-        objLead.Company = 'testing';
-        objLead.LeadSource = 'Builder';
-        objLead.Listing_Date__c = date.today();
-        insert objLead;
-        
-        test.startTest();
-        
-        Database.LeadConvert lc = new database.LeadConvert();
-        lc.setLeadId(objLead.Id);
-        lc.setDoNotCreateOpportunity(false);
-        lc.setConvertedStatus('Converted');
-        
-        Database.LeadConvertResult lcr = Database.convertLead(lc);
-        System.assert(lcr.isSuccess());
-        
-        Id accId =  lcr.getAccountId();
-        Account accObj = new Account();
-        accObj.Id = accId;
-        accObj.Type = 'Vendor';
-        update accObj;
-        
-        contact objCon1 = new contact();
-        objCon1.LastName = 'test';
-        objCon1.FirstName = 'First';
-        objCon1.Email = 'test@gmail.com';
-        objCon1.AccountId = accObj.Id;
-        insert objCon1;
-        system.debug('objCon1 :: ' +objCon1.Type__c );
-        
-        Id oppId = lcr.getOpportunityId();
-        
-        Opportunity oppty = new Opportunity();
-        oppty.Id = oppId;
-        oppty.Title_Company_Attorney__c = objCon1.Id;
-        update oppty;
-       
-        OpportunityDocumentCtrl.updateFileType('Test1','0692i000000HS3MAAW','Contract_Document_1',oppId);
-        OpportunityDocumentCtrl.getOpportunityContractField(oppId);
-        OpportunityDocumentCtrl.sendEmailwithAttach(oppty);
-        
-        test.stopTest();
+   
+    @testSetup
+    static void setup() {
+        // Create Account
+        Account acc = new Account(Name='Test Account', Type = 'Custodian');
+        insert acc;
+
+        // Create Contact
+        Contact con = new Contact(FirstName='John', LastName='Doe', Email='john.doe@example.com', AccountId=acc.Id);
+        insert con;
+
+        // Create User
+        User u = [SELECT Id FROM User WHERE Profile.Name='System Administrator' LIMIT 1];
+
+        // Create Title Company (Contact)
+        Contact titleCompany = new Contact(FirstName='Title', LastName='Attorney', Email='title.attorney@example.com', AccountId=acc.Id);
+        insert titleCompany;
+
+        Trigger_Switch__c setting = new Trigger_Switch__c();
+        setting.Name = 'Opportunity';
+        setting.Is_Enabled__c =  true;
+        insert setting;
+        // Create Opportunity
+        Opportunity opp = new Opportunity(
+            Name='Test Opp',
+            StageName='Prospecting',
+            CloseDate=Date.today().addDays(10),
+            Market__c='MEM',
+            Title_Company_Attorney__c=titleCompany.Id,
+            OwnerId=u.Id,
+            Source_Contact__c=con.Id,
+            LeadSource = '	BiggerPockets',
+            AccountId=acc.Id
+        );
+        opp.RecordTypeId = Schema.SObjectType.Opportunity.getRecordTypeInfosByName().get('Buy').getRecordTypeId();
+        // opp.Name = 'Opp 0';
+        opp.Title_Verification_Email__c = TRUE;
+        // opp.CloseDate = date.today();
+        // opp.StageName = 'RecordTypeId = RecordTypeId';
+        opp.Bathrooms__c = '1';
+        opp.Bedrooms__c = '1';
+        opp.Square_Ft__c = 200;
+        opp.Car_Storage__c = '1GD';
+        opp.Year_Built__c = '2010';
+        opp.Appraised__c = 2000;
+        opp.Loan_Type__c = 'CV';
+        // opp.Market__c = 'MEM';
+        opp.Initial_Offer__c = 200;
+        opp.Initial_List_Price__c = 200;
+        opp.Info_Source__c = 'MLS';
+        // opp.LeadSource = 'Client Referral';
+        opp.Listing_Date__c = System.today() - 10;
+        insert opp;
+
+        // Create Custom Metadata record
+        // You can't insert Metadata via Apex, so make sure one exists in org with Label = 'test@example.com'
+
+        // Create ContentVersion and attach to ContentDocument
+        ContentVersion cv = new ContentVersion(
+            Title='TestDoc',
+            PathOnClient='TestDoc.pdf',
+            VersionData=Blob.valueOf('Test content')
+        );
+        insert cv;
+
+        cv = [SELECT Id, ContentDocumentId FROM ContentVersion WHERE Id = :cv.Id];
+        ContentDocumentLink cdl = new ContentDocumentLink(
+            ContentDocumentId=cv.ContentDocumentId,
+            LinkedEntityId=opp.Id,
+            ShareType='V'
+        );
+        insert cdl;
+    }
+
+    @isTest
+    static void testUpdateFileType() {
+        Opportunity opp = [SELECT Id FROM Opportunity LIMIT 1];
+        ContentVersion cv = [SELECT ContentDocumentId FROM ContentVersion LIMIT 1];
+
+        Test.startTest();
+        Opportunity updatedOpp = OpportunityDocumentCtrl.updateFileType(
+            'TestDoc.pdf',
+            cv.ContentDocumentId,
+            'Contract_Document_1',
+            opp.Id
+        );
+        Test.stopTest();
+
+        System.assertEquals('TestDoc.pdf', updatedOpp.Contract_Document_1__c);
+    }
+
+    @isTest
+    static void testGetOpportunityContractField() {
+        Opportunity opp = [SELECT Id FROM Opportunity LIMIT 1];
+
+        Test.startTest();
+        Opportunity result = OpportunityDocumentCtrl.getOpportunityContractField(opp.Id);
+        Test.stopTest();
+
+        System.assertEquals(opp.Id, result.Id);
+    }
+
+    @isTest
+    static void testSendEmailWithAttach() {
+        Opportunity opp = [SELECT Id FROM Opportunity LIMIT 1];
+        ContentVersion cv = [SELECT ContentDocumentId FROM ContentVersion LIMIT 1];
+
+        // Update Opportunity with Document IDs
+        opp.Contract_Document_1Id__c = cv.ContentDocumentId;
+        update opp;
+
+        Test.startTest();
+        OpportunityDocumentCtrl.sendEmailwithAttach(opp);
+        Test.stopTest();
+
+        List<EmailMessage> emails = [SELECT Id FROM EmailMessage WHERE CreatedDate = TODAY];
+        System.assert(emails.size() > 0, 'Expected at least one EmailMessage');
+
+        List<Attachment> attachments = [SELECT Id FROM Attachment WHERE ParentId = :emails[0].Id];
+        System.assert(attachments.size() > 0, 'Expected at least one attachment');
     }
 }
