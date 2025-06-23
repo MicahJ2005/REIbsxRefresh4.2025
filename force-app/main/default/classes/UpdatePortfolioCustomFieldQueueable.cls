@@ -9,7 +9,7 @@ public with sharing class UpdatePortfolioCustomFieldQueueable implements Queueab
     public void execute(QueueableContext context) {
         System.debug('entityIds In QUEUE: '+ entityIds);
         List<PW_Portfolio__c> portfolioList = [SELECT Id, PW_Org__c, PW_Portfolio_Entity_ID__c, Customer_Service_Assignment__c FROM PW_Portfolio__c WHERE Id IN: entityIds];
-        
+        List<PW_Portfolio__c> portfolioListToUpdate = new List<PW_Portfolio__c>();
         for (PW_Portfolio__c portfolio : portfolioList) {    
             string metadataDevName = '';
             if(portfolio.PW_Org__c == 'PPMG of Texas, LLC'){
@@ -58,16 +58,22 @@ public with sharing class UpdatePortfolioCustomFieldQueueable implements Queueab
 
             request.setBody(JSON.serialize(payload));
 
+            
             try {
                 HttpResponse res = http.send(request);
                 if (res.getStatusCode() != 200 && res.getStatusCode() != 204) {
                     System.debug('Failed for ID ' + portfolio.PW_Portfolio_Entity_ID__c + ': ' + res.getBody());
                 } else {
                     System.debug('Success for ID ' + portfolio.PW_Portfolio_Entity_ID__c);
+                    portfolio.PW_Batch_Synced__c = true;
+                    portfolioListToUpdate.add(portfolio);
                 }
             } catch (Exception ex) {
                 System.debug('Callout failed for ID ' + portfolio.PW_Portfolio_Entity_ID__c + ': ' + ex.getMessage());
             }
+        }
+        if(portfolioListToUpdate.size() > 0){
+            update portfolioListToUpdate;
         }
     }
 }
